@@ -7,6 +7,10 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Dialogs.Internals;
 using Microsoft.Bot.Connector;
 
+using Microsoft.Bot.Builder.Internals.Fibers;
+
+using MultiDialogsBot;
+
 namespace SimpleEchoBot
 {
     public class WebApiApplication : System.Web.HttpApplication
@@ -35,7 +39,17 @@ namespace SimpleEchoBot
                         .SingleInstance();
 
                 });
+            RegisterBotModules();
             GlobalConfiguration.Configure(WebApiConfig.Register);
+        }
+
+        private void RegisterBotModules()
+        {
+            var builder = new ContainerBuilder();
+
+            builder.RegisterModule(new ReflectionSurrogateModule());
+            builder.RegisterModule<GlobalMessageHandlersBotModule>();
+            builder.Update(Conversation.Container);
         }
     }
 }

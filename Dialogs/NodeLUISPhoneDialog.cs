@@ -56,8 +56,6 @@ namespace MultiDialogsBot.Dialogs
         HandSets handSetsBag;
         int numberOfIterations = 1;
 
-        bool debugMessages = false;
-
         public NodeLUISPhoneDialog(HandSets handSets, string brand, DateTime? currentModelReleaseDate,List<string> narrowedListOfModels) : base()
         {
             handSetsBag = handSets;
@@ -82,7 +80,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that you want a phone with access to internet and with wide bandwidth");
             handsetsLeft = decoder.DecodeIntent(EIntents.BandWidth,result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents = " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents = " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handsetsLeft,handsetsNow);
         }
@@ -98,7 +96,7 @@ namespace MultiDialogsBot.Dialogs
             try
             {
                 handsetsLeft = decoder.DecodeIntent(EIntents.BatteryLife,result);
-                if (debugMessages) await context.PostAsync($"DEBUG : I have here {handsetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handsetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
                 await UpdateUserAsync(context, handsetsLeft,handSetsNow);
             }
             catch (ArgumentException)
@@ -127,10 +125,10 @@ namespace MultiDialogsBot.Dialogs
             /*
             if (brandsRequired.Count == 0)
             {
-                if (debugMessages) await context.PostAsync("DEBUG : He didn't specify, Needs to call the node to specifically pick a brand");hfhth
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He didn't specify, Needs to call the node to specifically pick a brand");hfhth
             }*/
             handSetsLeft = decoder.DecodeIntent(EIntents.Brand, result);
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -146,7 +144,7 @@ namespace MultiDialogsBot.Dialogs
 
             handSetsLeft = decoder.DecodeIntent(EIntents.Camera, result,debugStr);
             await context.PostAsync(debugStr.ToString());
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -164,7 +162,7 @@ namespace MultiDialogsBot.Dialogs
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that you want a phone with Dual Camera");
             handSetsLeft = decoder.DecodeIntent(EIntents.DualCamera, result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context,handSetsLeft,handSetsNow);
         }
 
@@ -176,7 +174,7 @@ namespace MultiDialogsBot.Dialogs
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I undertand that you would like a phone with DualSIM");
             handSetsLeft = decoder.DecodeIntent(EIntents.DualSIM,result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -190,7 +188,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that an expandable memory is the most important thing for you");
 
             handSetsLeft = decoder.DecodeIntent(EIntents.ExpandableMemory,result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -203,7 +201,7 @@ namespace MultiDialogsBot.Dialogs
 
             await context.PostAsync("I understand that the most important thing for you is the presence of an FM Radio Antenna");
             handSetsLeft = decoder.DecodeIntent(EIntents.FMRadio, result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -217,7 +215,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is the presence of Face ID recognition");
 
             handSetsLeft = decoder.DecodeIntent(EIntents.FaceID,result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -230,7 +228,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is the presence of GPS");
 
             handSetsLeft = decoder.DecodeIntent(EIntents.GPS,result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -243,7 +241,7 @@ namespace MultiDialogsBot.Dialogs
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you is the presence of High Definition voice");
             handSetsLeft = decoder.DecodeIntent(EIntents.HDVoice,result);
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -256,8 +254,8 @@ namespace MultiDialogsBot.Dialogs
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you is a High resolution display");
             handSetsLeft = decoder.DecodeIntent(EIntents.HighResDisplay, result,debug);
-            if (debugMessages) await context.PostAsync("DEBUG : DecodeIntent() output = " + debug.ToString());
-            await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : DecodeIntent() output = " + debug.ToString());
+            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
@@ -272,7 +270,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is a phone with a large storage capability");
             handSetsLeft = decoder.DecodeIntent(EIntents.LargeStorage, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents: " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents: " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -287,7 +285,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you in a phone is the operating System");
             handSetsLeft = decoder.DecodeIntent(EIntents.OS, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handsetsNow);
         }
@@ -302,7 +300,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you on a phone is the screen size");
             handSetsLeft = decoder.DecodeIntent(EIntents.ScreenSize, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag ContentS : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag ContentS : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -316,13 +314,13 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is the presence of a secondary camera");
             handSetsLeft = decoder.DecodeIntent(EIntents.SecondaryCamera,result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());     
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
 
         [LuisIntent("Small")]
-        public async Task Small(IDialogContext context, LuisResult result)
+        public async Task Small(IDialogContext context, LuisResult result)         
         {
             int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
 
@@ -331,7 +329,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you are the dimensions of your new phone");
             handSetsLeft = decoder.DecodeIntent(EIntents.Small, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -346,7 +344,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is that your phone should be water resistant");
             handSetsLeft = decoder.DecodeIntent(EIntents.WaterResist,result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -361,7 +359,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is the weight of your phone");
             handSetsLeft = decoder.DecodeIntent(EIntents.Weight, result);
 
-            if (debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -376,7 +374,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is the presence of WiFi");
             handSetsLeft = decoder.DecodeIntent(EIntents.WiFi, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -391,7 +389,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understand that the most important thing for you is the color");
             handSetsLeft = decoder.DecodeIntent(EIntents.Color, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -406,7 +404,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("I understant that you want a recent model");
             handSetsLeft = decoder.DecodeIntent(EIntents.Newest, result);
 
-            if (debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
 
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
         }
@@ -436,8 +434,8 @@ namespace MultiDialogsBot.Dialogs
 
             
             topIntent = luisResult.TopScoringIntent;
-            if (debugMessages) await context.PostAsync($"DEBUG : The most scored intent is {topIntent.Intent} with skore = {topIntent.Score}");
-            if (debugMessages) await context.PostAsync(GetEntityScores(luisResult));
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : The most scored intent is {topIntent.Intent} with skore = {topIntent.Score}");
+            if (CommonDialog.debugMessages) await context.PostAsync(GetEntityScores(luisResult));
         }
 
         private string GetEntityScores(LuisResult result)
@@ -453,19 +451,18 @@ namespace MultiDialogsBot.Dialogs
             return sb.ToString();
         }
 
-        
         private async Task UpdateUserAsync(IDialogContext context,int handSetsLeft,int handSetsB4)
         {
             StringBuilder sb = new StringBuilder("-->");
             List<EIntents> ranking = this.decoder.IntentsRanking(sb);
-            
-
-
-            if (debugMessages) await context.PostAsync("DEBUG : Ranking : \r\n");
-
+        
             foreach (var intent in ranking)
                 sb.Append(intent.ToString() + "\r\n");
-            await context.PostAsync(sb.ToString() + "\r\n");
+            if (CommonDialog.debugMessages)
+            {
+                await context.PostAsync("DEBUG : Ranking : \r\n");
+                await context.PostAsync(sb.ToString() + "\r\n");
+            }
             if (handSetsLeft == handSetsB4)
                 await context.PostAsync("Unfortunately, that doesn't help in narrowing the list down");
             else if (handSetsLeft == 0)
@@ -475,12 +472,11 @@ namespace MultiDialogsBot.Dialogs
             }
             else
                 await context.PostAsync($"I narrowed it down to {handSetsLeft} handsets that fulfill your requirements");
-            if ((numberOfIterations++ == 1) && (handSetsLeft > 4))
+            if ((numberOfIterations++ == 1) && (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS))
                 await context.PostAsync("What else is important for you on a mobile?");
             else
             {
-                if (debugMessages) await context.PostAsync($"DEBUG : Number of phones on bag : {handSetsBag.BagCount()}");
-
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : Number of phones on bag : {handSetsBag.BagCount()}");
                 context.Done(decoder);
             }
         }

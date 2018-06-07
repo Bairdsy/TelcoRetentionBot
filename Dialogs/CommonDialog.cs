@@ -14,7 +14,8 @@ namespace  MultiDialogsBot.Dialogs
     [Serializable]
     public abstract class CommonDialog : IDialog<object>     
     {
-        protected static bool debugMessages = true;
+        public static bool debugMessages ;
+     
         protected static HandSets handSets;
         MongoDBAccess mongoDBAccess = MongoDBAccess.Instance; 
 

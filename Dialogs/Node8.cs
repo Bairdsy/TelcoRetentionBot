@@ -25,7 +25,7 @@
         {  
             var ret = await result;
 
-            await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
             if (((Tuple<string,NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet )
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1),this.upgradeEquipmentFlow);
             else

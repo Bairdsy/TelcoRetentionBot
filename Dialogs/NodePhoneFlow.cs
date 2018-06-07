@@ -503,7 +503,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 if (debugMessages) await context.PostAsync("DEBUG : xception message " + xception.Message);
             }
-            if (handSetsLeft <= 4)   // It's narrowed down enough
+            if (handSetsLeft <= BotConstants.MAX_CAROUSEL_CARDS)   // It's narrowed down enough
             {
                 modelsInBag = handSets.GetBagModels();
                 if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag has {modelsInBag.Count}");

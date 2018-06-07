@@ -17,7 +17,7 @@ namespace MultiDialogsBot.Dialogs
     [Serializable]
     public class NodeLuisSubsNeedscs : LuisDialog<object>
     {
-        bool debugMessages;
+        bool debugMessages = false;
 
         [LuisIntent("None")]
         public async Task None(IDialogContext context,LuisResult result)

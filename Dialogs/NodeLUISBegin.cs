@@ -53,8 +53,6 @@ namespace MultiDialogsBot.Dialogs
         LuisUpdater updater = new LuisUpdater();
         string nonUnderstoodUtterance,initialPhrase;
 
-        bool debugMessages = false;
-
 
         [LuisIntent("Upgrade Both")]
         public async Task UpgradeBoth(IDialogContext context,LuisResult result)
@@ -195,8 +193,8 @@ namespace MultiDialogsBot.Dialogs
             double secondIntentionScore = ObtainSecondTopIntentScore(result);
             string secondMostLikelyIntention = ObtainSecondMostLikelyIntent(result);   
 
-            if (debugMessages) await context.PostAsync($"DEBUG: First Intent is {intention}, with skore = {intentionScore}");          
-            if (debugMessages) await context.PostAsync($"DEBUG: Second Intent is {secondMostLikelyIntention}, with skore = {secondIntentionScore}");
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: First Intent is {intention}, with skore = {intentionScore}");          
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: Second Intent is {secondMostLikelyIntention}, with skore = {secondIntentionScore}");
         }
 
         private async Task AskToRephraseAsync(IDialogContext context,LuisResult result)
@@ -295,35 +293,35 @@ namespace MultiDialogsBot.Dialogs
             var connector = new ConnectorClient(new Uri(((Activity)ans).ServiceUrl));
             int counter = 0,maxTimes = 8;
 
-            if (debugMessages) await context.PostAsync("DEBUG : Beginning of method CheckUserAnswerAsync()");
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of method CheckUserAnswerAsync()");
             if (humanFriendlyIntent.TryGetValue(text, out tuple))
             {
                 msg += tuple.Item1;
                 try    
                 {
-                    if (debugMessages) await context.PostAsync("Checking if we saw utterance enough times...");
+                    if (CommonDialog.debugMessages) await context.PostAsync("Checking if we saw utterance enough times...");
                     LUISUpdated = await updater.UpdateUtteranceAsync(text, nonUnderstoodUtterance);
                     if (LUISUpdated)
                     {
-                        if (debugMessages) await context.PostAsync("We did, utterance added to LUIS and order for training sent");
-                        if (debugMessages) await context.PostAsync("DEBUG : Debug Messages : " + updater.debug);
+                        if (CommonDialog.debugMessages) await context.PostAsync("We did, utterance added to LUIS and order for training sent");
+                        if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Debug Messages : " + updater.debug);
                         typingActivity = ((Activity)ans).CreateReply();
 
-                        if (debugMessages) await context.PostAsync("DEBUG: Training status = " + (await updater.CheckTrainStatus()));
+                        if (CommonDialog.debugMessages) await context.PostAsync("DEBUG: Training status = " + (await updater.CheckTrainStatus()));
                         typingActivity.Type = ActivityTypes.Typing;
                         await connector.Conversations.SendToConversationAsync((Activity)typingActivity);
                         do
                         {
                             Thread.Sleep(90);
-                            if (debugMessages) await context.PostAsync("DEBUG: Checking Training status = " + (await updater.CheckTrainStatus()));
+                            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG: Checking Training status = " + (await updater.CheckTrainStatus()));
                             luisTrained = await updater.CheckTrainStatus();
-                            if (debugMessages) await context.PostAsync("DEBUG: Training status = " + (await updater.CheckTrainStatus()));
+                            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG: Training status = " + (await updater.CheckTrainStatus()));
                         }
                         while ((counter < maxTimes) && !luisTrained);
 
                         retVal = await updater.PublishLuisAsync();
-                        if (debugMessages) await context.PostAsync("DEBUG : Publish POST returned : " + retVal);
-                        if (debugMessages) await context.PostAsync("DEBUG: Debug mesages = " + updater.debug);
+                        if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Publish POST returned : " + retVal);
+                        if (CommonDialog.debugMessages) await context.PostAsync("DEBUG: Debug mesages = " + updater.debug);
                     }
                 }
                 catch (Exception xception)
@@ -331,7 +329,7 @@ namespace MultiDialogsBot.Dialogs
                     await context.PostAsync("Error...could not add utterance to LUIS, xception message = " + xception.Message);
                 }
                 await context.PostAsync(msg);
-                if (debugMessages) await context.PostAsync("DEBUG : End of Method CheckUserAnswerAsync()");
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : End of Method CheckUserAnswerAsync()");
                 context.Done(Tuple.Create(initialPhrase,tuple.Item2));
             }
             else

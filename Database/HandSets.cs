@@ -6,6 +6,8 @@ using System.Web;
 
 using System.Text.RegularExpressions;
 
+using MultiDialogsBot.Helper;
+
 namespace MultiDialogsBot.Database
 {
 
@@ -304,7 +306,7 @@ namespace MultiDialogsBot.Database
                 double temp = getter(bag[i]);
 
                 ++counter;
-                if (counter >= 4)           // 4 = minimum possible to show in caroussel but you've got to have at least 2 different
+                if (counter >= BotConstants.MAX_CAROUSEL_CARDS)           // MAX+CAROUSEL_CARDS = minimum possible to show in caroussel but you've got to have at least 2 different
                 {
                     if (((i + 1) >= bag.Count) || (getter(bag[i + 1]) != temp))
                     break;

@@ -218,6 +218,7 @@
     <Compile Include="Dialogs\BrandModelNode.cs" />
     <Compile Include="Dialogs\ColorsNode.cs" />
     <Compile Include="Dialogs\CommonDialog.cs" />
+    <Compile Include="Dialogs\commonResponsesDialog.cs" />
     <Compile Include="Dialogs\ContextConstants.cs" />
     <Compile Include="Dialogs\EchoDialog.cs" />
     <Compile Include="Dialogs\KnockOutRecommendationsNode.cs" />
@@ -269,6 +270,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Database\MongoDBAccess.cs" />
+    <Compile Include="GlobalMessageHandlersBotModule.cs" />
+    <Compile Include="Helper\BotConstants.cs" />
     <Compile Include="Helper\IntentDecoder.cs" />
     <Compile Include="Helper\LuisUpdater.cs" />
     <Compile Include="PhoneFeatures.cs" />
@@ -278,6 +281,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resource1.resx</DependentUpon>
     </Compile>
+    <Compile Include="Scorables\DebugScorable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
