@@ -1,0 +1,351 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+using System.Text.RegularExpressions;
+
+namespace MultiDialogsBot.Database
+{
+
+    [Serializable]
+    public class HandSets
+    {
+
+        public delegate double accessor(HandSetFeatures handSetFeatures);
+
+        [Serializable]
+        class Models : IEnumerable
+        {
+            IEnumerator IEnumerable.GetEnumerator() { return models.Values.GetEnumerator();}
+
+            Dictionary<string, HandSetFeatures> models;
+            public string BrandLogoURL { get; set; }
+
+            public Models ()
+            {
+                models = new Dictionary<string, HandSetFeatures>();
+            }
+
+            public Models(string brandImageURL) : this()
+            {
+                BrandLogoURL = brandImageURL;
+            }
+
+            public void Add(HandSetFeatures newModel)
+            {
+                HandSetFeatures old;
+
+                if (!models.TryGetValue(newModel.Model, out old))
+                {
+                    models.Add(newModel.Model, newModel);
+                }
+                else
+                    newModel.CopyTo(old);
+            }
+
+            public Dictionary<string,bool> GetAllModels()
+            {
+                Dictionary<string, bool> returnVal = new Dictionary<string, bool>();
+
+                foreach (var model in models.Keys)
+                    if (models[model].OS != null)
+                        returnVal.Add(model, false);
+                return returnVal;
+            }
+
+            public string GetSpecificModelBrand(string model)
+            {
+                return models[model].Brand;
+            }
+
+            public List<string> SelectWithRegEx(List<string> regex_filters)
+            {
+                Regex regex;
+                List<string> returnVal = new List<string>();
+
+                foreach (string filter in regex_filters)
+                {
+                    regex = new Regex(filter);
+                    foreach (string model in models.Keys)
+                    {
+                        if (  regex.IsMatch(model.ToLower()))                 // Oliver = night
+                            returnVal.Add(model);
+                    }
+                }
+               // returnVal.Insert(0, $"I examined {counter} models\r\n and obtained the following results = {debugString.ToString()}");
+                return  returnVal;
+            }
+
+            public HandSetFeatures GetEquipmentFeatures(string model)
+            {
+                return models[model];
+            }
+        }
+
+        Dictionary<string, Models> brands = new Dictionary<string, Models>();
+        Models masterDict = new Models();
+        List<HandSetFeatures> bag = new List<HandSetFeatures>();
+
+        public void Add(HandSetFeatures newModel)
+        {
+            Models brandModels;
+
+
+            if (!brands.TryGetValue(newModel.Brand, out brandModels))
+            {
+                brands.Add(newModel.Brand, new Models());
+                brands[newModel.Brand].Add(newModel);
+                masterDict.Add(newModel);
+            }
+            else
+            {
+                masterDict.Add(newModel);
+                brandModels.Add(newModel);
+            }
+        }
+
+        public int GetHandSetCount()
+        {
+            return GetAllModels().Count;
+        }
+        public Dictionary<string,bool> GetAllBrands()
+        {
+            Dictionary<string, bool> returnVal = new Dictionary<string, bool>();
+
+
+            foreach (var brand in brands.Keys)
+                returnVal.Add(brand, false);
+            return returnVal;
+        }
+
+        public Dictionary<string,bool> GetAllModels()
+        {
+            return masterDict.GetAllModels();
+        }
+
+        public Dictionary<string,bool> GetAllModelsForBrand(string brand)
+        {
+            Models models = brands[brand];
+
+            return models.GetAllModels();
+        }
+
+        public string GetModelBrand(string model)
+        {
+            // Search the master
+            return masterDict.GetSpecificModelBrand(model);
+        }
+
+        public List<string> SelectWithFilter(List<string> filters)
+        {
+            return masterDict.SelectWithRegEx(filters);
+        }
+
+        public string GetImageURL(string model)
+        {
+            HandSetFeatures handSetFeatures;
+
+            handSetFeatures = masterDict.GetEquipmentFeatures(model);
+            return handSetFeatures.ImageURL;
+        }
+
+        public DateTime GetModelReleaseDate(string model)
+        {
+            HandSetFeatures handSetFeatures;
+
+            handSetFeatures = masterDict.GetEquipmentFeatures(model);
+            return handSetFeatures.ReleaseDate;
+        }
+
+        /***********************************************
+         * To handle the bag of handsets               *
+         * that we wannt to reduce more and more       *
+         * via NodeLUISPhoneDialog                     *
+         * (Branch 7 - Recommend a phone)              *
+         *                                             *
+         ***********************************************/
+         
+        public void InitializeBag(List<string> identifiedMatches)
+        {
+            HandSetFeatures handSetFeatures;
+
+            bag.Clear();
+
+            foreach (var model in identifiedMatches)
+            {
+                handSetFeatures = masterDict.GetEquipmentFeatures(model);
+                if (handSetFeatures.OS != null)
+                    bag.Add(handSetFeatures);
+            }
+        }
+        public void InitializeBag(string brand2Filter, DateTime? releaseDate)
+        {
+            List<Models> listOfSetsOfModels = new List<Models>();
+            DateTime release = releaseDate ?? new DateTime( 1980,1,1);
+            string brand2Exclude ;
+
+            bag.Clear();
+            if (brand2Filter == null)
+                listOfSetsOfModels.Add(masterDict);
+            else if (brand2Filter[0] != '!')
+                listOfSetsOfModels.Add(brands[brand2Filter]);
+            else
+            {
+                brand2Exclude = brand2Filter.Substring(1);
+                foreach (var brand in brands.Keys)
+                    if (brand != brand2Exclude)
+                        listOfSetsOfModels.Add(brands[brand]);
+            }
+            foreach (Models set in listOfSetsOfModels) 
+                foreach (HandSetFeatures handset in set)
+                    if ((handset.ReleaseDate >= release) && (handset.OS != null))
+                        bag.Add(handset);
+        }
+
+        public int BagCount()
+        {
+            return bag.Count;
+        }
+
+        public int EliminateFromBag(Predicate<HandSetFeatures> predicate)
+        {
+            return bag.RemoveAll(predicate);
+        }
+
+        public void removeAllButTop(int phones2Keep)
+        {
+            int total = bag.Count;
+
+            if (total == phones2Keep)
+                return;
+            bag.RemoveRange(phones2Keep, total - phones2Keep );
+            return;
+        }
+
+        public double ComputeMiddle(accessor getter)
+        {
+            return (bag.Max(x => getter(x)) + bag.Min(x => getter(x))) / 2;
+        }
+        public int KnockOutNumber(Predicate<HandSetFeatures> predicate)
+        {
+            return bag.Count(x =>  predicate(x));
+        }
+
+        public List<string> GetBagColors()
+        {
+            List<string> returnVal = new List<string>() ;
+
+            foreach (var handset in bag)
+                returnVal = new List<string>(returnVal.Union<string>(handset.Colors));
+
+            return returnVal;
+        }
+
+        public double GetHighStandardThreshold(IComparer<HandSetFeatures> comparer,accessor getter)  
+        {
+            double min, max, temp;
+
+            bag.Sort(comparer);   
+            min = getter(bag[0]);
+            max = getter(bag[bag.Count - 1]);
+            if (min > max )
+            {
+                temp = min;
+                min = max;
+                max = temp;
+                return (min + (max - min) / 100 * 70);
+            }
+            return (min + (max - min) / 100 * 30);
+        }
+
+        public string BuildStrRepFull()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+
+            foreach (var brand in brands.Keys)
+            {
+                stringBuilder.Append("Brand : " + brand + "\r\nModels:\r\n");
+                foreach (var model in brands[brand])
+                    stringBuilder.Append("--> " + model);
+            }
+
+            foreach (var el in masterDict)
+            {
+                stringBuilder.Append(el.ToString());
+                stringBuilder.Append("\r\n-----\\//------\r\n");
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        public string BuildStrRep()
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder();
+
+            foreach (var el in bag)
+            {
+                stringBuilder.Append(el.ToString());
+                stringBuilder.Append("\r\n-----\\//------\r\n");
+            }
+
+            return  stringBuilder.ToString();
+        }
+        public int SortAndGetTop(IComparer<HandSetFeatures> comparer,accessor getter )
+        {
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder("Contents");
+            int counter = 0;
+        
+            bag.Sort(comparer);
+ 
+            for (int i = 0; i < bag.Count; ++i)
+            {
+                double temp = getter(bag[i]);
+
+                ++counter;
+                if (counter >= 4)           // 4 = minimum possible to show in caroussel but you've got to have at least 2 different
+                {
+                    if (((i + 1) >= bag.Count) || (getter(bag[i + 1]) != temp))
+                    break;
+                }
+            }
+            return counter;
+        }
+
+        public List<string> GetBagModels()
+        {
+            List<string> returnVal = new List<string>();
+
+            foreach (var handset in bag)
+                returnVal.Add(handset.Model);
+            return returnVal;
+        }
+
+        public string GetBrandLogo(string brand)
+        {
+            string logo;
+
+            logo = brands[brand].BrandLogoURL ?? "https://image.freepik.com/free-icon/not-available-abbreviation-inside-a-circle_318-33662.jpg";
+            return logo;
+        } 
+
+        public List<string> GetModelColors(string model)
+        {
+            HandSetFeatures handSetFeatures;
+
+            handSetFeatures = masterDict.GetEquipmentFeatures(model);
+            return handSetFeatures.Colors;
+        }
+
+        public void SetBrandLogo(string brand,string url)
+        {
+            Models theBrandModels;
+
+            if (brands.TryGetValue(brand, out theBrandModels))
+                theBrandModels.BrandLogoURL = url;
+        /*    else
+                throw new Exception("Error....trying to set the logo from an inexistent brand"); let's ignore the exception for now....   */
+        }
+    }
+}
