@@ -249,54 +249,13 @@ namespace MultiDialogsBot.Dialogs
             }
 
             await ProcessSelectedBrandsAndModels(context, brandsWanted, modelsWanted);
-            /*
-            stringBuilder = new StringBuilder("DEBUG : Models selected including uncovered brands: ");
-            foreach (string brand in brandsWanted)
-                stringBuilder.Append("-->" + brand + "\r\n");
-            if (debugMessages) await context.PostAsync("DEBUG : brands identified with uncovered brands : " + stringBuilder.ToString());
-            stringBuilder = new StringBuilder("DEBUG : Models selected including uncovered brands: ");
-            foreach (string model in modelsWanted)
-                stringBuilder.Append("-->" + model + "\r\n");
-            if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + stringBuilder.ToString());
-
-            selectResult = SelectWithFilter(modelsWanted);
-            stringBuilder = new StringBuilder("DEBUG : Models selected : ");
-            foreach (string model in selectResult)
-                stringBuilder.Append("-->" + model + "\r\n");
-            if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + stringBuilder.ToString());
-            AddUncoveredBrands(brandsWanted, selectResult);    
-            stringBuilder = new StringBuilder("DEBUG : Models selected including uncovered brands: ");
-            foreach (string model in selectResult)
-                stringBuilder.Append("-->" + model + "\r\n");
-            if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + stringBuilder.ToString());
-            handSets.InitializeBag(selectResult);
- 
-            if (debugMessages) await context.PostAsync("DEBUG: contents of bag : " + handSets.BuildStrRep());
-
-            if (selectResult.Count == 0)
-            {
-                await context.PostAsync("Sorry I got that wrong, Could you just type the specific model and brand so I can show it to you?");
-                context.Call(new BrandModelNode(), MessageReceivedAsync);
-            }
-            else if (handSets.BagCount() < 5)
-            {
-                context.Call(new LessThan5Node(selectResult),  FinalSelectionReceivedAsync);
-            }
-            else
-            {
-                await context.PostAsync($"I have quite a few equipments on my list that match your brand and model, specifically {selectResult.Count}");
-                await context.PostAsync("As such, I would like to narrow it down a little bit for you, so allow me to ask you");
-                await context.PostAsync("What is the most important thing for you on a phone?");
-
-                if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
-                if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
-                context.Call(new NodeLUISPhoneDialog(handSets, null, null, selectResult), LuisResponseHandlerAsync);
-            }*/
         }
 
         private async Task ProcessSelectedBrandsAndModels(IDialogContext context, List<string> wantedBrands,List<string> wantedModels)
         {
             StringBuilder sb  ;
+            TopFeatures topFeatures;
+            IntentDecoder theDecoder;
             List<string> selectResult;
 
             sb = new StringBuilder("DEBUG : Brands indicated : ");
@@ -333,13 +292,18 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
+                Activity reply = ((Activity)context.Activity).CreateReply("What is the most important thing for you on a phone?");
+
                 await context.PostAsync($"I have quite a few equipments on my list that match your brand and model, specifically {selectResult.Count}");
                 await context.PostAsync("As such, I would like to narrow it down a little bit for you, so allow me to ask you");
-                await context.PostAsync("What is the most important thing for you on a phone?");
+                theDecoder = new IntentDecoder(handSets, null, null, selectResult);
+                topFeatures = new TopFeatures(theDecoder);
+                reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
+                await context.PostAsync(reply);
 
                 if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                 if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
-                context.Call(new NodeLUISPhoneDialog(handSets, null, null, selectResult), LuisResponseHandlerAsync);
+                context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, null, null, selectResult), LuisResponseHandlerAsync);     
             }
         }
 
@@ -466,24 +430,35 @@ namespace MultiDialogsBot.Dialogs
         private async Task RecommendPhoneAsync(IDialogContext context,string brand,DateTime? lowerThreshold = null)
         {
             int count;
+            TopFeatures topFeatures ;
+            IntentDecoder theDecoder = new IntentDecoder(handSets, brand, lowerThreshold, null);
+
+            StringBuilder sb = new StringBuilder("");   // For debugging purposes
+
             try
             {
+                topFeatures = new TopFeatures(theDecoder);    
                 handSets.InitializeBag(brand, lowerThreshold);
                 count = handSets.BagCount();
-                if (count >= 5)
+                if (count > BotConstants.MAX_CAROUSEL_CARDS)
                 {
-                    await context.PostAsync($"OK, I have {count} available and I'm trying to work out the right one for you");
-                    await context.PostAsync("Name one, the most important thing on your decision?");
                     if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                     if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
-                    context.Call(new NodeLUISPhoneDialog(handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
+                    await context.PostAsync($"OK, I have {count} available and I'm trying to work out the right one for you");
+                    Activity message = (Activity)context.Activity;
+                    Activity reply = message.CreateReply("Name one, the most important thing on your decision?");
+                    reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
+                    if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
+                    await context.PostAsync(reply);
+                    context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
                 }
                 else
                     context.Call(new LessThan5Node(handSets.GetBagModels()), FinalSelectionReceivedAsync);
             }
             catch (Exception xception )
             {
-                if (debugMessages) await context.PostAsync("DEBUG : Message from the exception : " + xception.Message);
+                if (debugMessages) await context.PostAsync("DEBUG : Message from the exception : " + xception.Message + "\r\nDEBUG : string builder : " + sb.ToString());
+
             }
         }
 

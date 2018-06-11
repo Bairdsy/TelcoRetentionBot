@@ -22,6 +22,7 @@ namespace MultiDialogsBot.Helper
         readonly Dictionary<NodeLUISPhoneDialog.EIntents, Predicate<HandSetFeatures>> booleanFilters;
 
         delegate int sgn(Tuple<HandSetFeatures,HandSetFeatures> x);
+        delegate int NumberOfDifferent();
 
         struct KnockOutIntent : IComparable
         {
@@ -42,6 +43,13 @@ namespace MultiDialogsBot.Helper
         }
 
         public HandSets PhonesLeft { get { return handSets; } }
+        public List<NodeLUISPhoneDialog.EIntents> Exclude
+        {
+            get
+            {
+                return intents2Exclude;
+            }
+        }
 
         List<NodeLUISPhoneDialog.EIntents> intents2Exclude;
         HandSets handSets;
@@ -51,6 +59,9 @@ namespace MultiDialogsBot.Helper
         bool desc;   // Order by DESC/ASC
         List<string> StrKeyWords { get; set; }
         DateTime DateThreshold { get; set; }
+
+
+
 
         public IntentDecoder(HandSets hand_sets,string brand, DateTime? releaseDate,List<string> identifiedMatches)
         {
@@ -133,6 +144,47 @@ namespace MultiDialogsBot.Helper
         public string GetBagStrRep()
         {
             return handSets.BuildStrRep();
+        }
+
+        public bool KnocksSomeButNotAll(NodeLUISPhoneDialog.EIntents desiredFeature)
+        {
+            Dictionary<NodeLUISPhoneDialog.EIntents,NumberOfDifferent> enumerated = new Dictionary<NodeLUISPhoneDialog.EIntents, NumberOfDifferent>()
+            {
+                { NodeLUISPhoneDialog.EIntents.Color , () => handSets.GetBagColors().Count },
+                { NodeLUISPhoneDialog.EIntents.Brand , () => handSets.GetBagBrands().Count},
+                {  NodeLUISPhoneDialog.EIntents.OS, () => handSets.GetBagOSes().Count }
+            };
+            Predicate<HandSetFeatures> predicate;
+            int count = handSets.BagCount();
+            int knockOutNumber;
+
+            if (booleanFilters.TryGetValue(desiredFeature,out predicate))  // It's boolean
+            {
+                knockOutNumber = handSets.KnockOutNumber(predicate);
+                return (knockOutNumber != count) && (knockOutNumber != 0);
+            }
+            else if (intentFilters.TryGetValue(desiredFeature,out predicate))
+            {
+                if (!enumerated.ContainsKey(desiredFeature))
+                {
+                    double highStandardThreshold; 
+
+                    intent = desiredFeature;
+                    highStandardThreshold = handSets.GetHighStandardThreshold(this, getters[desiredFeature]);
+                    if (desiredFeature == NodeLUISPhoneDialog.EIntents.Newest)
+                        DateThreshold = new DateTime((long)highStandardThreshold);
+                    else
+                        Threshold = highStandardThreshold;
+                    knockOutNumber = handSets.KnockOutNumber(predicate);
+                    return (knockOutNumber != count) && (knockOutNumber != 0);
+                }
+                else
+                {
+                    return (enumerated[desiredFeature])() != 1;
+                }
+
+            }
+            throw new Exception("Error...received a feature I don't know about:" + desiredFeature.ToString());
         }
 
         public int DecodeIntent(NodeLUISPhoneDialog.EIntents intent2Decode, List<string> keywords,bool orderByDesc)

@@ -18,7 +18,7 @@ using MultiDialogsBot.Helper;
 
 namespace MultiDialogsBot.Dialogs
 {
-    [LuisModel("0ffacaae-8314-4b1d-af4d-68718eb880f6", "a3a20fb04cad4cfcaf7b821bd1eb9a19",LuisApiVersion.V2,null,SpellCheck = true,Verbose = true)]
+    [LuisModel("0ffacaae-8314-4b1d-af4d-68718eb880f6", "99127c285bd3420aa9d9f460091b7683", LuisApiVersion.V2,null,SpellCheck = true,Verbose = true)]
     [Serializable]
     public class NodeLUISBegin : LuisDialog<object>
     {
@@ -57,7 +57,7 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("Upgrade Both")]
         public async Task UpgradeBoth(IDialogContext context,LuisResult result)
         {
-            string intention = "Upgrade Both"; // humanFriendlyIntent["Upgrade Both"].Item1;
+            string intention = "Upgrade Both"; 
             string secondIntention = null;
             bool closeToSecond = CloseToSecond(result);
             string typosWarning = TyposInformation(result);
@@ -344,7 +344,7 @@ namespace MultiDialogsBot.Dialogs
         private async Task DoubleCheck(IDialogContext context,string mostLikelyIntent,string secondMostLikely)
         {
             string friendly1 = humanFriendlyIntent[mostLikelyIntent].Item1;
-            string friendly2  ;
+            string friendly2  ;         
             string textForUser = string.Concat("I am not sure I followed that\r\n",
                                    "I think you meant you ", friendly1);
             Activity reply, lastMessage = (Activity) context.Activity;
@@ -352,24 +352,24 @@ namespace MultiDialogsBot.Dialogs
             {
                 ContentUrl = "https://image.freepik.com/free-vector/businessman-with-doubts_23-2147618177.jpg",
                 ContentType = "image/png",
-                Name = "Bender_Rodriguez.png"
-            };
+                Name = "Bender_Rodriguez.png"  
+            };                    
             SuggestedActions suggestedActions = new SuggestedActions()
             {
                 Actions = new List<CardAction>()
-                {
-                    new CardAction(){ Title = "Yes", Type=ActionTypes.ImBack, Value="Yes" },
-                    new CardAction(){ Title = "No", Type=ActionTypes.ImBack, Value="No" }
+                {   
+                    new CardAction(){ Title = "Yes", Type=ActionTypes.ImBack, Value="Yes" /*, Image = "https://emojipedia-us.s3.amazonaws.com/thumbs/120/emoji-one/104/thumbs-up-sign_1f44d.png"*/ },
+                    new CardAction(){ Title = "No", Type=ActionTypes.ImBack, Value="No" , /*Image = "https://emojipedia-us.s3.amazonaws.com/thumbs/120/apple/129/thumbs-down-sign_1f44e.png"*/}
                 }
             };
-
+           // await context.PostAsync("Sien tcha hun\";");
             if (secondMostLikely != null)
-            {
+            {   
                 friendly2 = humanFriendlyIntent[secondMostLikely].Item1;
                 textForUser += string.Concat("\r\n but maybe you'd rather ", friendly2, "\r\n, could you please select the correct one?");
                 suggestedActions.Actions[0].Title += ",I " + friendly1;
                 suggestedActions.Actions[1].Title += ",I " + friendly2;
-                suggestedActions.Actions[0].Value = mostLikelyIntent;
+                suggestedActions.Actions[0].Value = mostLikelyIntent;      
                 suggestedActions.Actions[1].Value = secondMostLikely;
                 suggestedActions.Actions.Add(new CardAction() { Title = "Neither", Type = ActionTypes.ImBack, Value = "Neither" });
             }
@@ -378,12 +378,12 @@ namespace MultiDialogsBot.Dialogs
                 textForUser += ", but, again, I'm not sure..  could you please agree?";    
                 suggestedActions.Actions[0].Value = mostLikelyIntent;
             }
-            
             reply = lastMessage.CreateReply(textForUser);
             reply.SuggestedActions = suggestedActions;
             reply.Attachments.Add(imageAttachment);
+            reply.AttachmentLayout = "carousel";
             await context.PostAsync(reply);
-
+               
             context.Wait(CheckUserAnswerAsync);
         }
 

@@ -6,8 +6,7 @@ using System.Web;
 using System.Text;
 using System.Threading.Tasks;
 
-
-using Microsoft.Bot.Builder;
+using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
@@ -18,7 +17,7 @@ using MultiDialogsBot.Database;
 
 namespace MultiDialogsBot.Dialogs
 {
-    [LuisModel("f245439f-5379-464a-8481-e68985e4504b", "a3a20fb04cad4cfcaf7b821bd1eb9a19", LuisApiVersion.V2, null, SpellCheck = true, Verbose = true)]
+    [LuisModel("f245439f-5379-464a-8481-e68985e4504b", "99127c285bd3420aa9d9f460091b7683", LuisApiVersion.V2, null, SpellCheck = true, Verbose = true)]
     [Serializable]
     public class NodeLUISPhoneDialog : LuisDialog<object>
     {
@@ -54,14 +53,16 @@ namespace MultiDialogsBot.Dialogs
         DateTime? ReleaseDateCurrentModel;
         IntentDecoder decoder;
         HandSets handSetsBag;
+        TopFeatures topButtons;
         int numberOfIterations = 1;
 
-        public NodeLUISPhoneDialog(HandSets handSets, string brand, DateTime? currentModelReleaseDate,List<string> narrowedListOfModels) : base()
+        public NodeLUISPhoneDialog(TopFeatures mostDemanded,HandSets handSets, string brand, DateTime? currentModelReleaseDate,List<string> narrowedListOfModels) : base()
         {
             handSetsBag = handSets;
             brandDesired = brand;
             ReleaseDateCurrentModel = currentModelReleaseDate;
-            decoder = new IntentDecoder(handSets, brand, currentModelReleaseDate,narrowedListOfModels);
+            decoder = mostDemanded.AssociatedDecoder; //new IntentDecoder(handSets, brand, currentModelReleaseDate,narrowedListOfModels);
+            topButtons = mostDemanded;
         }
 
         [LuisIntent("None")]
@@ -455,7 +456,8 @@ namespace MultiDialogsBot.Dialogs
         {
             StringBuilder sb = new StringBuilder("-->");
             List<EIntents> ranking = this.decoder.IntentsRanking(sb);
-        
+            var reply = ((Activity)context.Activity).CreateReply("What else is important for you on a mobile?");
+          
             foreach (var intent in ranking)
                 sb.Append(intent.ToString() + "\r\n");
             if (CommonDialog.debugMessages)
@@ -473,7 +475,11 @@ namespace MultiDialogsBot.Dialogs
             else
                 await context.PostAsync($"I narrowed it down to {handSetsLeft} handsets that fulfill your requirements");
             if ((numberOfIterations++ == 1) && (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS))
-                await context.PostAsync("What else is important for you on a mobile?");
+            {
+                sb = new StringBuilder("");
+                reply.SuggestedActions = topButtons.GetTop4Buttons(sb);
+                await context.PostAsync(reply);
+            }
             else
             {
                 if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : Number of phones on bag : {handSetsBag.BagCount()}");

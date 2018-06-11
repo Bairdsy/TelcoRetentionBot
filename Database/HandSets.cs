@@ -206,6 +206,8 @@ namespace MultiDialogsBot.Database
                         bag.Add(handset);
         }
 
+
+
         public int BagCount()
         {
             return bag.Count;
@@ -243,6 +245,30 @@ namespace MultiDialogsBot.Database
                 returnVal = new List<string>(returnVal.Union<string>(handset.Colors));
 
             return returnVal;
+        }
+
+        public List<string> GetBagOSes()
+        {
+            List<string> temp;
+            IEnumerable<string> temp2;
+
+            temp = new List<string>();
+            foreach (var feature in bag)
+                temp.Add(feature.OS);
+            temp2 = temp.Distinct<string>();
+            return new List<string>(temp2);
+        }
+
+        public List<string> GetBagBrands()
+        {
+            List<string> temp;
+            IEnumerable<string> temp2;
+
+            temp = new List<string>();
+            foreach (var feature in bag)
+                temp.Add(feature.Brand);
+            temp2 = temp.Distinct();
+            return new List<string>(temp2);
         }
 
         public double GetHighStandardThreshold(IComparer<HandSetFeatures> comparer,accessor getter)  

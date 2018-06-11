@@ -49,7 +49,7 @@ namespace MultiDialogsBot.Database
             {
                 string imageName = doc.GetElement("name").Value.ToString();
                 string imageURL = doc.GetElement("Image").Value.ToString();
-
+                   
                 ret.Add(imageName, imageURL);
             }
             return ret;
@@ -222,6 +222,23 @@ namespace MultiDialogsBot.Database
             return numberOfTimesSeen >= MAX_TIMES_SEEN;
         }
 
+        public List<Tuple<string,string>> GetFeatureRanking()
+        {
+            List<Tuple<string, string>> returnVal = new List<Tuple<string, string>>();
+            string intent;
+            string utterance;
+            var featureFreqCollection = madCalmDB.GetCollection<BsonDocument>("FeatureFrequency");
+            var orderBy = Builders<BsonDocument>.Sort.Descending("Frequency");
+            var cur = featureFreqCollection.Find(new BsonDocument()).Sort(orderBy).ToCursor();
+
+            foreach(var doc in cur.ToEnumerable())
+            {
+                intent = doc.GetElement("FeatureName").Value.ToString();
+                utterance = doc.GetElement("Utterance").Value.ToString();
+                returnVal.Add(new Tuple<string, string>(intent, utterance));
+            }
+            return returnVal;
+        }
 
         private List<BsonDocument> GetFeaturesDocument(IMongoCollection<BsonDocument> featuresCollection, BsonDocument elements)
         {
@@ -242,5 +259,7 @@ namespace MultiDialogsBot.Database
             { return null; }
         }
 
+
+        
     }
 }
