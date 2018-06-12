@@ -310,22 +310,25 @@ namespace MultiDialogsBot.Dialogs
         private async Task ShowCurrentPhoneAsync(IDialogContext context)
         {
             string imgURL;
-            string subsBrand, subsModel;
+            string subsBrand = null, subsModel;
             var reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
-       /*     AdaptiveCard attachment = new Attachment() { ContentType="AdaptativeCard",body}*/
-
-
-    
  
             if (  !context.ConversationData.TryGetValue("HandsetModelKey", out subsModel))
             {
                 await context.PostAsync("I don't know what to do here, one of them is missing...");  /* Should never happen */
                 return;
             }
-
-            preferredBrand = subsBrand = GetModelBrand(subsModel);
-
+            /* For now , let's pretend user has a iphone 7 plus- 256gb */
+            subsModel = "iphone 7 plus- 256gb";
+            try
+            {
+                preferredBrand = subsBrand = GetModelBrand(subsModel);
+            }
+            catch (Exception xception)
+            {
+                await context.PostAsync("Error in GetModelBrand(), exception message= " + xception.Message);    
+            }
             imgURL = GetEquipmentImageURL(subsModel);
             heroCard = new HeroCard()
             {
@@ -401,10 +404,11 @@ namespace MultiDialogsBot.Dialogs
             Activity activity = (await awaitable) as Activity;
             string ans = activity.Text;
             string subsModel, subsBrand;
-            List<string> opt = new List<string>() { "Yes", "No, I don't mind" };
-
-
+            List<string> opt = new List<string>() { "Yes", "No, I don't mind" };       
+                
             context.ConversationData.TryGetValue("HandsetModelKey", out subsModel);
+            /* For now     it will be 7 plus 256 */      
+            subsModel = "iphone 7 plus- 256gb";
             subsBrand = GetModelBrand(subsModel);
             if (ans.ToLower().Equals("yes"))   // He wants to stick with the brand
             {
@@ -507,8 +511,10 @@ namespace MultiDialogsBot.Dialogs
         {
             string ans,subsBrand,subsModel;
             context.ConversationData.TryGetValue("HandsetModelKey", out subsModel);
+            subsModel = "iphone 7 plus- 256gb";
             subsBrand = GetModelBrand(subsModel);
 
+            if (debugMessages) await context.PostAsync("DEBUG : Brand obtained : " + subsBrand);
             ans = await awaitable;      
 
             if (ans.ToLower() != "yes")                                         // Anything goes

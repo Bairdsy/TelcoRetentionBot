@@ -202,7 +202,7 @@ namespace MultiDialogsBot.Database
             }
             foreach (Models set in listOfSetsOfModels) 
                 foreach (HandSetFeatures handset in set)
-                    if ((handset.ReleaseDate >= release) && (handset.OS != null))
+                    if ((handset.ReleaseDate > release) && (handset.OS != null))
                         bag.Add(handset);
         }
 

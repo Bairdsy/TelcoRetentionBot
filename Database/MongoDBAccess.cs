@@ -37,7 +37,7 @@ namespace MultiDialogsBot.Database
         }
 
 
-
+        /*
         public Dictionary<string,object> GetSubsNoImages(int anonSubsno)
         {
             Dictionary<string, object> ret = new Dictionary<string, object>();
@@ -53,20 +53,20 @@ namespace MultiDialogsBot.Database
                 ret.Add(imageName, imageURL);
             }
             return ret;
-        }
+        }*/
 
         
 
         public Dictionary<string,bool> GetAllBrands()
         {
             Dictionary<string, bool> ret = new Dictionary<string, bool>();
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("handsets");
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");    
         
             var cursor = handSetCollection.Find(new BsonDocument()).ToCursor();
 
             foreach (var doc in cursor.ToEnumerable())
             {
-                string brand = doc.GetElement("Maker").Value.ToString();
+                string brand = doc.GetElement("Brand").Value.ToString();           
 
                 if (!ret.Keys.Contains(brand))
                     ret[brand] = false;
@@ -76,43 +76,58 @@ namespace MultiDialogsBot.Database
 
         public HandSets GetCompleteHandSetData()
         {
+            string brand, model;
             HandSets returnVal = new HandSets();
-            HandSetFeatures node;
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("handsets");
-            var featuresCollection = madCalmDB.GetCollection<BsonDocument>("features");
+            HandSetFeatures currentNode = null;
+
+            var featuresCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");
             var brandsCollection = madCalmDB.GetCollection<BsonDocument>("brands");
-            var cursor = handSetCollection.Find(new BsonDocument()).ToCursor();
-            var brandCursor = brandsCollection.Find(new BsonDocument()).ToCursor();
 
+            var brandCursor = brandsCollection.Find(new BsonDocument()).ToCursor();   
+            var orderBy = Builders<BsonDocument>.Sort.Ascending("Brand");
+            var orderBy2 = Builders<BsonDocument>.Sort.Ascending("Model");
+            var featureCur = featuresCollection.Find(new BsonDocument()).Sort(orderBy).Sort(orderBy2).ToCursor();
+            string currentBrand, currentModel;
+            
+            currentBrand = currentModel = "";
 
-            foreach (var doc in cursor.ToEnumerable())
+            foreach (var doc in featureCur.ToEnumerable())     
             {
-                var featureDocs = GetFeaturesDocument(featuresCollection, doc);
-
-                //  if ((featureDocs != null) && (featureDocs.Count > 0))
-                node = new HandSetFeatures(doc, featureDocs);
-               // if (node.OS != null)
-                returnVal.Add(node);
+                if (doc == null)
+                    throw new Exception("Null exception!");
+                brand = doc.GetElement("Brand").Value.ToString();
+                
+                model = doc.GetElement("Model").Value.ToString();
+                
+                if ((currentBrand != brand) || (currentModel != model))
+                {
+                    currentNode = new HandSetFeatures(doc);
+                   
+                    currentBrand = brand;
+                    currentModel = model;
+                    returnVal.Add(currentNode);
+                }
+                else
+                    currentNode.Colors.Add(doc.GetElement("Color").Value.ToString());
             }
-
              
 
             foreach (var doc in brandCursor.ToEnumerable())
-                returnVal.SetBrandLogo(doc.GetElement("brand").Value.ToString(), doc.GetElement("imageURL").Value.ToString());
+                returnVal.SetBrandLogo(doc.GetElement("brand").Value.ToString().ToLower(), doc.GetElement("imageURL").Value.ToString());
 
             return returnVal;
         }
 
         public string GetBrandOfModel(string model)
         {
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("handsets");
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");    
             var filter = Builders<BsonDocument>.Filter.Eq("Model", model);
             var firstDoc = handSetCollection.Find(filter).First();
 
             if (firstDoc.Count() == 0)
                 return null;
             else
-                return firstDoc.GetElement("Maker").Value.ToString();
+                return firstDoc.GetElement("Brand").Value.ToString();     
         }
 
 
@@ -120,17 +135,17 @@ namespace MultiDialogsBot.Database
         public Dictionary<string,bool> GetModels(string brand)   // null = to obtain all
         {
             Dictionary<string, bool> ret = new Dictionary<string, bool>();
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("handsets");
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");                   // handsets b4
             FilterDefinition<BsonDocument> filter;
             IAsyncCursor<BsonDocument> cursor;
 
             if (null == brand)
             {
-                cursor = handSetCollection.Find(new BsonDocument()).ToCursor();
+                cursor = handSetCollection.Find(new BsonDocument()).ToCursor();     
             }
             else
             {
-                filter = Builders<BsonDocument>.Filter.Eq("Maker", brand);
+                filter = Builders<BsonDocument>.Filter.Eq("Brand", brand);             // Maker b4 
                 cursor = handSetCollection.Find(filter).ToCursor();
             }
             foreach (var doc in cursor.ToEnumerable())
@@ -144,10 +159,11 @@ namespace MultiDialogsBot.Database
 
         public string GetHandSetImageURL(string manufacturer,string model)
         {
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("handsets");
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");                       // handsets b4
             var filterBuilder = Builders<BsonDocument>.Filter;
             var projectionFilterBuilder = Builders<BsonDocument>.Projection;
-            var filter = filterBuilder.Eq("Maker", manufacturer) & filterBuilder.Eq("Model", model);
+            var filter = filterBuilder.Eq("Brand", manufacturer) & filterBuilder.Eq("Model", model);            // Maker b4 
+            /* var proj = projectionFilterBuilder.Include("Image").Exclude("_id");*/
             var proj = projectionFilterBuilder.Include("Image").Exclude("_id");
             var firstDoc = handSetCollection.Find(filter).Project(proj).First();
 
