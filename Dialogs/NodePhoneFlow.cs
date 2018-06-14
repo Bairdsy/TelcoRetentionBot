@@ -329,7 +329,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 await context.PostAsync("Error in GetModelBrand(), exception message= " + xception.Message);    
             }
-            imgURL = GetEquipmentImageURL(subsModel);
+            imgURL = GetEquipmentImageURL(subsModel,false);
             heroCard = new HeroCard()
             {
                 Title = subsBrand,

@@ -10,9 +10,9 @@
     using FluentAssertions;
     using MongoDB.Bson;
     using MongoDB.Driver;
-  
-    
 
+
+    using Dialogs;
 
 
     [Serializable]
@@ -31,13 +31,60 @@
 
         public override async Task StartAsync(IDialogContext context)
         {
-            context.Wait(this.MessageReceivedAsync);
- 
+            context.Wait(this.MainEntryPoint);
+        }   
+
+        private async Task MainEntryPoint(IDialogContext context,IAwaitable<IMessageActivity> awaitable)
+        {
+            DateTime time = DateTime.Now;
+            int hour = time.Hour;
+            string salutation;
+            TimeZone tz = TimeZone.CurrentTimeZone;
+
+            context.ConversationData.SetValue("HandsetModelKey", "iphone 7");
+            if (CommonDialog.debugMessages)
+            { 
+                await context.PostAsync("DEBUG : Beginning of program");
+                await context.PostAsync("DEBUG : My timezone is " + tz.StandardName.ToString());
+            }
+            if ((hour > 5) && (hour < 12))
+                salutation = "Good morning, ";    
+            else if (hour < 19)
+                salutation = "Good afternoon, ";
+            else
+                salutation = "Good evening, ";
+
+            await context.PostAsync(salutation + "John Doe");
+            await context.PostAsync("Welcome to the phones and plans page, if you need any assistance at any point\r\n I'd be delighted to help you choose the best phone and plan for you");
+            await context.PostAsync("If you are an existing customer I can certainly make sure that any recommendation\r\n is highly personalized to your usage and phone requirements");
+            await context.PostAsync("Let me know if I can help you with a new phone or plan");
+            context.Call(new NodeLUISBegin(), DoneInitiaLuis);
+         //   context.Wait(MessageReceivedAsync);
+        }
+
+        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)
+        {
+            var ret = await result;
+
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
+            if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet)
+                context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
+           // else
+                //PromptDialog.Choice(context, this.PhoneSelection, new List<string>() { NewPhone, CurrentPhone, NotSure }, "Have you thought about whether you want to get a new phone or if you are happy with your current phone?", "Not a valid option", 3);
+        }
+
+        private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
+        {
+            await context.PostAsync("End of phone Flow");
+            context.Wait(MessageReceivedAsync);
         }
 
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
+
+            await context.PostAsync("End of root node");
+
             if (message.Text.All(Char.IsDigit))
             {
                 int subsno = Int32.Parse(message.Text);

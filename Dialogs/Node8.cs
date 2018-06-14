@@ -18,7 +18,6 @@
             await context.PostAsync($"OK.  You have been successfully authenticated so lets get down to business.  :)");
             await context.PostAsync("So how can I help you today?");
             context.Call(new NodeLUISBegin( ), EnterLuis);
-           // PromptDialog.Choice(context, this.PhoneSelection, new List<string>() { NewPhone, CurrentPhone, NotSure }, "Have you thought about whether you want to get a new phone or if you are happy with your current phone?", "Not a valid option", 3);
         }
 
         private async Task EnterLuis(IDialogContext context,IAwaitable<object> result)

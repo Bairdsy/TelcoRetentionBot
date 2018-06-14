@@ -145,12 +145,15 @@ namespace MultiDialogsBot.Database
             return masterDict.SelectWithRegEx(filters);
         }
 
-        public string GetImageURL(string model)
+        public string GetImageURL(string model,bool madCalmImage)
         {
             HandSetFeatures handSetFeatures;
 
             handSetFeatures = masterDict.GetEquipmentFeatures(model);
-            return handSetFeatures.ImageURL;
+            if (madCalmImage)
+                return handSetFeatures.MadCalmPicUrl + "-1-recommended.png";
+            else
+                return handSetFeatures.PhonePictureUrl;
         }
 
         public DateTime GetModelReleaseDate(string model)

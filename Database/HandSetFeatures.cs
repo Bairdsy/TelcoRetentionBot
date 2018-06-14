@@ -72,6 +72,8 @@ namespace MultiDialogsBot.Database
             get;private set;
         }
 
+        public string PhonePictureUrl { get; private set; }
+
         public void CopyTo(HandSetFeatures other)
         {
             other.Brand = Brand;
@@ -229,9 +231,13 @@ namespace MultiDialogsBot.Database
                 {
                     IsSmartphone = ("Smartphone" == data);
                 } 
-                else if (key.Equals("MadCalm - Picture"))
+                else if (key.Equals("MadCalm-Picture"))
                 {
                     MadCalmPicUrl = data;
+                }
+                else if (key == "Picture URL")
+                {
+                    PhonePictureUrl = data;
                 }
             }
         }

@@ -22,12 +22,12 @@ namespace  MultiDialogsBot.Dialogs
 
         abstract public Task StartAsync(IDialogContext context);
         
-        protected string GetEquipmentImageURL(string model)
+        protected string GetEquipmentImageURL(string model,bool madCalmPic)
         {
             if (handSets == null)
                 InitializeDataStruct();
 
-            return handSets.GetImageURL(model);
+            return handSets.GetImageURL(model,madCalmPic);
         }
 
         protected int GetModelCount()

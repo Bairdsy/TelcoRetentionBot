@@ -118,7 +118,7 @@ namespace MultiDialogsBot.Dialogs
                     Title = GetModelBrand(model),
                     Subtitle = model,    
                     Text = "",
-                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model), "img/jpeg") },
+                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
                     Buttons = new List<CardAction>()
                     {
                         new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
@@ -141,8 +141,8 @@ namespace MultiDialogsBot.Dialogs
 
             this.selectedModel = model;
             await context.PostAsync("Great! I've narrowed it down to the perfect phone for you. This is it :");
-            equipmentURL = GetEquipmentImageURL(model);
-            heroCard = new HeroCard()
+            equipmentURL = GetEquipmentImageURL(model,true);
+            heroCard = new HeroCard()    
             {
                 Title = GetModelBrand(model),
                 Subtitle = model,

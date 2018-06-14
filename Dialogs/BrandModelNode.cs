@@ -186,14 +186,14 @@ namespace MultiDialogsBot.Dialogs
         {
             HeroCard heroCard;
 
-            foreach (var model in modelsVector)
+            foreach (var model in modelsVector)   
             {
                 heroCard = new HeroCard()
                 {
                     Title = model,
                     Subtitle = "",
                     Text = "From " + brand,
-                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model), "img/jpeg"), new CardImage(GetEquipmentImageURL(model), "img/jpeg") },
+                    Images = new List<CardImage>() {/* new CardImage(GetEquipmentImageURL(model,true), "img/jpeg"),*/ new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
                     Buttons = new List<CardAction>
                     {
                         new CardAction() { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want a " + model },
