@@ -41,7 +41,7 @@
             string salutation;
             TimeZone tz = TimeZone.CurrentTimeZone;
 
-            context.ConversationData.SetValue("HandsetModelKey", "iphone 7");
+            context.ConversationData.SetValue("HandsetModelKey", "iphone 7 plus- 256gb");
             if (CommonDialog.debugMessages)
             { 
                 await context.PostAsync("DEBUG : Beginning of program");

@@ -134,6 +134,25 @@ namespace MultiDialogsBot.Database
             return models.GetAllModels();
         }
 
+        public bool IsOldestOrNewest(string model)
+        {
+            string brand = GetModelBrand(model);
+            bool older, newer;
+            Models brandModels = this.brands[brand];
+            HandSetFeatures modelFeatures;
+
+            newer = older = false;
+            modelFeatures = brandModels.GetEquipmentFeatures(model);
+            foreach (HandSetFeatures otherModelFeatures in brandModels)
+            {
+                if (otherModelFeatures.ReleaseDate < modelFeatures.ReleaseDate)
+                    older = true;
+                else if (otherModelFeatures.ReleaseDate > modelFeatures.ReleaseDate)
+                    newer = true;
+            }
+            return !older || !newer;
+        }
+
         public string GetModelBrand(string model)
         {
             // Search the master
@@ -154,6 +173,22 @@ namespace MultiDialogsBot.Database
                 return handSetFeatures.MadCalmPicUrl + "-1-recommended.png";
             else
                 return handSetFeatures.PhonePictureUrl;
+        }
+
+        public string GetSpecsUrl(string model)
+        {
+            HandSetFeatures features;
+
+            features = masterDict.GetEquipmentFeatures(model);
+            return features.SpecsUrl;
+        }
+
+        public string GetReviewsUrl(string model)
+        {
+            HandSetFeatures features;
+
+            features = masterDict.GetEquipmentFeatures(model);
+            return features.ReviewsUrl;
         }
 
         public DateTime GetModelReleaseDate(string model)

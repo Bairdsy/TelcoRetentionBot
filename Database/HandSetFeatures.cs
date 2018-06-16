@@ -74,6 +74,10 @@ namespace MultiDialogsBot.Database
 
         public string PhonePictureUrl { get; private set; }
 
+        public string SpecsUrl { get; private set; }
+
+        public string ReviewsUrl { get; private set; }
+
         public void CopyTo(HandSetFeatures other)
         {
             other.Brand = Brand;
@@ -238,6 +242,14 @@ namespace MultiDialogsBot.Database
                 else if (key == "Picture URL")
                 {
                     PhonePictureUrl = data;
+                }
+                else if (key == "Detailed Feature URL")
+                {
+                    SpecsUrl = data;
+                }
+                else if (key == "Reviews URL")
+                {
+                    ReviewsUrl = data;
                 }
             }
         }

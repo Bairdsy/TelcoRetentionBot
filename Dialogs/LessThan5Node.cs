@@ -74,7 +74,7 @@ namespace MultiDialogsBot.Dialogs
         {
             IMessageActivity messageActivity = (IMessageActivity)(await awaitable);
             string model,buttonPressed;
-            List<string> options = new List<string>() { "I'll pick", "Help me work it out" };
+            List<string> options;  
  
 
             buttonPressed = messageActivity.Text;
@@ -86,10 +86,13 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (buttonPressed.StartsWith("No"))
             {
+                string brand = GetModelBrand(this.selectedModel);
+
+                options = new List<string>() { $"Yes, I want to stay with {brand}", "No" };
                 PromptDialog.Choice(context, 
                     WrongRecoverOptionReceivedAsync, 
                     options, 
-                    "I'm sorry I got that wrong. Shall we do another go or do you want to pick a phone from a list of everything?",
+                    $"Do you still want to look at {brand} range or look at other phones?",
                     "Not understood, please try again",
                     4);
             }
@@ -103,7 +106,7 @@ namespace MultiDialogsBot.Dialogs
         }
 
         private async Task DisplayMultiPhoneCarouselAnsyc(IDialogContext context, List<String> models)
-        {
+        { 
             var reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
 
@@ -123,8 +126,8 @@ namespace MultiDialogsBot.Dialogs
                     {
                         new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
                         new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },   
-                        new CardAction(){Title = "Reviews",Type = ActionTypes.ImBack,Value = "Reviews for " + model},
-                        new CardAction (){Title = "Specifications",Type=ActionTypes.ImBack,Value = "Specs for " + model }
+                        new CardAction(){Title = "Reviews",Type = ActionTypes.OpenUrl,Value = GetModelReviewsUrl( model)},
+                        new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
                 };
                 reply.Attachments.Add(heroCard.ToAttachment());
@@ -140,21 +143,21 @@ namespace MultiDialogsBot.Dialogs
             HeroCard heroCard;
 
             this.selectedModel = model;
-            await context.PostAsync("Great! I've narrowed it down to the perfect phone for you. This is it :");
+            await context.PostAsync("Great. Let's have a look at that phone now.");
             equipmentURL = GetEquipmentImageURL(model,true);
-            heroCard = new HeroCard()    
+            heroCard = new HeroCard()      
             {
                 Title = GetModelBrand(model),
                 Subtitle = model,
-                Text = "Please click one of the buttons to continue",
+                Text = "Click one of the buttons to continue.",
                 Images = new List<CardImage> { new CardImage(equipmentURL, "img/jpeg") },
                 Buttons = new List<CardAction>()
                 {
-                    new CardAction(){Title = "Yes - Great Choice", Type=ActionTypes.ImBack, Value = "I want " + model},
-                    new CardAction(){Title = "No - That's not quite right",Type = ActionTypes.ImBack,Value = "No - That's not quite right"},
-                    new CardAction(){Title = "Plan Prices",Type=ActionTypes.ImBack,Value = "Plan Prices for " + model},
-                    new CardAction(){Title = "Reviews",Type=ActionTypes.ImBack,Value = "Reviews for " + model},
-                    new CardAction(){Title = "Specifications",Type=ActionTypes.ImBack, Value= "Specs for " + model }
+                    new CardAction(){Title = "Yes - that's the phone I like", Type=ActionTypes.ImBack, Value = "I want " + model},
+                    new CardAction(){Title = "No. I am after a different model",Type = ActionTypes.ImBack,Value = "No. I am after a different model"},
+                    new CardAction(){Title = "Phone Price per Plan",Type=ActionTypes.ImBack,Value = "Plan Prices for " + model},
+                    new CardAction(){Title = "Expert Reviews",Type=ActionTypes.OpenUrl,Value = GetModelReviewsUrl( model) },
+                    new CardAction(){Title = "Specifications",Type=ActionTypes.OpenUrl, Value= GetModelSpecsUrl( model) }
                 }
             };
             reply.Attachments.Add(heroCard.ToAttachment());
@@ -164,20 +167,47 @@ namespace MultiDialogsBot.Dialogs
         }          
 
         private async Task CongratulateSubsAsync(IDialogContext context,string model)
-        {
+        {   
             string phoneMatchMsg = "The phone match message will be inserted here";
 
-            await context.PostAsync($"Great Choice - The {model} is perfect for you because {phoneMatchMsg}. Now we need to work out what plan you should be on");
+            await context.PostAsync($"Excellent sellection - The {model} is great for you because {phoneMatchMsg}. The next step is to work out what plan is the best for you");
         }
 
         private async Task WrongRecoverOptionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)
+        {
+            string brand, ans, prompt;
+            string currentModel ;
+            List<string> options = new List<string>() { "Yes" , "No, I don't mind"};
+
+            context.ConversationData.TryGetValue("HandsetModelKey", out currentModel);
+            brand = GetModelBrand(selectedModel);
+
+            ans = await awaitable;
+            if (ans.StartsWith("Yes"))    // subs wants to stick with the brand of the current SELECTED phone
+            {
+                if ((brand == GetModelBrand(currentModel)) && !IsOldestOrNewest(selectedModel))
+                {
+                    prompt = "Great. And are you looking for something newer than you have now?";
+                    PromptDialog.Choice(context, ChangeBrandChoiceReceivedAsync, options, prompt, "Not understood, please try again", 4);
+                }
+                else
+                    context.Done("-" + brand);
+            }
+            else if (ans == "No")   // Subs wants a different brand
+                context.Done("~" + brand);
+            else
+                context.Wait(MessageReceivedAsync);
+        }
+
+        /* This one is just for backup */
+        private async Task WrongRecoverOptionReceivedAsync2(IDialogContext context,IAwaitable<string> awaitable)
         {
             string brand, ans, prompt;
             Dictionary<string,bool> modelsVector;
             List<string> options = new List<string>() { "Change Brand" };
 
             ans = await awaitable;
-            if (ans.StartsWith("I'll "))
+            if (ans.StartsWith("I'll "))   
             {
                 brand = GetModelBrand(selectedModel);
                 modelsVector = GetBrandModels(brand);
@@ -192,13 +222,15 @@ namespace MultiDialogsBot.Dialogs
         public async Task ChangeBrandChoiceReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)   
         {
             string ans = await awaitable;
+            string brand = GetModelBrand(selectedModel);
 
+            
             if (debugMessages) await context.PostAsync($"DEBUG : You picked " + ans);
 
-            if (ans.StartsWith("Change"))  // He doesn't want this brand
-                context.Done("~");
-            else if (ans.StartsWith("See"))
-                context.Done(string.Concat("~", string.Join("~",modelList.ToArray())));
+            if (ans.StartsWith("Ye"))  // He wants something newer
+                context.Done(">" + brand);
+            else if (ans.StartsWith("No"))
+                context.Done("-" + brand);
             else
                 context.Wait(MessageReceivedAsync);
         }

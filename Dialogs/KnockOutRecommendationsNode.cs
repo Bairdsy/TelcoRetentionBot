@@ -14,7 +14,7 @@ namespace MultiDialogsBot.Dialogs
     {
         readonly Dictionary<NodeLUISPhoneDialog.EIntents, string> englishDescriptions;
         List<FeatureIntent> features;
-
+            
         enum EFeatureType
         {
             boolean = 0,

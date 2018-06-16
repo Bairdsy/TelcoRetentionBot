@@ -30,6 +30,13 @@ namespace  MultiDialogsBot.Dialogs
             return handSets.GetImageURL(model,madCalmPic);
         }
 
+        protected bool IsOldestOrNewest(string model)
+        {
+            if (handSets == null)
+                InitializeDataStruct();
+            return handSets.IsOldestOrNewest(model);
+        }
+
         protected int GetModelCount()
         {
             if (handSets == null)
@@ -70,6 +77,20 @@ namespace  MultiDialogsBot.Dialogs
             if (handSets == null)
                 InitializeDataStruct();
             return handSets.GetModelReleaseDate(model);
+        }
+
+        protected string GetModelSpecsUrl(string model)
+        {
+            if (handSets == null)
+                InitializeDataStruct();
+            return handSets.GetSpecsUrl(model);
+        }
+
+        protected string GetModelReviewsUrl(string model)
+        {
+            if (handSets == null)
+                InitializeDataStruct();
+            return handSets.GetReviewsUrl(model);
         }
 
         protected Dictionary<string,bool> GetBrandModels(string brand)   // null to grab everything

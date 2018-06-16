@@ -193,13 +193,13 @@ namespace MultiDialogsBot.Dialogs
                     Title = model,
                     Subtitle = "",
                     Text = "From " + brand,
-                    Images = new List<CardImage>() {/* new CardImage(GetEquipmentImageURL(model,true), "img/jpeg"),*/ new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
+                    Images = new List<CardImage>() {new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
                     Buttons = new List<CardAction>
                     {
                         new CardAction() { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want a " + model },
                         new CardAction() { Title = "Plan Prices", Type = ActionTypes.ImBack, Value = "Show me Plan Prices"},
-                        new CardAction() { Title = "Reviews", Type = ActionTypes.ImBack, Value = "Show me the Reviews"},
-                        new CardAction() { Title = "Specifications", Type = ActionTypes.ImBack, Value = "Show me Specifications"},
+                        new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = GetModelReviewsUrl(model)},
+                        new CardAction() { Title = "Specifications", Type = ActionTypes.OpenUrl, Value = GetModelSpecsUrl(model)},
                     },
                 };
                 reply.Attachments.Add(heroCard.ToAttachment());

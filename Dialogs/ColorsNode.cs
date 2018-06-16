@@ -33,7 +33,7 @@ namespace MultiDialogsBot.Dialogs
                 PromptDialog.Choice(context, 
                                   ColorSelectionReceivedAsync,
                                   colors,
-                                  "OK. There are a few different options for you to pick for that phone from below, namely, color",
+                                  "OK. There are a few different options for you to pick for that phone from below:",
                                   "Sorry, not a valid option",
                                   4);
             else

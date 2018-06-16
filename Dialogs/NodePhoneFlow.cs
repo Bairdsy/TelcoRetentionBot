@@ -37,13 +37,12 @@ namespace MultiDialogsBot.Dialogs
             {
                 Actions = new List<CardAction>()
                 {
-                    new CardAction(){Title = "Yes",Type=ActionTypes.ImBack,Value = "Yes"},
-                    new CardAction(){Title = "No", Type = ActionTypes.ImBack, Value = "No"}
+                    new CardAction(){Title = "Yes, I know what I want",Type=ActionTypes.ImBack,Value = "Yes"},
+                    new CardAction(){Title = "No, I haven't made up my mind", Type = ActionTypes.ImBack, Value = "No"}
                 }
             };
 
-            await context.PostAsync("So you want a new smartphone! Great! ");   
-
+            await context.PostAsync("I'd really like to see if I can help you here.");
             try
             {
                 if (IndicatedModelsAndOrBrands(out brandsWanted,out modelsWanted))
@@ -52,7 +51,7 @@ namespace MultiDialogsBot.Dialogs
                 }
                 else
                 {
-                    reply = lastMsg.CreateReply("Do you know what make and model you want?");
+                    reply = lastMsg.CreateReply("Have you decided already what you want or would you like some support in choosing what's the right phone for you?");
                     reply.SuggestedActions = suggestedActions;
                     // PromptDialog.Choice(context, MessageReceivedWithDecisionAsync, options, "Do you know what make and model you want?", "Did not quite follow that, could you please repeat?", 5);
                     await context.PostAsync(reply);
@@ -81,7 +80,7 @@ namespace MultiDialogsBot.Dialogs
             catch (Exception xception)
             {
                 await context.PostAsync("Error...xception message = " + xception.Message);
-            }
+            }   
 
             if (hasDecided)
             {   
@@ -91,7 +90,7 @@ namespace MultiDialogsBot.Dialogs
                     await ProcessSelectedBrandsAndModels(context, wantedBrands, wantedModels);
                 else
                 {
-                    await context.PostAsync("Great. What is it? - please just type the brand and/or model you want ");
+                    await context.PostAsync("Great to know. What model do you like the most?");
                     context.Wait(BrandAndModelReceived);
                 }
             }
@@ -511,7 +510,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string ans,subsBrand,subsModel;
             context.ConversationData.TryGetValue("HandsetModelKey", out subsModel);
-            subsModel = "iphone 7 plus- 256gb";
+ //           subsModel = "iphone 7 plus- 256gb";
             subsBrand = GetModelBrand(subsModel);
 
             if (debugMessages) await context.PostAsync("DEBUG : Brand obtained : " + subsBrand);
@@ -524,7 +523,39 @@ namespace MultiDialogsBot.Dialogs
                 //context.Wait(MessageReceivedAsync);
         }
 
-        private async Task FinalSelectionReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
+        /*
+         * - it's just that brand
+         * > it's just that brand, but newer than current phone
+         * ~ it's everything that is not that brand 
+         * 
+         */
+        private async Task FinalSelectionReceivedAsync(IDialogContext context, IAwaitable<object> awaitable)
+        {
+            string selection = (string)(await awaitable);
+            string subsModel;
+
+
+            if (debugMessages) await context.PostAsync("DEBUG: Final selection received : " + selection);
+            switch (selection[0])
+            {
+                case '~':
+                    await RecommendPhoneAsync(context, "!" + selection.Substring(1));
+                    break;
+                case '-':
+                    await RecommendPhoneAsync(context, selection.Substring(1));
+                    break;
+                case '>':
+                    if (!context.ConversationData.TryGetValue("HandsetModelKey", out subsModel))
+                        throw new Exception("Error...HandsetModelKey not present in conversation data");
+                    await RecommendPhoneAsync(context, selection.Substring(1), GetModelReleaseDate(subsModel));
+                    break;
+                default:
+                    context.Call(new ColorsNode(selection), MessageReceivedAsync);
+                    break;
+            }
+        }
+
+        private async Task FinalSelectionReceivedAsync2(IDialogContext context,IAwaitable<object> awaitable)
         {
             string selection = (string)(await awaitable);
 
@@ -537,6 +568,7 @@ namespace MultiDialogsBot.Dialogs
                 else
                     context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
             }
+
             else
                 context.Call(new ColorsNode(selection), MessageReceivedAsync);
         }
