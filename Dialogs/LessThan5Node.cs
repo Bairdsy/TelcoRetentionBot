@@ -5,7 +5,6 @@ using System.Web;
 
 using System.Threading.Tasks;
 
-
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
@@ -43,7 +42,7 @@ namespace MultiDialogsBot.Dialogs
                 modelPicked = selectedModel = buttonPressed.Substring(7);
                 context.Done(modelPicked);
             }
-            else if (buttonPressed == "choose")
+            else if (buttonPressed.ToLower() == "start again")
             {
                 if (MoreThanOneBrand() ||  // If there is more than one brand or if the carousel covers the whole of model for the brand, He needs to choose from the list of brands. 
                     modelList.Count >= GetBrandModels(GetModelBrand(modelList[0])).Count)
@@ -110,8 +109,8 @@ namespace MultiDialogsBot.Dialogs
             var reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
 
-            await context.PostAsync("Great! Here are some phones that match your choices. Choose one of them that you'd like");
-            await context.PostAsync("or if you are not happy with these choices, type \"choose\"");
+            await context.PostAsync($"Great choice! There are {modelList.Count} different versions for you to choose from");
+            await context.PostAsync("If you change your mind I can help you to choose something else. Just type \"Start Again\" to find a more suitable model");
 
             reply.AttachmentLayout = "carousel";
             foreach (var model in models)
@@ -147,8 +146,8 @@ namespace MultiDialogsBot.Dialogs
             equipmentURL = GetEquipmentImageURL(model,true);
             heroCard = new HeroCard()      
             {
-                Title = GetModelBrand(model),
-                Subtitle = model,
+                Title = Capitalize(GetModelBrand(model)),
+                Subtitle = Capitalize(model),
                 Text = "Click one of the buttons to continue.",
                 Images = new List<CardImage> { new CardImage(equipmentURL, "img/jpeg") },
                 Buttons = new List<CardAction>()
@@ -243,6 +242,14 @@ namespace MultiDialogsBot.Dialogs
                 if (brand != GetModelBrand(modelList[i]))
                     return true;
             return false;
+        }
+
+        private string Capitalize(string str2Capitalize)
+        {
+            if (str2Capitalize.ToLower().StartsWith("iphone"))
+                return "iP" + str2Capitalize.Substring(2);
+            else
+                return str2Capitalize.First().ToString().ToUpper() + str2Capitalize.Substring(1);
         }
     }
 }

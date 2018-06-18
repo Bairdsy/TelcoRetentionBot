@@ -94,6 +94,7 @@ namespace MultiDialogsBot.Helper
             max = Math.Min(ranking.Count, BotConstants.TOP_INTENTS);
             for (int i = 0; i < max; ++i)
                 actions.Add(new CardAction() { Title= ranking[i].Item1, Type = ActionTypes.ImBack, Value = ranking[i].Item2 });
+            actions.Add(new CardAction() { Title = "Show me all", Type = ActionTypes.ImBack, Value = "Show me all" });
             return new SuggestedActions() { Actions = actions };
         }
 

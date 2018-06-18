@@ -291,10 +291,12 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
-                Activity reply = ((Activity)context.Activity).CreateReply("What is the most important thing for you on a phone?");
+                Activity reply = ((Activity)context.Activity).CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
 
-                await context.PostAsync($"I have quite a few equipments on my list that match your brand and model, specifically {selectResult.Count}");
-                await context.PostAsync("As such, I would like to narrow it down a little bit for you, so allow me to ask you");
+                await context.PostAsync($"We have over {selectResult.Count} different models of phone to choose from. As you are unshre what is your best model then let me");
+                await context.PostAsync("know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say what ones.");
+                await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone ");
+                await context.PostAsync("(e.g. I like to play games on my iPhone, I regularly read books on my phone)");
                 theDecoder = new IntentDecoder(handSets, null, null, selectResult);
                 topFeatures = new TopFeatures(theDecoder);
                 reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);

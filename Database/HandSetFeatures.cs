@@ -124,7 +124,7 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key == "Model")
                 {
-                    Model = data;
+                    Model = data.Replace('-',' ');   // To avoid problems with hyphens
                 }
                 else if ((key == "Release date") && DateTime.TryParse(data, out result))   // Release date
                 {
