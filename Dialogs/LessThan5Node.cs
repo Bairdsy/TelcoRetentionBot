@@ -85,7 +85,7 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (buttonPressed.StartsWith("No"))
             {
-                string brand = GetModelBrand(this.selectedModel);
+                string brand = Capitalize(GetModelBrand(this.selectedModel));
 
                 options = new List<string>() { $"Yes, I want to stay with {brand}", "No" };
                 PromptDialog.Choice(context, 
@@ -169,7 +169,7 @@ namespace MultiDialogsBot.Dialogs
         {   
             string phoneMatchMsg = "The phone match message will be inserted here";
 
-            await context.PostAsync($"Excellent sellection - The {model} is great for you because {phoneMatchMsg}. The next step is to work out what plan is the best for you");
+            await context.PostAsync($"Excellent selection - The {model} is great for you because {phoneMatchMsg}. The next step is to work out what plan is the best for you");
         }
 
         private async Task WrongRecoverOptionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)
@@ -184,13 +184,7 @@ namespace MultiDialogsBot.Dialogs
             ans = await awaitable;
             if (ans.StartsWith("Yes"))    // subs wants to stick with the brand of the current SELECTED phone
             {
-                if ((brand == GetModelBrand(currentModel)) && !IsOldestOrNewest(selectedModel))
-                {
-                    prompt = "Great. And are you looking for something newer than you have now?";
-                    PromptDialog.Choice(context, ChangeBrandChoiceReceivedAsync, options, prompt, "Not understood, please try again", 4);
-                }
-                else
-                    context.Done("-" + brand);
+                context.Done("-" + brand);   
             }
             else if (ans == "No")   // Subs wants a different brand
                 context.Done("~" + brand);

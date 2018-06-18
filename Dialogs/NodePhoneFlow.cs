@@ -285,7 +285,7 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync("Sorry I got that wrong, could you just type the specific model and brand so I can show it to you?");
                 context.Call(new BrandModelNode(), MessageReceivedAsync);
             }
-            else if (handSets.BagCount() < 5)
+            else if (handSets.BagCount() <= BotConstants.MAX_CAROUSEL_CARDS)
             {
                 context.Call(new LessThan5Node(selectResult), FinalSelectionReceivedAsync);
             }
@@ -293,8 +293,8 @@ namespace MultiDialogsBot.Dialogs
             {
                 Activity reply = ((Activity)context.Activity).CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
 
-                await context.PostAsync($"We have over {selectResult.Count} different models of phone to choose from. As you are unshre what is your best model then let me");
-                await context.PostAsync("know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say what ones.");
+                await context.PostAsync($"We have over {selectResult.Count} different models of phone to choose from. As you are unsure what is your best model then let me");
+                await context.PostAsync("know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
                 await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone ");
                 await context.PostAsync("(e.g. I like to play games on my iPhone, I regularly read books on my phone)");
                 theDecoder = new IntentDecoder(handSets, null, null, selectResult);
