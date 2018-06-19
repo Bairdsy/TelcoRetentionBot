@@ -287,7 +287,7 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (handSets.BagCount() <= BotConstants.MAX_CAROUSEL_CARDS)
             {
-                context.Call(new LessThan5Node(selectResult), FinalSelectionReceivedAsync);
+                context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);
             }
             else
             {
@@ -458,7 +458,7 @@ namespace MultiDialogsBot.Dialogs
                     context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
                 }
                 else
-                    context.Call(new LessThan5Node(handSets.GetBagModels()), FinalSelectionReceivedAsync);
+                    context.Call(new LessThan5Node(handSets.GetBagModels(),true), FinalSelectionReceivedAsync);
             }
             catch (Exception xception )
             {
@@ -487,7 +487,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 modelsInBag = handSets.GetBagModels();
                 if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag has {modelsInBag.Count}");
-                context.Call(new LessThan5Node(modelsInBag), FinalSelectionReceivedAsync);
+                context.Call(new LessThan5Node(modelsInBag,true), FinalSelectionReceivedAsync);
             }  
             else
             {
@@ -505,7 +505,7 @@ namespace MultiDialogsBot.Dialogs
             decoder = (IntentDecoder)(await awaitable);
             handSets = decoder.PhonesLeft;
             vector = handSets.GetBagModels();
-            context.Call(new LessThan5Node(vector), FinalSelectionReceivedAsync);
+            context.Call(new LessThan5Node(vector,true), FinalSelectionReceivedAsync);
         }
 
         private async Task WantsNewerMsgReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)

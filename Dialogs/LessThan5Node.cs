@@ -15,10 +15,12 @@ namespace MultiDialogsBot.Dialogs
     {
         List<string> modelList;
         string selectedModel;
+        bool weAreOnBranch7;
 
-        public LessThan5Node(List<string> models2Show)
+        public LessThan5Node(List<string> models2Show, bool insideBranch7)
         {
             modelList = models2Show;
+            weAreOnBranch7 = insideBranch7;
         }
 
 
@@ -109,16 +111,26 @@ namespace MultiDialogsBot.Dialogs
             var reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
 
-            await context.PostAsync($"Great choice! There are {modelList.Count} different versions for you to choose from");
-            await context.PostAsync("If you change your mind I can help you to choose something else. Just type \"Start Again\" to find a more suitable model");
+            if (!weAreOnBranch7)
+            {
+                await context.PostAsync($"Great choice! There are {modelList.Count} different versions for you to choose from");
+                await context.PostAsync("If you change your mind I can help you to choose something else. Just type \"Start Again\" to find a more suitable model");
+            }
+            else
+            {
+                await context.PostAsync(string.Concat("Great, as you {Bot responde regards the utterance goes here} , Here are our TOP",
+                                                      modelList.Count,
+                                                      " models to choose from. ",
+                                                      "Or let's look at some other options, please type \"Start again\""));
+            }
 
             reply.AttachmentLayout = "carousel";
             foreach (var model in models)
             {
                 heroCard = new HeroCard()
                 {
-                    Title = GetModelBrand(model),
-                    Subtitle = model,    
+                    Title = Capitalize(GetModelBrand(model)),
+                    Subtitle = Capitalize(model),    
                     Text = "",
                     Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
                     Buttons = new List<CardAction>()
@@ -142,18 +154,22 @@ namespace MultiDialogsBot.Dialogs
             HeroCard heroCard;
 
             this.selectedModel = model;
-            await context.PostAsync("Great. Let's have a look at that phone now.");
+            if (!weAreOnBranch7)
+                await context.PostAsync("Great. Let's have a look at that phone now.");
+            else
+                await context.PostAsync("Great. Based on what you told me, I've narrowed it down to this recommended model");
+
             equipmentURL = GetEquipmentImageURL(model,true);
             heroCard = new HeroCard()      
             {
                 Title = Capitalize(GetModelBrand(model)),
                 Subtitle = Capitalize(model),
-                Text = "Click one of the buttons to continue.",
+                Text = weAreOnBranch7 ? "Select from one of the buttons below" : "Click one of the buttons to continue.",
                 Images = new List<CardImage> { new CardImage(equipmentURL, "img/jpeg") },
                 Buttons = new List<CardAction>()
                 {
-                    new CardAction(){Title = "Yes - that's the phone I like", Type=ActionTypes.ImBack, Value = "I want " + model},
-                    new CardAction(){Title = "No. I am after a different model",Type = ActionTypes.ImBack,Value = "No. I am after a different model"},
+                    new CardAction(){Title = weAreOnBranch7 ? "Yes - great choice" : "Yes - that's the phone I like", Type=ActionTypes.ImBack, Value = "I want " + model},
+                    new CardAction(){Title = weAreOnBranch7 ? "No. That's not quite right" : "No. I am after a different model",Type = ActionTypes.ImBack,Value = "No. I am after a different model"},
                     new CardAction(){Title = "Phone Price per Plan",Type=ActionTypes.ImBack,Value = "Plan Prices for " + model},
                     new CardAction(){Title = "Expert Reviews",Type=ActionTypes.OpenUrl,Value = GetModelReviewsUrl( model) },
                     new CardAction(){Title = "Specifications",Type=ActionTypes.OpenUrl, Value= GetModelSpecsUrl( model) }
