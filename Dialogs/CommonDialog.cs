@@ -37,6 +37,19 @@ namespace  MultiDialogsBot.Dialogs
             return handSets.IsOldestOrNewest(model);
         }
 
+        protected List<string> GetAllModels()
+        {
+            Dictionary<string, bool> bagOfAllModels;
+            List<string> returnVal = new List<string>();
+
+            if (handSets == null)
+                InitializeDataStruct();
+            bagOfAllModels = handSets.GetAllModels();
+            foreach (var model in bagOfAllModels.Keys)
+                returnVal.Add(model);
+            return returnVal;
+        }
+
         protected int GetModelCount()
         {
             if (handSets == null)

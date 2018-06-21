@@ -23,6 +23,7 @@ namespace MultiDialogsBot.Dialogs
     {
         string preferredBrand;
         string phraseFromSubs;
+        bool LuisCalled = false; 
 
         public NodePhoneFlow(string input)
         {
@@ -275,11 +276,8 @@ namespace MultiDialogsBot.Dialogs
             foreach (string model in selectResult)
                 sb.Append("-->" + model + "\r\n");
             if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + sb.ToString());
-
             handSets.InitializeBag(selectResult);
-
             if (debugMessages) await context.PostAsync("DEBUG : contents of bag : " + handSets.BuildStrRep());
-
             if (selectResult.Count == 0)
             {
                 await context.PostAsync("Sorry I got that wrong, could you just type the specific model and brand so I can show it to you?");
@@ -288,24 +286,44 @@ namespace MultiDialogsBot.Dialogs
             else if (handSets.BagCount() <= BotConstants.MAX_CAROUSEL_CARDS)
             {
                 context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);
-            }
+            }  
             else
             {
-                Activity reply = ((Activity)context.Activity).CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
+                await CallLuisPhoneNodeAsync(selectResult, context);
+             /* //  Activity reply = ((Activity)context.Activity).CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
 
-                await context.PostAsync($"We have over {selectResult.Count} different models of phone to choose from. As you are unsure what is your best model then let me");
-                await context.PostAsync("know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
-                await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone ");
-                await context.PostAsync("(e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+                await context.PostAsync($"We have over {selectResult.Count} different models of phone to choose from.");
+                await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
+                await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+
                 theDecoder = new IntentDecoder(handSets, null, null, selectResult);
                 topFeatures = new TopFeatures(theDecoder);
                 reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                 await context.PostAsync(reply);
-
-                if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
-                if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
-                context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, null, null, selectResult), LuisResponseHandlerAsync);     
+                context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, null, null, selectResult), LuisResponseHandlerAsync);
+                LuisCalled = true;*/
             }
+        }
+
+        private async Task CallLuisPhoneNodeAsync(List<string> basket,IDialogContext context)
+        {
+            StringBuilder sb = new StringBuilder();  // Only works for debug
+            IntentDecoder theDecoder;
+            TopFeatures topFeatures;
+            Activity reply = ((Activity)context.Activity).CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
+
+            handSets.InitializeBag(basket);
+            theDecoder = new IntentDecoder(handSets, null, null, basket);
+            topFeatures = new TopFeatures(theDecoder);
+            if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
+            if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
+            await context.PostAsync($"We have over {basket.Count} different models of phone to choose from.");
+            await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
+            await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+            reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
+            await context.PostAsync(reply);
+            context.Call(new NodeLUISPhoneDialog(topFeatures, handSets, null, null, basket), LuisResponseHandlerAsync);
+            LuisCalled = true;
         }
 
         private async Task ShowCurrentPhoneAsync(IDialogContext context)
@@ -527,29 +545,34 @@ namespace MultiDialogsBot.Dialogs
 
         /*
          * - it's just that brand
-         * > it's just that brand, but newer than current phone
+         * > it's just that brand, but newer than current phone (deprecated)
+         * : it's the brand and model node, he wants to explicitly pick the brand and then model
          * ~ it's everything that is not that brand 
          * 
          */
         private async Task FinalSelectionReceivedAsync(IDialogContext context, IAwaitable<object> awaitable)
         {
             string selection = (string)(await awaitable);
-            string subsModel;
-
+            List<string> models2Exclude,remainingModels;
 
             if (debugMessages) await context.PostAsync("DEBUG: Final selection received : " + selection);
             switch (selection[0])
             {
-                case '~':
+                case LessThan5Node.SOME_OTHER_BRAND:
                     await RecommendPhoneAsync(context, "!" + selection.Substring(1));
                     break;
-                case '-':
+                case LessThan5Node.STICK_WITH_BRAND:
                     await RecommendPhoneAsync(context, selection.Substring(1));
                     break;
-                case '>':
-                    if (!context.ConversationData.TryGetValue("HandsetModelKey", out subsModel))
-                        throw new Exception("Error...HandsetModelKey not present in conversation data");
-                    await RecommendPhoneAsync(context, selection.Substring(1), GetModelReleaseDate(subsModel));
+                case LessThan5Node.NONE_OF_THESE_MODELS:
+                    models2Exclude = new List<string>(selection.Substring(1).Split(LessThan5Node.NONE_OF_THESE_MODELS));
+                    if (LuisCalled)
+                        context.Call(new BrandModelNode(models2Exclude), FinalSelectionReceivedAsync);
+                    else
+                    {
+                        remainingModels = new List<string>( GetAllModels().Except(models2Exclude));
+                        await CallLuisPhoneNodeAsync(remainingModels, context);
+                    }
                     break;
                 default:
                     context.Call(new ColorsNode(selection), MessageReceivedAsync);

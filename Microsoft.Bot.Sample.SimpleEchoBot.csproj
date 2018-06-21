@@ -274,6 +274,7 @@
     <Compile Include="Helper\BotConstants.cs" />
     <Compile Include="Helper\IntentDecoder.cs" />
     <Compile Include="Helper\LuisUpdater.cs" />
+    <Compile Include="Helper\Miscellany.cs" />
     <Compile Include="Helper\TopFeatures.cs" />
     <Compile Include="PhoneFeatures.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

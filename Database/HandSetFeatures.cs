@@ -110,7 +110,7 @@ namespace MultiDialogsBot.Database
                 ++counter;
                 if (element == null)
                     throw new Exception($"the element #{counter} is null");
-                if (element.Name == null)
+                if (element.Name == null)   
                     throw new Exception($"the element #{counter} has a null name");
                 if (element.Value == null)
                     throw new Exception($"The eleement #{counter} has a null value");
@@ -179,7 +179,7 @@ namespace MultiDialogsBot.Database
                             DisplayResolution = new double[] { xRes, yRes };
                     }
                 }
-                else if (key == "Memory (GB)")
+                else if (key == "Memory / Storage (GB)")
                 {
                     int index;
                     if ((index = data.IndexOf("MB")) != -1)
@@ -197,7 +197,7 @@ namespace MultiDialogsBot.Database
                     OS = data;
                 }
                 else if (key.StartsWith("Screen size "))
-                {
+                {  
                     if (double.TryParse(data, out res))
                     {
                         ScreenSize = res;
@@ -249,7 +249,14 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key == "Reviews URL")
                 {
-                    ReviewsUrl = data;
+                    Uri uri;
+
+                    if (Uri.TryCreate(data, UriKind.Absolute, out uri) && ((uri.Scheme == Uri.UriSchemeHttp) || (uri.Scheme == Uri.UriSchemeHttps)))
+                    {
+                        ReviewsUrl = data;
+                    }
+                    else
+                        ReviewsUrl = null;
                 }
             }
         }
@@ -284,7 +291,7 @@ namespace MultiDialogsBot.Database
             sb.Append("Available in the following colours:");
             foreach (var color in Colors)
                 sb.Append(color + ";");
-            sb.Append(string.Concat("Dimensions : ", (BodySize[0] * BodySize[1] * BodySize[2]), "\r\n"));
+            sb.Append(string.Concat("Dimensions : ", (BodySize[0] * BodySize[1] * BodySize[2]), "\r\nMemory : ",MemoryMB.ToString() ));
             return sb.ToString();
         }
     }

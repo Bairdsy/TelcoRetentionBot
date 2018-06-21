@@ -88,6 +88,7 @@ namespace MultiDialogsBot.Database
 
         Dictionary<string, Models> brands = new Dictionary<string, Models>();
         Models masterDict = new Models();
+        List<string> unavailableBrands = new List<string>();
         List<HandSetFeatures> bag = new List<HandSetFeatures>();
 
         public void Add(HandSetFeatures newModel)
@@ -106,6 +107,11 @@ namespace MultiDialogsBot.Database
                 masterDict.Add(newModel);
                 brandModels.Add(newModel);
             }
+        }
+
+        public bool IsBrandUnavailable(string unavailableBrand)
+        {
+            return unavailableBrand.Contains(unavailableBrand);
         }
 
         public int GetHandSetCount()

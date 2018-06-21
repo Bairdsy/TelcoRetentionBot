@@ -108,10 +108,7 @@ namespace MultiDialogsBot.Dialogs
             await this.PostDebugInfoAsync(context, result, intention);
 
             if (degreeOfCertain == EDegreeOfCertain.High)
-            {
-                await context.PostAsync($"Sure, I can find a new phone for you");
                 context.Done(Tuple.Create(initialPhrase,   humanFriendlyIntent[intention].Item2));
-            }
             else if (degreeOfCertain == EDegreeOfCertain.Medium)
             {
                 nonUnderstoodUtterance = initialPhrase;
