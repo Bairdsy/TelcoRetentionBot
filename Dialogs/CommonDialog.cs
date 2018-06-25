@@ -30,6 +30,13 @@ namespace  MultiDialogsBot.Dialogs
             return handSets.GetImageURL(model,madCalmPic);
         }
 
+        protected List<string> GetTop5Sellers()
+        {
+            if (handSets == null)
+                InitializeDataStruct();
+            return handSets.GetTop5Sales();
+        }
+
         protected bool IsOldestOrNewest(string model)
         {
             if (handSets == null)
@@ -147,6 +154,13 @@ namespace  MultiDialogsBot.Dialogs
             if (handSets == null)
                 InitializeDataStruct();
             return handSets.GetModelColors(model);
+        }
+
+        protected bool IsBrandUnavailable(string brand)
+        {
+            if (handSets == null)
+                InitializeDataStruct();
+            return handSets.IsBrandUnavailable(brand);
         }
 
         private void InitializeDataStruct()

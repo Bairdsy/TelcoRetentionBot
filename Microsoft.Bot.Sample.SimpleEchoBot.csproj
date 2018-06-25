@@ -260,7 +260,7 @@
     <Compile Include="Dialogs\Node9.cs" />
     <Compile Include="Dialogs\NodeLUISBegin.cs" />
     <Compile Include="Dialogs\NodeLUISPhoneDialog.cs" />
-    <Compile Include="Dialogs\NodeLuisSubsNeedscs.cs" />
+    <Compile Include="Dialogs\NodeLuisSubsNeeds.cs" />
     <Compile Include="Dialogs\NodePhoneFlow.cs" />
     <Compile Include="Dialogs\Node_Template - Copy - Copy.cs" />
     <Compile Include="Dialogs\RootDialog - Copy.cs" />
@@ -275,6 +275,7 @@
     <Compile Include="Helper\IntentDecoder.cs" />
     <Compile Include="Helper\LuisUpdater.cs" />
     <Compile Include="Helper\Miscellany.cs" />
+    <Compile Include="Helper\ScoreFuncs.cs" />
     <Compile Include="Helper\TopFeatures.cs" />
     <Compile Include="PhoneFeatures.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

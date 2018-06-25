@@ -11,13 +11,22 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 
+
 namespace MultiDialogsBot.Dialogs
 {
-    [LuisModel("bd88c74a-7bf4-4253-8abd-e808f0a83f19", "a3a20fb04cad4cfcaf7b821bd1eb9a19",LuisApiVersion.V2,null,SpellCheck = true,Verbose =true)]
+    [LuisModel("bd88c74a-7bf4-4253-8abd-e808f0a83f19", "99127c285bd3420aa9d9f460091b7683", LuisApiVersion.V2,null,SpellCheck = true,Verbose =true)]
     [Serializable]
-    public class NodeLuisSubsNeedscs : LuisDialog<object>
+    public class NodeLuisSubsNeeds : LuisDialog<object>
     {
-        bool debugMessages = false;
+        public enum ENeeds
+        {
+            PictureLover = 0,
+            MovieWatcher ,
+            CommunicateInWritting,
+            ComfortableToHold
+        };
+
+        double topEntitySkore;
 
         [LuisIntent("None")]
         public async Task None(IDialogContext context,LuisResult result)
@@ -26,11 +35,30 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("Not understood");
         }
 
+        [LuisIntent("PictureLover")]
+        public async Task PictureLover(IDialogContext context,LuisResult result)
+        {
+            await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("PictureLover Intent detected");
+            context.Done(new Tuple<ENeeds,double>(ENeeds.PictureLover,topEntitySkore));
+        }
+
+        [LuisIntent("MovieWatcher")]
+        public async Task MovieWatcher(IDialogContext context,LuisResult result)
+        {
+            await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("MovieWatcher intent detected");
+
+            context.Done(new Tuple<ENeeds, double>(ENeeds.MovieWatcher, topEntitySkore));
+        }
+
         [LuisIntent("ComfortableToHold")]
         public async Task ComfortableToHold(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("Comfortable to hold intent detected");
             await context.PostAsync("ComfortableToHold");
+            context.Done(new Tuple<ENeeds, double>(ENeeds.ComfortableToHold, topEntitySkore));
         }
 
         [LuisIntent("BrowseWeb")]
@@ -44,7 +72,9 @@ namespace MultiDialogsBot.Dialogs
         public async Task CommunicateInWritting(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("Communicate in writting intent detected");
             await context.PostAsync("CommunicateInWritting");
+            context.Done(new Tuple<ENeeds, double>(ENeeds.CommunicateInWritting, topEntitySkore));
         }
 
         [LuisIntent("PlayGames")]
@@ -57,10 +87,10 @@ namespace MultiDialogsBot.Dialogs
         {
             IntentRecommendation topIntent;
 
-
+            topEntitySkore = luisResult.TopScoringIntent.Score ?? 0;
             topIntent = luisResult.TopScoringIntent;
-            if (debugMessages) await context.PostAsync($"DEBUG : The most scored intent is {topIntent.Intent} with skore = {topIntent.Score}");
-            if (debugMessages) await context.PostAsync(GetEntityScores(luisResult));
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : The most scored intent is {topIntent.Intent} with skore = {topIntent.Score}");
+            if (CommonDialog.debugMessages) await context.PostAsync(GetEntityScores(luisResult));
         }
 
         private string GetEntityScores(LuisResult result)

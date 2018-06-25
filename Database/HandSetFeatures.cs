@@ -48,15 +48,17 @@ namespace MultiDialogsBot.Database
 
         public bool GPS { get; private set; }
 
-        public bool WiFi { get; private set; }
+        public bool WiFi { get; private set; }  
 
         public bool HDVoice { get; private set; }
 
         public double ScreenSize { get; private set; }
 
-        public bool SecondaryCamera { get; private set; }
+        public double SecondaryCamera { get; private set; }
 
         public double[] BodySize { get; private set; }
+
+        public double RamSize { get; private set; }
 
         public bool WaterResist { get; private set; }
 
@@ -65,6 +67,11 @@ namespace MultiDialogsBot.Database
         public bool IsSmartphone
         {
             get; private set;
+        }
+
+        public int SalesNumber
+        {
+            get;private set;
         }
 
         public string MadCalmPicUrl
@@ -93,7 +100,7 @@ namespace MultiDialogsBot.Database
             DateTime result;
             int batteryLifeInHours;
             double cameraResolutionMPixels;
-            int weight,xRes,yRes,megs,gigs;
+            int weight,xRes,yRes,megs,gigs,generic;
             double price,res;
 
 
@@ -205,7 +212,10 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key.StartsWith("Secondary Camera"))
                 {
-                    SecondaryCamera = "No" != data;
+                    if (double.TryParse(data, out res))
+                        SecondaryCamera = res;
+                    else
+                        SecondaryCamera = 0;
                 }
                 else if (key.StartsWith("Dimensions"))    // We expect it in the form a x b x c
                 {
@@ -257,6 +267,20 @@ namespace MultiDialogsBot.Database
                     }
                     else
                         ReviewsUrl = null;
+                }
+                else if (key == "RAM (GB)")
+                {
+                    if (double.TryParse(data, out res))
+                        RamSize = res;
+                    else
+                        RamSize = 0;
+                }
+                else if (key == "N Sales")
+                {
+                    if (int.TryParse(data, out generic))
+                        SalesNumber = generic;
+                    else
+                        SalesNumber = 0;
                 }
             }
         }

@@ -71,8 +71,9 @@ namespace MultiDialogsBot.Dialogs
             IMessageActivity messageActivity = await awaitable;
             string response = messageActivity.Text;
             bool hasDecided = response.ToLower().Contains("yes");
-            List<string> options,wantedBrands,wantedModels;
+            List<string> wantedBrands,wantedModels;
             int totalPhones = 3;
+            Activity activity;
 
             try
             {
@@ -97,15 +98,20 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
+                List<CardAction> buttons;
+                 
                 if (debugMessages) await context.PostAsync("DEBUG : string representation : " + handSets.BuildStrRepFull());
-                options = new List<string>() { "I'll pick", "Help me work it out" };
-                PromptDialog.Choice(
-                    context,
-                    PickOrRecommendOptionReceivedAsync,
-                    options,
-                    $"OK. Do you want to pick a phone from a list of everything ({totalPhones} models) , or should I try to recommend a few for you?",
-                    "Sorry, not a valid option",
-                    4);
+                await DisplayTopSalesCarouselAsync(context);
+                activity = ((Activity)(context.Activity)).CreateReply();
+                activity.Text = $"There are {totalPhones} phones to choose from or I can help you choose one";
+                buttons = new List<CardAction>()
+                {
+                    new CardAction(){Title = "I'll decide by myself",Type=ActionTypes.ImBack,Value = "I'll pick"},
+                    new CardAction(){Title = "Help me work it out, based on what's important for me",Type= ActionTypes.ImBack,Value = "Help me work it out"}
+                };
+                activity.SuggestedActions = new SuggestedActions(actions : buttons);
+                await context.PostAsync(activity);
+                context.Wait(PickOrRecommendOptionReceivedAsync);
             }
         }
 
@@ -254,8 +260,6 @@ namespace MultiDialogsBot.Dialogs
         private async Task ProcessSelectedBrandsAndModels(IDialogContext context, List<string> wantedBrands,List<string> wantedModels)
         {
             StringBuilder sb  ;
-            TopFeatures topFeatures;
-            IntentDecoder theDecoder;
             List<string> selectResult;
 
             sb = new StringBuilder("DEBUG : Brands indicated : ");
@@ -290,18 +294,6 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 await CallLuisPhoneNodeAsync(selectResult, context);
-             /* //  Activity reply = ((Activity)context.Activity).CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
-
-                await context.PostAsync($"We have over {selectResult.Count} different models of phone to choose from.");
-                await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
-                await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
-
-                theDecoder = new IntentDecoder(handSets, null, null, selectResult);
-                topFeatures = new TopFeatures(theDecoder);
-                reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
-                await context.PostAsync(reply);
-                context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, null, null, selectResult), LuisResponseHandlerAsync);
-                LuisCalled = true;*/
             }
         }
 
@@ -406,16 +398,23 @@ namespace MultiDialogsBot.Dialogs
         }
 
 
-        private async Task PickOrRecommendOptionReceivedAsync(IDialogContext context, IAwaitable<string> awaitable)
+        private async Task PickOrRecommendOptionReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> awaitable)
         {
-            string option = await awaitable;
+            IMessageActivity activity = (IMessageActivity) await awaitable;
+            string option = activity.Text,selectedModel;
 
             if (option.Equals("I'll pick"))
             {
                 context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
             }
+            else if (option.StartsWith("I want "))
+            {
+                selectedModel = option.Substring(7);
+                context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);
+            }
             else
-                await ShowCurrentPhoneAsync(context);
+                await RecommendPhoneAsync(context, null, null);
+             //   await ShowCurrentPhoneAsync(context);
         }
 
         private async Task ChangeBrandAnswerReceived(IDialogContext context,IAwaitable<object> awaitable)
@@ -481,7 +480,6 @@ namespace MultiDialogsBot.Dialogs
             catch (Exception xception )
             {
                 if (debugMessages) await context.PostAsync("DEBUG : Message from the exception : " + xception.Message + "\r\nDEBUG : string builder : " + sb.ToString());
-
             }
         }
 
@@ -534,7 +532,7 @@ namespace MultiDialogsBot.Dialogs
             subsBrand = GetModelBrand(subsModel);
 
             if (debugMessages) await context.PostAsync("DEBUG : Brand obtained : " + subsBrand);
-            ans = await awaitable;      
+            ans = await awaitable;
 
             if (ans.ToLower() != "yes")                                         // Anything goes
                 await RecommendPhoneAsync(context, subsBrand);
@@ -610,6 +608,42 @@ namespace MultiDialogsBot.Dialogs
             wantedBrands = brandsDetected;
             wantedModels = modelsDetected;
             return (modelsDetected.Count != 0) || (brandsDetected.Count != 0);
+        }
+
+        private async Task DisplayTopSalesCarouselAsync(IDialogContext context)
+        {
+            int x;
+            string reviewsUrl;
+            List<string> topSellers;
+            Activity reply = ((Activity)context.Activity).CreateReply();
+            HeroCard heroCard;
+
+            topSellers = GetTop5Sellers();
+            x = topSellers.Count;
+            reply.Text = $"Here are our latest TOP {x} sellers to choose from or let's work some other options based on what's important for you";
+            foreach(var model in topSellers)
+            {
+                heroCard = new HeroCard()
+                {
+                    Title = Miscellany.Capitalize(GetModelBrand(model)),
+                    Subtitle = Miscellany.Capitalize(model),
+                    Text = "",
+                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model, true), "img/jpeg") },
+                    Buttons = new List<CardAction>()
+                    {
+                        new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
+                        new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },
+                        new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
+                    }
+                };
+                if ((reviewsUrl = GetModelReviewsUrl(model)) != null)
+                {
+                    heroCard.Buttons.Add(new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });
+                }
+                reply.Attachments.Add(heroCard.ToAttachment());
+            }
+            reply.AttachmentLayout = "carousel";
+            await context.PostAsync(reply);
         }
     }
 

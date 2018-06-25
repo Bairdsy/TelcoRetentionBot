@@ -57,6 +57,39 @@ namespace MultiDialogsBot.Database
                 return returnVal;
             }
 
+            public List<string> GetTop5MostSoldModels()
+            {
+                List<string> returnVal = new List<string>();
+                int maxSales,counter = 0,modelsCount ;
+                HandSetFeatures  mostSold;
+                string tail;
+
+                while((returnVal.Count != models.Count) && (counter < 5))
+                {
+                    maxSales = -1;
+                    mostSold = null;
+                    foreach (HandSetFeatures handSet in models.Values)
+                    {
+                        if (!returnVal.Contains(handSet.Model) && handSet.SalesNumber >= maxSales)
+                        {
+                            mostSold = handSet;
+
+                            maxSales = mostSold.SalesNumber;
+                        }
+                    }
+                    returnVal.Add(mostSold.Model);
+                    modelsCount = returnVal.Count;
+                    if (modelsCount != 1)
+                    {
+                        tail = returnVal[modelsCount - 2];
+                        if (models[tail].SalesNumber == maxSales)
+                            continue; // Do not increment, we need five different
+                    }
+                    ++counter;
+                }
+                return returnVal;
+            }
+
             public string GetSpecificModelBrand(string model)
             {
                 return models[model].Brand;
@@ -72,11 +105,10 @@ namespace MultiDialogsBot.Database
                     regex = new Regex(filter);
                     foreach (string model in models.Keys)
                     {
-                        if (  regex.IsMatch(model.ToLower()))                 // Oliver = night
+                        if (  regex.IsMatch(model.ToLower()))                 
                             returnVal.Add(model);
                     }
                 }
-               // returnVal.Insert(0, $"I examined {counter} models\r\n and obtained the following results = {debugString.ToString()}");
                 return  returnVal;
             }
 
@@ -111,9 +143,13 @@ namespace MultiDialogsBot.Database
 
         public bool IsBrandUnavailable(string unavailableBrand)
         {
-            return unavailableBrand.Contains(unavailableBrand);
+            return unavailableBrands.Contains(unavailableBrand.ToLower());
         }
 
+        public List<string> GetTop5Sales()
+        {
+            return masterDict.GetTop5MostSoldModels();
+        }
         public int GetHandSetCount()
         {
             return GetAllModels().Count;
@@ -135,9 +171,14 @@ namespace MultiDialogsBot.Database
 
         public Dictionary<string,bool> GetAllModelsForBrand(string brand)
         {
-            Models models = brands[brand];
+            Models models; // = brands[brand];
 
-            return models.GetAllModels();
+            if (brands.TryGetValue(brand, out models))
+            {
+                return models.GetAllModels();
+            }
+            else
+                return new Dictionary<string, bool>();
         }
 
         public bool IsOldestOrNewest(string model)
@@ -270,6 +311,17 @@ namespace MultiDialogsBot.Database
                 return;
             bag.RemoveRange(phones2Keep, total - phones2Keep );
             return;
+        }
+
+        public HandSetFeatures GetModelFeatures(string model)
+        {
+            return masterDict.GetEquipmentFeatures(model);
+        }
+
+        public void GetMaxAndMinLimits(accessor getter,out double min, out double max)
+        {
+            min = bag.Min(x => getter(x));
+            max = bag.Max(x => getter(x));
         }
 
         public double ComputeMiddle(accessor getter)
@@ -416,8 +468,8 @@ namespace MultiDialogsBot.Database
 
             if (brands.TryGetValue(brand, out theBrandModels))
                 theBrandModels.BrandLogoURL = url;
-        /*    else
-                throw new Exception("Error....trying to set the logo from an inexistent brand"); let's ignore the exception for now....   */
+            else
+                unavailableBrands.Add(brand.ToLower());
         }
     }
 }

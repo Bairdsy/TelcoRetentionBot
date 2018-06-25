@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Bot.Connector;
@@ -31,7 +32,7 @@ namespace MultiDialogsBot.Dialogs
             Cheap,
             Color,
             DualCamera,
-            DualSIM,
+            DualSIM, 
             ExpandableMemory,   
             FMRadio,
             FaceID,
@@ -46,7 +47,8 @@ namespace MultiDialogsBot.Dialogs
             WaterResist,
             Weight,
             WiFi,
-            Newest
+            Newest,
+            RAM
         }
 
         string brandDesired;
@@ -55,6 +57,10 @@ namespace MultiDialogsBot.Dialogs
         HandSets handSetsBag;
         TopFeatures topButtons;
         int numberOfIterations = 1;
+
+        EIntents desiredFeature;
+        double desiredFeatureScore;
+        LuisResult res;
 
         public NodeLUISPhoneDialog(TopFeatures mostDemanded,HandSets handSets, string brand, DateTime? currentModelReleaseDate,List<string> narrowedListOfModels) : base()
         {
@@ -75,78 +81,37 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("BandWidth")]
         public async Task BandWidth(IDialogContext context, LuisResult result)
         {
-            int handsetsLeft , handsetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that you want a phone with access to internet and with wide bandwidth");
-            handsetsLeft = decoder.DecodeIntent(EIntents.BandWidth,result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents = " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handsetsLeft,handsetsNow);
+            desiredFeature = EIntents.BandWidth;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
-
 
         [LuisIntent("BatteryLife")]
         public async Task BatteryLife(IDialogContext context, LuisResult result)
         {
-            int handsetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand you want a big battery life");
-            try
-            {
-                handsetsLeft = decoder.DecodeIntent(EIntents.BatteryLife,result);
-                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handsetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
-                await UpdateUserAsync(context, handsetsLeft,handSetsNow);
-            }
-            catch (ArgumentException)
-            {
-                await context.PostAsync("Argument xception");
-            }
-            catch (InvalidOperationException)
-            {
-                await context.PostAsync("Error ... Invalid operation xception");
-            }
-            catch (Exception xception)
-            {
-                await context.PostAsync($"Error...Exception Message = {xception.Message}");
-            }
+            desiredFeature = EIntents.BatteryLife;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("Brand")]
         public async Task Brand(IDialogContext context, LuisResult result)
         {
-            int handSetsNow = handSetsBag.BagCount();
-            int handSetsLeft = 0;
-
             await ShowDebugInfoAsync(context, result);
-           
             await context.PostAsync("I understand that the most important thing for you is brand");
-            /*
-            if (brandsRequired.Count == 0)
-            {
-                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He didn't specify, Needs to call the node to specifically pick a brand");hfhth
-            }*/
-            handSetsLeft = decoder.DecodeIntent(EIntents.Brand, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.Brand;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("Camera")]
         public async Task Camera(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-            StringBuilder debugStr = new StringBuilder("DEBUG : DecodeIntent : ");
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is the presence of a camera");
-
-            handSetsLeft = decoder.DecodeIntent(EIntents.Camera, result,debugStr);
-            await context.PostAsync(debugStr.ToString());
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.Camera;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("Cheap")]
@@ -158,256 +123,164 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("DualCamera")]
         public async Task DualCamera(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that you want a phone with Dual Camera");
-            handSetsLeft = decoder.DecodeIntent(EIntents.DualCamera, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context,handSetsLeft,handSetsNow);
+            desiredFeature = EIntents.DualCamera;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("DualSIM")]
         public async Task DualSIM(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I undertand that you would like a phone with DualSIM");
-            handSetsLeft = decoder.DecodeIntent(EIntents.DualSIM,result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.DualSIM;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("ExpandableMemory")]
         public async Task ExpandableMemory(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that an expandable memory is the most important thing for you");
-
-            handSetsLeft = decoder.DecodeIntent(EIntents.ExpandableMemory,result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.ExpandableMemory;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("FMRadio")]
         public async Task FMRadio(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is the presence of an FM Radio Antenna");
-            handSetsLeft = decoder.DecodeIntent(EIntents.FMRadio, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.FMRadio;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("FaceID")]
         public async Task FaceID(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is the presence of Face ID recognition");
-
-            handSetsLeft = decoder.DecodeIntent(EIntents.FaceID,result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.FaceID;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("GPS")]
         public async Task GPS(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you is the presence of GPS");
-
-            handSetsLeft = decoder.DecodeIntent(EIntents.GPS,result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.GPS;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
 
         [LuisIntent("HDVoice")]
         public async Task HDVoice(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you is the presence of High Definition voice");
-            handSetsLeft = decoder.DecodeIntent(EIntents.HDVoice,result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.HDVoice;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("HighResDisplay")]
         public async Task HighResDisplay(IDialogContext context, LuisResult result)
-        {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-            StringBuilder debug = new StringBuilder();
-
+        { 
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you is a High resolution display");
-            handSetsLeft = decoder.DecodeIntent(EIntents.HighResDisplay, result,debug);
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : DecodeIntent() output = " + debug.ToString());
-            if (CommonDialog.debugMessages) await context.PostAsync("Bag contents : " + handSetsBag.BuildStrRep());
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.HighResDisplay;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("LargeStorage")]
         public async Task LargeStorage(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is a phone with a large storage capability");
-            handSetsLeft = decoder.DecodeIntent(EIntents.LargeStorage, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents: " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.LargeStorage;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("OS")]
         public async Task OS(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handsetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you in a phone is the operating System");
-            handSetsLeft = decoder.DecodeIntent(EIntents.OS, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handsetsNow);
+            desiredFeature = EIntents.OS;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("ScreenSize")]
         public async Task ScreenSize(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you on a phone is the screen size");
-            handSetsLeft = decoder.DecodeIntent(EIntents.ScreenSize, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag ContentS : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.ScreenSize;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("SecondaryCamera")]
         public async Task SecondaryCamera(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you is the presence of a secondary camera");
-            handSetsLeft = decoder.DecodeIntent(EIntents.SecondaryCamera,result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());     
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.SecondaryCamera;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("Small")]
         public async Task Small(IDialogContext context, LuisResult result)         
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
-            await ShowDebugInfoAsync(context, result); 
-
+            await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you are the dimensions of your new phone");
-            handSetsLeft = decoder.DecodeIntent(EIntents.Small, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.Small;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("WaterResist")]
         public async Task WaterResist(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-      
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is that your phone should be water resistant");
-            handSetsLeft = decoder.DecodeIntent(EIntents.WaterResist,result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.WaterResist;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("Weight")]
         public async Task Weight(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft = -1,handSetsNow = handSetsBag.BagCount();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is the weight of your phone");
-            handSetsLeft = decoder.DecodeIntent(EIntents.Weight, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.Weight;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("WiFi")]
         public async Task WiFi(IDialogContext context, LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is the presence of WiFi");
-            handSetsLeft = decoder.DecodeIntent(EIntents.WiFi, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.WiFi;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
-
+        /************* Daqui para baixo nao foi testado ******************/
         [LuisIntent("Color")]
         public async Task Color(IDialogContext context,LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understand that the most important thing for you is the color");
-            handSetsLeft = decoder.DecodeIntent(EIntents.Color, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.Color;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("Newest")]
         public async Task Newest(IDialogContext context , LuisResult result)
         {
-            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-
             await ShowDebugInfoAsync(context, result);
-
             await context.PostAsync("I understant that you want a recent model");
-            handSetsLeft = decoder.DecodeIntent(EIntents.Newest, result);
-
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Bag contents : " + handSetsBag.BuildStrRep());
-
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            desiredFeature = EIntents.Newest;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("")]
@@ -418,23 +291,21 @@ namespace MultiDialogsBot.Dialogs
 
         string TyposWarning(LuisResult result)
         {
-            string returnValue = null;
+            string returnValue = null;  
 
             if (result.AlteredQuery != null )
             {
                 returnValue = $"You typed {result.Query}, did you mean {result.AlteredQuery} ?";
-            }
+            }  
             return returnValue;
         }
-
-
 
         private async Task ShowDebugInfoAsync (IDialogContext context,LuisResult luisResult)
         {
             IntentRecommendation topIntent;
 
-            
             topIntent = luisResult.TopScoringIntent;
+            desiredFeatureScore = topIntent.Score ?? 0;
             if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : The most scored intent is {topIntent.Intent} with skore = {topIntent.Score}");
             if (CommonDialog.debugMessages) await context.PostAsync(GetEntityScores(luisResult));
         }
@@ -450,6 +321,18 @@ namespace MultiDialogsBot.Dialogs
             }
             sb.Append("No next one\r\n");
             return sb.ToString();
+        }
+
+        private async Task ProcessNeedOrFeatureAsync(IDialogContext context, LuisResult luisResult)
+        {
+            var msg = context.MakeMessage();
+            string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
+
+            res = luisResult;
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
+            msg.Text = text;
+            await context.Forward(new NodeLuisSubsNeeds(), ProcessLuisNeedsResult, msg, CancellationToken.None);
         }
 
         private async Task UpdateUserAsync(IDialogContext context,int handSetsLeft,int handSetsB4)
@@ -486,5 +369,52 @@ namespace MultiDialogsBot.Dialogs
                 context.Done(decoder);
             }
         }
+
+        public async Task ProcessLuisNeedsResult(IDialogContext context,IAwaitable<object> awaitable)
+        {
+            Tuple<NodeLuisSubsNeeds.ENeeds, double> result = (Tuple<NodeLuisSubsNeeds.ENeeds,double>) await awaitable;
+            double needsScore = result.Item2;
+            NodeLuisSubsNeeds.ENeeds needsIntent = result.Item1;
+            int handSetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
+
+            if (needsScore > desiredFeatureScore)  // WE have a need 
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync("It's a need, namely " + needsIntent.ToString());
+                if (needsIntent == NodeLuisSubsNeeds.ENeeds.MovieWatcher)
+                {
+                    await context.PostAsync("Scores : \r\n" + Scores());
+                }
+            }
+            else
+            {
+                try
+                {
+                    handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
+                    if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
+                    await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+                }
+                catch (ArgumentException)
+                {
+                    await context.PostAsync("Argument xception");
+                }
+                catch (Exception xception)
+                {
+                    await context.PostAsync($"Error...Exception Message = {xception.Message}");
+                }
+            }
+        }
+
+        private string Scores()
+        {
+            StringBuilder sb = new StringBuilder();
+            List<string> basket;
+            ScoreFuncs funcs = new ScoreFuncs(handSetsBag);
+
+            basket = handSetsBag.GetBagModels();
+            foreach (var model in basket)
+                sb.Append($"{model} ==> score = {funcs.PictureLover(model)}\r\n");
+            return sb.ToString();
+        }
+
     }
 }

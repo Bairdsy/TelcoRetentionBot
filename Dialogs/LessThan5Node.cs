@@ -58,18 +58,6 @@ namespace MultiDialogsBot.Dialogs
                 models2Exclude = modelList.ToArray();
                 unwantedModels = string.Concat(NONE_OF_THESE_MODELS, string.Join(NONE_OF_THESE_MODELS.ToString(), models2Exclude));
                 context.Done(unwantedModels);
-                /*
-                if (MoreThanOneBrand() ||  // If there is more than one brand or if the carousel covers the whole of model for the brand, He needs to choose from the list of brands. 
-                    modelList.Count >= GetBrandModels(GetModelBrand(modelList[0])).Count)
-                    context.Done("~");    
-                else
-                {
-                       string[] models2Exclude = this.modelList.ToArray();
-
-                       unwantedModels = string.Concat("~", string.Join("~", models2Exclude));
-                       context.Done(unwantedModels);
-                    AskChangeBrandOrDifferentModel(context);
-                }*/
             }
         }
 

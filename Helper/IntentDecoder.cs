@@ -83,7 +83,8 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.Color, y => !y.Colors.Exists(x => StrKeyWords.Contains(x.ToLower())) },     
                 { NodeLUISPhoneDialog.EIntents.OS, y =>  !StrKeyWords.Contains(y.OS.ToLower())  },
                 { NodeLUISPhoneDialog.EIntents.Brand, y => !StrKeyWords.Contains(y.Brand.ToLower())   },
-                { NodeLUISPhoneDialog.EIntents.Newest, y => y.ReleaseDate < DateThreshold }
+                { NodeLUISPhoneDialog.EIntents.Newest, y => y.ReleaseDate < DateThreshold },
+                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, y => y.SecondaryCamera < Threshold }
             };  
             comparingFunctions = new Dictionary<NodeLUISPhoneDialog.EIntents, sgn>()
             {
@@ -96,6 +97,7 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.Small, y => (desc ? -1 : 1) * Math.Sign(Prod(y.Item1.BodySize) - Prod(y.Item2.BodySize)) },
                 { NodeLUISPhoneDialog.EIntents.Weight, y => Math.Sign(y.Item1.Weight - y.Item2.Weight)  },
                 { NodeLUISPhoneDialog.EIntents.Newest, y => (y.Item2.ReleaseDate > y.Item1.ReleaseDate) ? 1 : -1 },
+                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, x => -Math.Sign(x.Item1.SecondaryCamera - x.Item2.SecondaryCamera) }
             };
 
             getters = new Dictionary<NodeLUISPhoneDialog.EIntents, HandSets.accessor>()
@@ -109,6 +111,7 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.Small, y => Prod(y.BodySize)  },
                 { NodeLUISPhoneDialog.EIntents.Weight, y => y.Weight  },
                 { NodeLUISPhoneDialog.EIntents.Newest, y => y.ReleaseDate.Ticks  },
+                { NodeLUISPhoneDialog.EIntents.SecondaryCamera , y => y.SecondaryCamera }
             };
 
             booleanFilters = new Dictionary<NodeLUISPhoneDialog.EIntents, Predicate<HandSetFeatures>>()
@@ -122,7 +125,7 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.GPS, x => !x.GPS },
                 { NodeLUISPhoneDialog.EIntents.WiFi, x => !x.WiFi }, 
                 { NodeLUISPhoneDialog.EIntents.HDVoice, x => ! x.HDVoice },
-                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, y => !y.SecondaryCamera },
+          /*      { NodeLUISPhoneDialog.EIntents.SecondaryCamera, y => !y.SecondaryCamera },*/
                 { NodeLUISPhoneDialog.EIntents.WaterResist, x => !x.WaterResist },
             };
         }
@@ -222,7 +225,7 @@ namespace MultiDialogsBot.Helper
             if (result != null)
             {
                 Threshold = -1;
-                DateThreshold = new DateTime(1980, 1, 1);
+                DateThreshold = new DateTime(1980, 1, 1); 
                 ExtractEntityInfo(intent2Decode, result);
             }
             intents2Exclude.Add(intent2Decode);

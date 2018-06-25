@@ -19,52 +19,26 @@ namespace MultiDialogsBot.Dialogs
         const int MAX_FAILURES = 3;
 
         string brandChosen;
-        int failureNumber = 0;
+        int availableModelsCount,failureNumber = 0;
         List<string> brandModels, xclude = null;
         Dictionary<string,bool> brands;  
 
 
-        public BrandModelNode(List<string> models2Exclude)
+        public BrandModelNode(List<string> models2Exclude) : this()
         {
             xclude = models2Exclude;
+            availableModelsCount -= xclude.Count;
         }
 
-        public BrandModelNode() { }
+        public BrandModelNode()
+        {
+            availableModelsCount = GetModelCount();
+        }
 
         public override async Task StartAsync(IDialogContext context)
         {
-            //Activity message;
-            //Dictionary<string, bool> modelsSet;
-
             if (debugMessages) await context.PostAsync("DEBUG : BrandModelNode : StartAsync()");
-     //       if (xclude == null)  
             await AskBrandAndModelAsync(context);
-         /*   else
-            {
-                try
-                {
-                    brandModels = new List<string>();
-                    brandChosen = GetModelBrand(xclude[0]);
-                    brands = GetAllBrands();
-                    message = ((Activity)context.Activity).CreateReply();    
-                    message.Text = $"OK, these are the other models I have from the {brandChosen} brand, do you like any of them?";
-                    modelsSet = GetBrandModels(brandChosen);  
-
-                    foreach (var model in modelsSet.Keys)
-                        if ( !xclude.Contains( model))  
-                        {
-                            brandModels.Add(model);  
-                        }
-                    ComposeModelCarousel(brandChosen, brandModels, message);
-                    message.AttachmentLayout = "carousel";
-                    await context.PostAsync(message);
-                }
-                catch (Exception xception)
-                {
-                    await context.PostAsync("Error...xception message = " + xception.Message);
-                }
-                context.Wait(ChoiceMadeAsync);
-            }*/
         }
           
         private async Task ChoiceMadeAsync(IDialogContext context, IAwaitable<object> awaitable)
@@ -109,60 +83,50 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync($"Error...too many failed attempts. Recovery from this situation is left to the Help Node");
                 context.Wait(this.MessageReceivedAsync);
             }
-
-            /*
-            if (contents.StartsWith("I want a "))
-            {
-                model = contents.Substring(9);
-                if (debugMessages) await context.PostAsync("DEBUG: OK, you picked " + model);
-                context.Done(model);
-            }
-               
-            else if ((failureNumber != 0) && (contents.ToLower() == "choose"))
-            {
-                var reply = ans.CreateReply("OK, these are the remaining brands that I have available, click on the one that interests you");
-                brands.Remove(brandChosen);
-                ComposeBrandsCarousel(reply);
-                await context.PostAsync(reply);
-                context.Wait(BrandChoiceMadeAskModelAsync);
-            }
-            else if (failureNumber++ != MAX_FAILURES)
-            {
-                errorMsg.Append("I'm sorry. I don't understand that. Click on \"Pick Me\" if there is a phone you like, or click on \"Plan Prices\" to see the cost");
-                errorMsg.Append(" for that phone on the different plans available. You can also click \"Reviews\" or \"Sepcifications\" for more details on any");
-                errorMsg.Append(" phone. Or if you want to go back to choose another brand or model type \"choose\"");
-                var reply = ans.CreateReply(errorMsg.ToString());
-                ComposeModelCarousel(brandChosen, brandModels, reply);
-                reply.AttachmentLayout = "carousel";
-                await context.PostAsync(reply);
-            }
-            else
-            {
-                await context.PostAsync($"Error...too many failed attempts. Recovery from this situation is left to the Help Node");
-                context.Wait(this.MessageReceivedAsync);
-            }*/
         }
 
         private async Task BrandChoiceMadeAskModelAsync(IDialogContext context, IAwaitable<object> awaitable)
         {
             Activity messageActivity = (Activity)await awaitable;
-            string brand = messageActivity.Text.Substring(7);
-            Dictionary<string, bool> tempHash;
+            string brand = messageActivity.Text.StartsWith("I want ") ? messageActivity.Text.Substring(7) : messageActivity.Text;
+            Dictionary<string, bool> tempHash;  
             List<string> brandModelsList = new List<string>();
-            bool moreThanOne;
+            bool moreThanOne, unavailable;
+            IEnumerable<string> vector;
 
+            if (debugMessages) await context.PostAsync("Beginning of BrandChoiceMadeAskModelAsync()");
             brandChosen = brand;
             tempHash = GetBrandModels(brand);
-            foreach (string model in tempHash.Keys.Except(xclude))
-                brandModelsList.Add(model); 
-            brandModels = brandModelsList;
-            moreThanOne = (brandModels.Count != 1);
-            brand = Miscellany.Capitalize(brand);
-            var reply = messageActivity.CreateReply(moreThanOne ? "Which model would you like to have? Please pick one" : $"This is the only model I have available from {brand}");
+            if (debugMessages) await context.PostAsync("Collecting models' hash");
+            if (!(unavailable = IsBrandUnavailable(brand)) && (tempHash.Count() > 0))
+            {
+                vector = xclude != null ? tempHash.Keys.Except(xclude) : tempHash.Keys;
+                foreach (string model in vector)
+                    brandModelsList.Add(model);
+                brandModels = brandModelsList;
+                moreThanOne = (brandModels.Count != 1);
+                brand = Miscellany.Capitalize(brand);
+                var reply = messageActivity.CreateReply(moreThanOne ? "Which model would you like to have? Please pick one" : $"This is the only model I have available from {brand}");
 
-            ComposeModelCarousel(brand,brandModelsList, reply);
-            await context.PostAsync(reply);
-            context.Wait(ChoiceMadeAsync);
+                ComposeModelCarousel(brand, brandModelsList, reply);
+                await context.PostAsync(reply);
+                if (debugMessages) await context.PostAsync("Exiting BrandChoiceMadeAskModelAsync(), brand is available on stock");
+                context.Wait(ChoiceMadeAsync);
+            }
+            else if (unavailable)
+            {
+                int x = availableModelsCount;
+
+                await context.PostAsync($"Unfortunately we don't have that brand in stock, but you can choose from over {x} plus models from Apple, Samsung, Nokia and other leading brands. Type the brands below from this list");
+                if (debugMessages) await context.PostAsync("Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
+                context.Wait(BrandChoiceMadeAskModelAsync);
+            }
+            else
+            {
+                await context.PostAsync("Not understood, please pick or type the brand you like");
+                if (debugMessages) await context.PostAsync("Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
+                context.Wait(BrandChoiceMadeAskModelAsync);
+            }
         }
 
         private void ComposeBrandsCarousel(Activity reply)
@@ -173,7 +137,8 @@ namespace MultiDialogsBot.Dialogs
             foreach (string brand in brands.Keys)
             {
                 brandModels = new List<string>(GetBrandModels(brand).Keys);
-                if (brandModels.Except(xclude).Count() == 0)
+                if ((xclude != null) && // Avoid passing null to Except()
+                    (brandModels.Except(xclude).Count() == 0))
                     continue;
                 card = new HeroCard()
                 {
@@ -195,14 +160,14 @@ namespace MultiDialogsBot.Dialogs
         {
             StringBuilder builder = new StringBuilder();
             var reply = ((Activity)context.Activity).CreateReply();
-            int numberOfModels = GetModelCount(); 
+            int numberOfModels = availableModelsCount; 
 
             try
             {
                 brands =  GetAllBrands();
-                if (xclude != null)
-                    numberOfModels -= xclude.Count;
+
                 reply.Text = $"You can choose from {numberOfModels} models from Apple, Samsung, Nokia and other leading brands. Click or type the brands below from this list";
+                if (debugMessages) await context.PostAsync("DEBUG : Calling ComposeBrandsCarousel()");
                 ComposeBrandsCarousel(reply);
             }
             catch (Exception xception)
