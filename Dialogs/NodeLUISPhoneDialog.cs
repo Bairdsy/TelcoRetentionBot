@@ -62,6 +62,8 @@ namespace MultiDialogsBot.Dialogs
         double desiredFeatureScore;
         LuisResult res;
 
+        ScoreFuncs needsScores;
+
         public NodeLUISPhoneDialog(TopFeatures mostDemanded,HandSets handSets, string brand, DateTime? currentModelReleaseDate,List<string> narrowedListOfModels) : base()
         {
             handSetsBag = handSets;
@@ -69,6 +71,7 @@ namespace MultiDialogsBot.Dialogs
             ReleaseDateCurrentModel = currentModelReleaseDate;
             decoder = mostDemanded.AssociatedDecoder; //new IntentDecoder(handSets, brand, currentModelReleaseDate,narrowedListOfModels);
             topButtons = mostDemanded;
+            needsScores = new ScoreFuncs(handSets);
         }
 
         [LuisIntent("None")]
@@ -332,7 +335,16 @@ namespace MultiDialogsBot.Dialogs
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
             msg.Text = text;
-            await context.Forward(new NodeLuisSubsNeeds(), ProcessLuisNeedsResult, msg, CancellationToken.None);
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Forwarding it to Luis needs...");
+            try
+            {
+                await context.Forward(new NodeLuisSubsNeeds(), ProcessLuisNeedsResult, msg, CancellationToken.None);
+            }
+            catch (Exception xception)
+            {
+                await context.PostAsync("DEBUG : Error...failure to forward to LUIS Subscriber needs node, xception message = " + xception.Message);
+            }
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : End of ProcessNeedOrFeatureAsync()");
         }
 
         private async Task UpdateUserAsync(IDialogContext context,int handSetsLeft,int handSetsB4)
@@ -357,7 +369,7 @@ namespace MultiDialogsBot.Dialogs
             }
             else
                 await context.PostAsync($"I narrowed it down to {handSetsLeft} handsets that fulfill your requirements");
-            if ((numberOfIterations++ == 1) && (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS))
+            if (/*(numberOfIterations++ == 1) &&*/ (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS))
             {
                 sb = new StringBuilder("");
                 reply.SuggestedActions = topButtons.GetTop4Buttons(sb);
@@ -379,19 +391,54 @@ namespace MultiDialogsBot.Dialogs
 
             if (needsScore > desiredFeatureScore)  // WE have a need 
             {
-                if (CommonDialog.debugMessages) await context.PostAsync("It's a need, namely " + needsIntent.ToString());
-                if (needsIntent == NodeLuisSubsNeeds.ENeeds.MovieWatcher)
-                {
-                    await context.PostAsync("Scores : \r\n" + Scores());
-                }
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString());
+                handSetsLeft = needsScores.GetTopFive(needsIntent);
+                await UpdateUserAsync(context, handSetsLeft, handSetsNow);
             }
             else
             {
                 try
                 {
-                    handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
-                    if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
-                    await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+                    switch (desiredFeature)
+                    {
+                        case EIntents.Camera:
+                            if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
+                            {
+                                handSetsLeft = needsScores.GetTopFive(NodeLuisSubsNeeds.ENeeds.Camera);
+                                await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+                            }
+                            else
+                                await DecodeAndProcessIntentAsync(context);
+                            break;
+                        case EIntents.OS:
+                            if (!GetOSData(res))
+                            {
+                                PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagOSes(), "Could you please indicate your favourite Operating System?", "Not understood, please try again", 3);
+                            }
+                            else
+                                await DecodeAndProcessIntentAsync(context);
+                            break;
+                        case EIntents.Color:
+                            if (!GetPreferredColors(res))
+                            {
+                                PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagColors(), "Could you please indicate your favourite Color?", "Not understood, please try again", 3);
+                            }
+                            else
+                                await DecodeAndProcessIntentAsync(context);
+                            break;
+                        case EIntents.Brand:
+                            if (!GetSpecificBrands(res))
+                            {
+                                PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagBrands(), "Could you please indicate your favourite brand?", "Not understood, please try again", 3);
+                            }
+                            else
+                                await DecodeAndProcessIntentAsync(context);
+                            break;
+                        default:
+                            await DecodeAndProcessIntentAsync(context);
+                            break;
+                    }
+                    topButtons.SetNewFreq(desiredFeature);
                 }
                 catch (ArgumentException)
                 {
@@ -404,17 +451,91 @@ namespace MultiDialogsBot.Dialogs
             }
         }
 
-        private string Scores()
+        private async Task ProcessEnumeratedChoice(IDialogContext context,IAwaitable<string> awaitable)
         {
-            StringBuilder sb = new StringBuilder();
-            List<string> basket;
-            ScoreFuncs funcs = new ScoreFuncs(handSetsBag);
+            string ans = await awaitable;
+            
 
-            basket = handSetsBag.GetBagModels();
-            foreach (var model in basket)
-                sb.Append($"{model} ==> score = {funcs.PictureLover(model)}\r\n");
-            return sb.ToString();
+            await context.PostAsync("He picked = " + ans);    
+            decoder.StrKeyWords = new List<string>() { ans.ToLower() };
+            await DecodeAndProcessIntentAsync(context);
         }
 
+        private async Task DecodeAndProcessIntentAsync(IDialogContext context)
+        {
+            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
+
+            handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
+            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+        }
+
+        private bool GetOSData(LuisResult result)
+        {
+            List<string> subsOSChoices = new List<string>();
+
+            foreach (var entity in result.Entities)
+                if (entity.Type == "OperatingSystem")
+                    subsOSChoices.Add(entity.Entity.ToLower());
+
+            decoder.StrKeyWords = subsOSChoices;
+            return decoder.StrKeyWords.Count != 0;
+        }
+
+        private bool GetPreferredColors(LuisResult result)
+        {
+            List<string> colorVector = new List<string>();
+
+            foreach (var entity in result.Entities)
+                if (entity.Type == "Color")
+                    colorVector.Add(entity.Entity.ToLower());
+            decoder.StrKeyWords = colorVector;
+            return decoder.StrKeyWords.Count != 0;
+        }
+
+        private bool GetCameraCompositeEntityData(LuisResult result)
+        {
+            double megaPixels = 0;
+
+            foreach (var cEntity in result.CompositeEntities)
+                if (cEntity.ParentType == "cameracomposite")
+                {
+                    foreach (var child in cEntity.Children)
+                        if ((child.Type == "builtin.number") && double.TryParse(child.Value, out megaPixels))
+                        {
+                            //Threshold = megaPixels;
+                            return true;
+                        }
+                }
+            return false;
+        }
+
+        private bool GetSpecificBrands(LuisResult res)
+        {
+            List<string> returnVal = new List<string>();
+            string ent;
+
+            foreach (var entity in res.Entities)
+                if ((entity.Type == "Brand") && (entity.Entity.ToUpper() != "BRAND"))
+                {
+                    ent = entity.Entity.ToLower();
+                    returnVal.Add(ent == "iphone" ? "apple" : ent);
+                }
+            decoder.StrKeyWords = returnVal;
+            return decoder.StrKeyWords.Count != 0;
+        } 
+
+        /*       private string Scores()
+         *      {
+                   StringBuilder sb = new StringBuilder();
+                   List<string> basket;
+                   ScoreFuncs funcs = new ScoreFuncs(handSetsBag);    
+
+                   basket = handSetsBag.GetBagModels();
+                   foreach (var model in basket)
+                       sb.Append($"{model} ==> score = {funcs.PictureLoverScore(model)}\r\n");
+                   return sb.ToString();
+               }
+               */
     }
 }

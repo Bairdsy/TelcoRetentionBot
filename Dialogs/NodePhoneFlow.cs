@@ -54,11 +54,9 @@ namespace MultiDialogsBot.Dialogs
                 {
                     reply = lastMsg.CreateReply("Have you decided already what you want or would you like some support in choosing what's the right phone for you?");
                     reply.SuggestedActions = suggestedActions;
-                    // PromptDialog.Choice(context, MessageReceivedWithDecisionAsync, options, "Do you know what make and model you want?", "Did not quite follow that, could you please repeat?", 5);
                     await context.PostAsync(reply);
                     context.Wait(MessageReceivedWithDecisionAsync);
                 }
-                 //   PromptDialog.Confirm(context, MessageReceivedWithDecisionAsync, "Do you know what make and model you want?", "Didn't quite follow that, could you please repeat?", promptStyle: PromptStyle.Keyboard);
             }
             catch (Exception xception)
             {
@@ -412,7 +410,7 @@ namespace MultiDialogsBot.Dialogs
                 selectedModel = option.Substring(7);
                 context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);
             }
-            else
+            else    
                 await RecommendPhoneAsync(context, null, null);
              //   await ShowCurrentPhoneAsync(context);
         }
@@ -460,22 +458,21 @@ namespace MultiDialogsBot.Dialogs
             try
             {
                 topFeatures = new TopFeatures(theDecoder);    
-                handSets.InitializeBag(brand, lowerThreshold);
+                handSets.InitializeBag(brand, lowerThreshold);       
                 count = handSets.BagCount();
                 if (count > BotConstants.MAX_CAROUSEL_CARDS)
                 {
                     if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                     if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
-                    await context.PostAsync($"OK, I have {count} available and I'm trying to work out the right one for you");
                     Activity message = (Activity)context.Activity;
-                    Activity reply = message.CreateReply("Name one, the most important thing on your decision?");
+                    Activity reply = message.CreateReply($"We have over { count} different models of phone to choose from. As you are unsure what is your best model then let me know what is imporrtant to you and I'll select a few for you to choose from. If you like a particular brand just say which ones. Or you can choose features (like weight, battery life, camera...) or just tell me how you mistly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)\r\nYou can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
                     reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
                     await context.PostAsync(reply);
                     context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
                 }
                 else
-                    context.Call(new LessThan5Node(handSets.GetBagModels(),true), FinalSelectionReceivedAsync);
+                    context.Call(new LessThan5Node(handSets.GetBagModels(),true), FinalSelectionReceivedAsync);  
             }
             catch (Exception xception )
             {

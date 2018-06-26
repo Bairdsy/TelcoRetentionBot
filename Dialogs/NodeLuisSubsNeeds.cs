@@ -22,8 +22,9 @@ namespace MultiDialogsBot.Dialogs
         {
             PictureLover = 0,
             MovieWatcher ,
-            CommunicateInWritting,
-            ComfortableToHold
+            ShowOff,
+            GamesAddict,
+            Camera /* This one is part of the other LUIS APP */
         };
 
         double topEntitySkore;
@@ -39,7 +40,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task PictureLover(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("PictureLover Intent detected");
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : PictureLover Intent detected");
             context.Done(new Tuple<ENeeds,double>(ENeeds.PictureLover,topEntitySkore));
         }
 
@@ -47,40 +48,28 @@ namespace MultiDialogsBot.Dialogs
         public async Task MovieWatcher(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("MovieWatcher intent detected");
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : MovieWatcher intent detected");
 
             context.Done(new Tuple<ENeeds, double>(ENeeds.MovieWatcher, topEntitySkore));
         }
 
-        [LuisIntent("ComfortableToHold")]
-        public async Task ComfortableToHold(IDialogContext context,LuisResult result)
+        [LuisIntent("ShowOff")]
+        public async Task ShowOff(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Comfortable to hold intent detected");
-            await context.PostAsync("ComfortableToHold");
-            context.Done(new Tuple<ENeeds, double>(ENeeds.ComfortableToHold, topEntitySkore));
-        }
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : ShowOff intent detected");
 
-        [LuisIntent("BrowseWeb")]
-        public async Task BrowseWeb(IDialogContext context,LuisResult result)
+            context.Done(new Tuple<ENeeds, double>(ENeeds.ShowOff, topEntitySkore));
+        }
+          
+        [LuisIntent("GamesAddict")]
+        public async Task GamesAddict(IDialogContext context,LuisResult result)
         {
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of GamesAddict() handler method");
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("BrowseWeb");
-        }
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : GamesAddict intent detected");
 
-        [LuisIntent("CommunicateInWritting")]
-        public async Task CommunicateInWritting(IDialogContext context,LuisResult result)
-        {
-            await ShowDebugInfoAsync(context, result);
-            if (CommonDialog.debugMessages) await context.PostAsync("Communicate in writting intent detected");
-            await context.PostAsync("CommunicateInWritting");
-            context.Done(new Tuple<ENeeds, double>(ENeeds.CommunicateInWritting, topEntitySkore));
-        }
-
-        [LuisIntent("PlayGames")]
-        public async Task PlayGames(IDialogContext context,LuisResult result)
-        {
-
+            context.Done(new Tuple<ENeeds, double>(ENeeds.GamesAddict, topEntitySkore));
         }
 
         private async Task ShowDebugInfoAsync(IDialogContext context, LuisResult luisResult)

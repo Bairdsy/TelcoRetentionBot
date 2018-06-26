@@ -238,11 +238,21 @@ namespace MultiDialogsBot.Database
             return numberOfTimesSeen >= MAX_TIMES_SEEN;
         }
 
-        public List<Tuple<string,string>> GetFeatureRanking()
+        public void SetFeatureFrequency(string feature,int newFreq)
         {
-            List<Tuple<string, string>> returnVal = new List<Tuple<string, string>>();
+            var featureFreqCollection = madCalmDB.GetCollection<BsonDocument>("FeatureFrequency");
+            var updateDb = Builders<BsonDocument>.Update.Set("Frequency", newFreq);
+            var filter = Builders<BsonDocument>.Filter.Eq("FeatureName", feature);
+
+            featureFreqCollection.UpdateOne(filter, updateDb);
+        }
+
+        public List<Tuple<string,string,int>> GetFeatureRanking()
+        {
+            List<Tuple<string, string,int>> returnVal = new List<Tuple<string, string,int>>();
             string intent;
-            string utterance;
+            string utterance,aux;
+            int freq;
             var featureFreqCollection = madCalmDB.GetCollection<BsonDocument>("FeatureFrequency");
             var orderBy = Builders<BsonDocument>.Sort.Descending("Frequency");
             var cur = featureFreqCollection.Find(new BsonDocument()).Sort(orderBy).ToCursor();
@@ -251,7 +261,9 @@ namespace MultiDialogsBot.Database
             {
                 intent = doc.GetElement("FeatureName").Value.ToString();
                 utterance = doc.GetElement("Utterance").Value.ToString();
-                returnVal.Add(new Tuple<string, string>(intent, utterance));
+                aux = doc.GetElement("Frequency").Value.ToString();
+                freq = int.Parse(aux);
+                returnVal.Add(new Tuple<string, string,int>(intent, utterance,freq));
             }
             return returnVal;
         }

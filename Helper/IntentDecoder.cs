@@ -57,7 +57,7 @@ namespace MultiDialogsBot.Helper
         double Threshold { get;  set; }
         
         bool desc;   // Order by DESC/ASC
-        List<string> StrKeyWords { get; set; }
+        public List<string> StrKeyWords { get; set; }
         DateTime DateThreshold { get; set; }
 
 
@@ -84,7 +84,9 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.OS, y =>  !StrKeyWords.Contains(y.OS.ToLower())  },
                 { NodeLUISPhoneDialog.EIntents.Brand, y => !StrKeyWords.Contains(y.Brand.ToLower())   },
                 { NodeLUISPhoneDialog.EIntents.Newest, y => y.ReleaseDate < DateThreshold },
-                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, y => y.SecondaryCamera < Threshold }
+                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, y => y.SecondaryCamera < Threshold },
+                {NodeLUISPhoneDialog.EIntents.DualCamera, y => y.DualCamera < Threshold }
+
             };  
             comparingFunctions = new Dictionary<NodeLUISPhoneDialog.EIntents, sgn>()
             {
@@ -97,7 +99,8 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.Small, y => (desc ? -1 : 1) * Math.Sign(Prod(y.Item1.BodySize) - Prod(y.Item2.BodySize)) },
                 { NodeLUISPhoneDialog.EIntents.Weight, y => Math.Sign(y.Item1.Weight - y.Item2.Weight)  },
                 { NodeLUISPhoneDialog.EIntents.Newest, y => (y.Item2.ReleaseDate > y.Item1.ReleaseDate) ? 1 : -1 },
-                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, x => -Math.Sign(x.Item1.SecondaryCamera - x.Item2.SecondaryCamera) }
+                { NodeLUISPhoneDialog.EIntents.SecondaryCamera, x => -Math.Sign(x.Item1.SecondaryCamera - x.Item2.SecondaryCamera) },
+                {NodeLUISPhoneDialog.EIntents.DualCamera, x => -Math.Sign(x.Item1.DualCamera - x.Item2.DualCamera) }
             };
 
             getters = new Dictionary<NodeLUISPhoneDialog.EIntents, HandSets.accessor>()
@@ -111,21 +114,20 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.Small, y => Prod(y.BodySize)  },
                 { NodeLUISPhoneDialog.EIntents.Weight, y => y.Weight  },
                 { NodeLUISPhoneDialog.EIntents.Newest, y => y.ReleaseDate.Ticks  },
-                { NodeLUISPhoneDialog.EIntents.SecondaryCamera , y => y.SecondaryCamera }
+                { NodeLUISPhoneDialog.EIntents.SecondaryCamera , y => y.SecondaryCamera },
+                {NodeLUISPhoneDialog.EIntents.DualCamera, y => y.DualCamera }
             };
 
             booleanFilters = new Dictionary<NodeLUISPhoneDialog.EIntents, Predicate<HandSetFeatures>>()
             {
                 { NodeLUISPhoneDialog.EIntents.BandWidth,x => !x.Connectivity_4G },
                 { NodeLUISPhoneDialog.EIntents.FMRadio, x => !x.HasFMRadio },
-                { NodeLUISPhoneDialog.EIntents.DualCamera, x => !x.DualCamera },
                 { NodeLUISPhoneDialog.EIntents.DualSIM, x => !x.DualSIM}, 
                 { NodeLUISPhoneDialog.EIntents.ExpandableMemory, x => !x.ExpandableMemory },
                 { NodeLUISPhoneDialog.EIntents.FaceID, x => !x.FaceId },
                 { NodeLUISPhoneDialog.EIntents.GPS, x => !x.GPS },
                 { NodeLUISPhoneDialog.EIntents.WiFi, x => !x.WiFi }, 
                 { NodeLUISPhoneDialog.EIntents.HDVoice, x => ! x.HDVoice },
-          /*      { NodeLUISPhoneDialog.EIntents.SecondaryCamera, y => !y.SecondaryCamera },*/
                 { NodeLUISPhoneDialog.EIntents.WaterResist, x => !x.WaterResist },
             };
         }
@@ -281,26 +283,9 @@ namespace MultiDialogsBot.Helper
         
         private double Prod(IEnumerable<double> vector)
         {
-            double returnValue = 1;
-
-            foreach (var factor in vector)
-                returnValue *= factor;
-            return returnValue;
+            return MultiDialogsBot.Helper.Miscellany.Product(vector);
         }
 
-        private List<string> GetSpecificBrands(LuisResult res)
-        {
-            List<string> returnVal = new List<string>();
-            string ent;
-
-            foreach (var entity in res.Entities)
-                if ((entity.Type == "Brand") && (entity.Entity.ToUpper() != "BRAND"))
-                {
-                    ent = entity.Entity.ToLower();
-                    returnVal.Add(ent == "iphone" ? "apple" : ent);
-                }
-            return returnVal;
-        }
 
         private void GetDateThreshold (LuisResult result)
         {
@@ -532,6 +517,20 @@ namespace MultiDialogsBot.Helper
             StrKeyWords = colorVector;
         }
 
+        private List<string> GetSpecificBrands(LuisResult res)
+        {
+            List<string> returnVal = new List<string>();
+            string ent;
+
+            foreach (var entity in res.Entities)
+                if ((entity.Type == "Brand") && (entity.Entity.ToUpper() != "BRAND"))
+                {
+                    ent = entity.Entity.ToLower();
+                    returnVal.Add(ent == "iphone" ? "apple" : ent);
+                }
+            return returnVal;
+        }
+
         private void ExtractEntityInfo (NodeLUISPhoneDialog.EIntents intent,LuisResult result)
         {
             switch (intent)
@@ -540,19 +539,19 @@ namespace MultiDialogsBot.Helper
                     GetBatteryLifeComposedEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Brand:
-                    StrKeyWords = GetSpecificBrands(result);
+                 //   StrKeyWords = GetSpecificBrands(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Camera:
                     GetCameraCompositeEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.HighResDisplay:
                     GetHighResDisplayCompositeData(result);
-                    break;
+                    break;     
                 case NodeLUISPhoneDialog.EIntents.LargeStorage:
                     GetMemoryCompositeEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.OS:
-                    GetOSData(result);
+                 //   GetOSData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.ScreenSize:
                     GetScreenSizeCompositeEntityData(result);
@@ -564,7 +563,7 @@ namespace MultiDialogsBot.Helper
                     GetWeightCompositeEntity(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Color:
-                    GetPreferredColors(result);
+                  //  GetPreferredColors(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Newest:
                     GetDateThreshold(result);

@@ -36,7 +36,7 @@ namespace MultiDialogsBot.Database
 
         public List<string> Colors { get; set; }
 
-        public bool DualCamera { get; private set; }
+        public double DualCamera { get; private set; }
 
         public DateTime ReleaseDate { get; private set; }
 
@@ -157,7 +157,10 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key == "Dual Camara")
                 {
-                    DualCamera = "No" != data;
+                    if (double.TryParse(data, out res))
+                        DualCamera = res;
+                    else
+                        DualCamera = 0;
                 }
                 else if (key == "Dual SIM")
                     DualSIM = "No" != data;

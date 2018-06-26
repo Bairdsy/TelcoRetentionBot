@@ -16,7 +16,7 @@ namespace MultiDialogsBot.Helper
         readonly Dictionary<string, NodeLUISPhoneDialog.EIntents> english2Intent;  
 
         IntentDecoder theDecoder;
-        List<Tuple<string, string>> ranking;
+        List<Tuple<string, string,int>> ranking;
 
         public IntentDecoder AssociatedDecoder
         {
@@ -29,7 +29,7 @@ namespace MultiDialogsBot.Helper
         public TopFeatures(IntentDecoder decoder)
         {
             englishDescriptions = new Dictionary<NodeLUISPhoneDialog.EIntents, string>()
-            {
+            {    /*    
                 { NodeLUISPhoneDialog.EIntents.BandWidth,"BandWidth"},
                 { NodeLUISPhoneDialog.EIntents.FMRadio, "FM Radio"},
                 { NodeLUISPhoneDialog.EIntents.DualCamera, "DualCamera" },
@@ -40,19 +40,18 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.WiFi, "WiFi" },
                 { NodeLUISPhoneDialog.EIntents.HDVoice, "HDVoice" },
                 { NodeLUISPhoneDialog.EIntents.SecondaryCamera,"SecondaryCamera" },
-                { NodeLUISPhoneDialog.EIntents.WaterResist,"WaterResist" },
-                { NodeLUISPhoneDialog.EIntents.BatteryLife,"BatteryLife"},
+                { NodeLUISPhoneDialog.EIntents.WaterResist,"WaterResist" },*/
+                { NodeLUISPhoneDialog.EIntents.BatteryLife,"BatteryLife"},  
                 { NodeLUISPhoneDialog.EIntents.Camera,"Camera" },
                 { NodeLUISPhoneDialog.EIntents.HighResDisplay,"DisplayResolution" },
-                { NodeLUISPhoneDialog.EIntents.LargeStorage,"StorageMB"  },
-                { NodeLUISPhoneDialog.EIntents.ScreenSize, "ScreenSize" },
+                /*{ NodeLUISPhoneDialog.EIntents.LargeStorage,"StorageMB"  },*/
+                { NodeLUISPhoneDialog.EIntents.ScreenSize, "Screen" },
                 { NodeLUISPhoneDialog.EIntents.Cheap, "Price" },
-                { NodeLUISPhoneDialog.EIntents.Small, "BodySize" },
+                { NodeLUISPhoneDialog.EIntents.Small, "Size of Phone" }, 
                 { NodeLUISPhoneDialog.EIntents.Weight, "Weight" },
-                { NodeLUISPhoneDialog.EIntents.Color, "Colors"},
-                { NodeLUISPhoneDialog.EIntents.OS, "OS" },
+                { NodeLUISPhoneDialog.EIntents.OS, "Operating System" },
                 { NodeLUISPhoneDialog.EIntents.Brand, "Brand" },
-                { NodeLUISPhoneDialog.EIntents.Newest, "ReleaseDate"  }
+                { NodeLUISPhoneDialog.EIntents.Newest, "Recent Phones"  }
             };
             english2Intent = new Dictionary<string, NodeLUISPhoneDialog.EIntents>();
             foreach (var key in englishDescriptions.Keys)
@@ -71,11 +70,11 @@ namespace MultiDialogsBot.Helper
             List<CardAction> actions = new List<CardAction>();
             List<int> indexes4Removal = new List<int>();
             List<NodeLUISPhoneDialog.EIntents> intents2Exclude;
-            int max;
+            int max;   
 
 
             debug.Append("buttons : ");
-            for (int i = 0; i < ranking.Count; ++i)
+            for (int i = 0; i < ranking.Count; ++i)  
             {
                 debug.Append(this.ranking[i].Item1 + " ==> ");
                 if (!theDecoder.KnocksSomeButNotAll(english2Intent[ranking[i].Item1]))
@@ -83,14 +82,14 @@ namespace MultiDialogsBot.Helper
                     indexes4Removal.Add(i);
                     debug.Append("No");
                 }
-                else
+                else  
                     debug.Append("Yes");
                 
                 debug.Append("\r\n");
                 debug.Append($"name: {ranking[i].Item1}, description : {ranking[i].Item2}");
             }
             intents2Exclude = theDecoder.Exclude;
-            ranking = new List<Tuple<string, string>>(ranking.Where((tuple, i) => (!indexes4Removal.Contains(i) && !intents2Exclude.Contains(english2Intent[tuple.Item1]))));
+            ranking = new List<Tuple<string, string,int>>(ranking.Where((tuple, i) => (!indexes4Removal.Contains(i) && !intents2Exclude.Contains(english2Intent[tuple.Item1]))));
             max = Math.Min(ranking.Count, BotConstants.TOP_INTENTS);
             for (int i = 0; i < max; ++i)
                 actions.Add(new CardAction() { Title= ranking[i].Item1, Type = ActionTypes.ImBack, Value = ranking[i].Item2 });
@@ -98,6 +97,22 @@ namespace MultiDialogsBot.Helper
             return new SuggestedActions() { Actions = actions };
         }
 
+        public void SetNewFreq(NodeLUISPhoneDialog.EIntents feature)
+        {
+            string englishDesc;
+            Tuple<string, string, int> tuple;
+            int freq,index;
 
+            if (!englishDescriptions.TryGetValue(feature,out englishDesc))
+                return;
+            tuple = ranking.Where(x => x.Item1 == englishDesc).Single();
+            index = ranking.IndexOf(tuple);
+
+            freq = tuple.Item3;
+            tuple = new Tuple<string, string, int>(tuple.Item1,tuple.Item2, ++freq);
+            ranking[index] = tuple;
+            MongoDBAccess.Instance.SetFeatureFrequency(englishDescriptions[feature], freq);
+            ranking.Sort((x, y) => -Math.Sign(x.Item3 - y.Item3));
+        }
     }
 }
