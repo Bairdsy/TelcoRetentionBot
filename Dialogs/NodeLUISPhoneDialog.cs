@@ -51,6 +51,13 @@ namespace MultiDialogsBot.Dialogs
             RAM
         }
 
+        private enum EKeywords
+        {
+            None = 0,
+            ShowMeAll,
+            StartAgain
+        }
+
         string brandDesired;
         DateTime? ReleaseDateCurrentModel;
         IntentDecoder decoder;
@@ -331,6 +338,12 @@ namespace MultiDialogsBot.Dialogs
             var msg = context.MakeMessage();
             string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
 
+            if (EKeywords.ShowMeAll == CheckForKeywords(luisResult))
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is show me all");
+                context.Done(decoder);
+                return;
+            }
             res = luisResult;
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
@@ -385,6 +398,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task ProcessLuisNeedsResult(IDialogContext context,IAwaitable<object> awaitable)
         {
             Tuple<NodeLuisSubsNeeds.ENeeds, double> result = (Tuple<NodeLuisSubsNeeds.ENeeds,double>) await awaitable;
+            StringBuilder sb = new StringBuilder();
             double needsScore = result.Item2;
             NodeLuisSubsNeeds.ENeeds needsIntent = result.Item1;
             int handSetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
@@ -399,6 +413,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 try
                 {
+                    topButtons.SetNewFreq(desiredFeature, sb);
                     switch (desiredFeature)
                     {
                         case EIntents.Camera:
@@ -438,7 +453,8 @@ namespace MultiDialogsBot.Dialogs
                             await DecodeAndProcessIntentAsync(context);
                             break;
                     }
-                    topButtons.SetNewFreq(desiredFeature);
+                    if (CommonDialog.debugMessages) await context.PostAsync("I'm going to update the frequency for the feature = " + desiredFeature.ToString());
+                    if (CommonDialog.debugMessages) await context.PostAsync("SetNewFreq() returned = " + sb.ToString());
                 }
                 catch (ArgumentException)
                 {
@@ -508,6 +524,14 @@ namespace MultiDialogsBot.Dialogs
                         }
                 }
             return false;
+        }
+
+        private EKeywords CheckForKeywords(LuisResult result)
+        {
+            foreach (var entity in result.Entities)
+                if (entity.Type == "ShowMeAll")
+                    return EKeywords.ShowMeAll;
+            return EKeywords.None;
         }
 
         private bool GetSpecificBrands(LuisResult res)

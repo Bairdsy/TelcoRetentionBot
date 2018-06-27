@@ -258,6 +258,7 @@ namespace MultiDialogsBot.Dialogs
         private async Task ProcessSelectedBrandsAndModels(IDialogContext context, List<string> wantedBrands,List<string> wantedModels)
         {
             StringBuilder sb  ;
+            int x;
             List<string> selectResult;
 
             sb = new StringBuilder("DEBUG : Brands indicated : ");
@@ -285,8 +286,9 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync("Sorry I got that wrong, could you just type the specific model and brand so I can show it to you?");
                 context.Call(new BrandModelNode(), MessageReceivedAsync);
             }
-            else if (handSets.BagCount() <= BotConstants.MAX_CAROUSEL_CARDS)
+            else if ((x = handSets.BagCount()) <= BotConstants.MAX_CAROUSEL_CARDS)
             {
+                await context.PostAsync($"Great choice! There are {x} different versions for you to choose from");
                 context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);
             }  
             else
@@ -311,6 +313,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
             await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
             reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
+            if (debugMessages) await context.PostAsync("DEBUG : Results " + sb.ToString());
             await context.PostAsync(reply);
             context.Call(new NodeLUISPhoneDialog(topFeatures, handSets, null, null, basket), LuisResponseHandlerAsync);
             LuisCalled = true;
@@ -468,7 +471,7 @@ namespace MultiDialogsBot.Dialogs
                     Activity reply = message.CreateReply($"We have over { count} different models of phone to choose from. As you are unsure what is your best model then let me know what is imporrtant to you and I'll select a few for you to choose from. If you like a particular brand just say which ones. Or you can choose features (like weight, battery life, camera...) or just tell me how you mistly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)\r\nYou can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
                     reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
-                    await context.PostAsync(reply);
+                    await context.PostAsync(reply);   
                     context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
                 }
                 else
@@ -496,16 +499,17 @@ namespace MultiDialogsBot.Dialogs
             {
                 if (debugMessages) await context.PostAsync("DEBUG : xception message " + xception.Message);
             }
-            if (handSetsLeft <= BotConstants.MAX_CAROUSEL_CARDS)   // It's narrowed down enough
-            {
+            
+//            if (handSetsLeft <= BotConstants.MAX_CAROUSEL_CARDS)   // It's narrowed down enough
+//            {
                 modelsInBag = handSets.GetBagModels();
                 if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag has {modelsInBag.Count}");
                 context.Call(new LessThan5Node(modelsInBag,true), FinalSelectionReceivedAsync);
-            }  
-            else
-            {
-                context.Call(new KnockOutRecommendationsNode(decoder), DoneNarrowingFurtherAsync);
-            }
+ //           }  
+ //           else
+ //           {
+ //               context.Call(new KnockOutRecommendationsNode(decoder), DoneNarrowingFurtherAsync);
+ //           }
         }
 
         private async Task DoneNarrowingFurtherAsync(IDialogContext context,IAwaitable<object> awaitable)

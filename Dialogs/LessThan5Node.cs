@@ -17,13 +17,15 @@ namespace MultiDialogsBot.Dialogs
     [Serializable]
     public class LessThan5Node : CommonDialog
     {
+        public const int MAX_NUMBER_OF_TIMES_RUBBISH_ENTERED = 3;
         public const char STICK_WITH_BRAND = '-';  // Wants to stick with the same brand
         public const char SOME_OTHER_BRAND = '~';  // Doesn't want to continue with that brand
         public const char NONE_OF_THESE_MODELS = ':';
 
         List<string> modelList;
         string selectedModel;
-        bool weAreOnBranch7;
+        bool weAreOnBranch7,firstTime = true;
+        int numTimesRubbishEntered = 0;
 
         public LessThan5Node(List<string> models2Show, bool insideBranch7)
         {
@@ -58,6 +60,20 @@ namespace MultiDialogsBot.Dialogs
                 models2Exclude = modelList.ToArray();
                 unwantedModels = string.Concat(NONE_OF_THESE_MODELS, string.Join(NONE_OF_THESE_MODELS.ToString(), models2Exclude));
                 context.Done(unwantedModels);
+            }
+            else  // Anything else 
+            {
+                if (++numTimesRubbishEntered <= MAX_NUMBER_OF_TIMES_RUBBISH_ENTERED)
+                {
+                    await context.PostAsync("Sorry. I don't quite follow what you're saying. Click on \"Pick Me\" if there is a phone you like, or click on \"Phone Price per Plan\" to see the cost for that phone on the different plans available.");
+                    await context.PostAsync("You can also click \"Expert reviews\" or \"Specifications\" for more details on any phone. Or if you want to go back to choose another brand or model type \"Start Again\"");
+                    await DisplayMultiPhoneCarouselAnsyc(context, modelList);
+                }
+                else
+                {
+                    await context.PostAsync("TODO : Too many failed attempts. recovery from this situation is left to the HELP node");
+                    context.Wait(MessageReceivedAsync);
+                }
             }
         }
 
@@ -116,13 +132,14 @@ namespace MultiDialogsBot.Dialogs
 
             if (!weAreOnBranch7)
             {
-                await context.PostAsync($"Great choice! There are {modelList.Count} different versions for you to choose from");
+
                 await context.PostAsync("If you change your mind I can help you to choose something else. Just type \"Start Again\" to find a more suitable model");
             }
-            else
+            else if (firstTime)
+            {
                 await context.PostAsync($"Great, as you ->Bot responde regards the utterance goes here<- , Here are our TOP {x} models to choose from. Or let's look at some other options, please type \"Start again\"");
-            
-
+                firstTime = false;
+            }
             reply.AttachmentLayout = "carousel";
             foreach (var model in models)
             {
@@ -138,10 +155,10 @@ namespace MultiDialogsBot.Dialogs
                         new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },   
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
-                };
+                };      
                 if ((reviewsUrl = GetModelReviewsUrl(model)) != null)
                 {
-                    heroCard.Buttons.Add(new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });
+                    heroCard.Buttons.Add(new CardAction() { Title = "Expert Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });
                 }
                 
                 reply.Attachments.Add(heroCard.ToAttachment());

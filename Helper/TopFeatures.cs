@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using System.Text;
+
 using Microsoft.Bot.Connector;
 
 using MultiDialogsBot.Database;
@@ -65,7 +67,7 @@ namespace MultiDialogsBot.Helper
         {
             return ranking.Count;
         }
-        public SuggestedActions GetTop4Buttons(System.Text.StringBuilder debug)
+        public SuggestedActions GetTop4Buttons( StringBuilder debug)
         {
             List<CardAction> actions = new List<CardAction>();
             List<int> indexes4Removal = new List<int>();
@@ -75,10 +77,10 @@ namespace MultiDialogsBot.Helper
 
             debug.Append("buttons : ");
             for (int i = 0; i < ranking.Count; ++i)  
-            {
+            {  
                 debug.Append(this.ranking[i].Item1 + " ==> ");
                 if (!theDecoder.KnocksSomeButNotAll(english2Intent[ranking[i].Item1]))
-                {     
+                {       
                     indexes4Removal.Add(i);
                     debug.Append("No");
                 }
@@ -90,6 +92,19 @@ namespace MultiDialogsBot.Helper
             }
             intents2Exclude = theDecoder.Exclude;
             ranking = new List<Tuple<string, string,int>>(ranking.Where((tuple, i) => (!indexes4Removal.Contains(i) && !intents2Exclude.Contains(english2Intent[tuple.Item1]))));
+            for (int i = 0; i < ranking.Count; ++i)
+            {
+                debug.Append(this.ranking[i].Item1 + " ==> ");
+                if (!theDecoder.KnocksSomeButNotAll(english2Intent[ranking[i].Item1]))
+                {
+                    debug.Append("No");
+                }
+                else
+                    debug.Append("Yes");
+
+                debug.Append("\r\n");
+                debug.Append($"name: {ranking[i].Item1}, description : {ranking[i].Item2}");
+            }
             max = Math.Min(ranking.Count, BotConstants.TOP_INTENTS);
             for (int i = 0; i < max; ++i)
                 actions.Add(new CardAction() { Title= ranking[i].Item1, Type = ActionTypes.ImBack, Value = ranking[i].Item2 });
@@ -97,15 +112,23 @@ namespace MultiDialogsBot.Helper
             return new SuggestedActions() { Actions = actions };
         }
 
-        public void SetNewFreq(NodeLUISPhoneDialog.EIntents feature)
-        {
+        public void SetNewFreq(NodeLUISPhoneDialog.EIntents feature, StringBuilder debug)
+        {   
             string englishDesc;
-            Tuple<string, string, int> tuple;
+            Tuple<string, string, int> tuple;    
             int freq,index;
 
+            for (int i = 0; i < ranking.Count; ++i)    
+            {
+                debug.Append(this.ranking[i].Item1 + " ==> ");
+                debug.Append($"name: {ranking[i].Item1}, description : {ranking[i].Item2}");
+                debug.Append("\r\n");
+            }
             if (!englishDescriptions.TryGetValue(feature,out englishDesc))
                 return;
-            tuple = ranking.Where(x => x.Item1 == englishDesc).Single();
+ 
+            tuple = ranking.Where(x => x.Item1.ToLower() == englishDesc.ToLower()).Single();
+            
             index = ranking.IndexOf(tuple);
 
             freq = tuple.Item3;
