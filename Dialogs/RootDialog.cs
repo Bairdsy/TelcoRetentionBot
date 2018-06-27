@@ -59,17 +59,21 @@
             await context.PostAsync("If you are an existing customer I can certainly make sure that any recommendation\r\n is highly personalized to your usage and phone requirements");
             await context.PostAsync("Let me know if I can help you with a new phone or plan");
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);
-         //   context.Wait(MessageReceivedAsync);
         }
 
-        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)
+        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)            
         {
             var ret = await result;
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
             if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet)
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
-           // else
+            else if (((Tuple<string,NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.Plan)
+            {
+                await context.PostAsync("Ryan's node to kick in");
+                context.Wait(MessageReceivedAsync);
+            }
+           // else 
                 //PromptDialog.Choice(context, this.PhoneSelection, new List<string>() { NewPhone, CurrentPhone, NotSure }, "Have you thought about whether you want to get a new phone or if you are happy with your current phone?", "Not a valid option", 3);
         }
 

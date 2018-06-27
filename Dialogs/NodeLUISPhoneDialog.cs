@@ -22,6 +22,8 @@ namespace MultiDialogsBot.Dialogs
     [Serializable]
     public class NodeLUISPhoneDialog : LuisDialog<object>
     {
+        readonly Dictionary<EIntents, string> smallDesc;
+
         public enum EIntents
         {
             None = 0,
@@ -73,6 +75,11 @@ namespace MultiDialogsBot.Dialogs
 
         public NodeLUISPhoneDialog(TopFeatures mostDemanded,HandSets handSets, string brand, DateTime? currentModelReleaseDate,List<string> narrowedListOfModels) : base()
         {
+            smallDesc = new Dictionary<EIntents, string>()
+            {
+                {EIntents.BatteryLife,"Battery life" },
+            };
+
             handSetsBag = handSets;
             brandDesired = brand;
             ReleaseDateCurrentModel = currentModelReleaseDate;
@@ -82,10 +89,13 @@ namespace MultiDialogsBot.Dialogs
         }
 
         [LuisIntent("None")]
-        public async Task None(IDialogContext context,LuisResult result)
+        public async Task None(IDialogContext context,LuisResult result)  
         {
             await context.PostAsync("Not understood");
             await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("I could not understand that, I'm afraid");
+            desiredFeature = EIntents.None;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("BandWidth")]
@@ -335,12 +345,21 @@ namespace MultiDialogsBot.Dialogs
 
         private async Task ProcessNeedOrFeatureAsync(IDialogContext context, LuisResult luisResult)
         {
+            EKeywords keywords = CheckForKeywords(luisResult);
             var msg = context.MakeMessage();
             string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
 
-            if (EKeywords.ShowMeAll == CheckForKeywords(luisResult))
+            if (EKeywords.ShowMeAll == keywords)
             {
-                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is show me all");
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is " + "Show Me All");
+                decoder.FeatureOrNeedDesc = "Show Me All";
+                context.Done(decoder);
+                return;
+            }
+            else if (EKeywords.StartAgain == keywords)
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Found one keyword, it is " + "Start Again");
+                decoder.FeatureOrNeedDesc = "Start Again";
                 context.Done(decoder);
                 return;
             }
@@ -406,6 +425,8 @@ namespace MultiDialogsBot.Dialogs
             if (needsScore > desiredFeatureScore)  // WE have a need 
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString());
+                decoder.LastOneWasNeed = true;
+                decoder.FeatureOrNeedDesc = NodeLuisSubsNeeds.GetNeedIntentDesc(result.Item1);
                 handSetsLeft = needsScores.GetTopFive(needsIntent);
                 await UpdateUserAsync(context, handSetsLeft, handSetsNow);
             }
@@ -480,7 +501,13 @@ namespace MultiDialogsBot.Dialogs
         private async Task DecodeAndProcessIntentAsync(IDialogContext context)
         {
             int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
+            string featureText;
 
+            decoder.LastOneWasNeed = false;
+            if (smallDesc.TryGetValue(desiredFeature, out featureText))
+                decoder.FeatureOrNeedDesc = featureText;
+            else
+                decoder.FeatureOrNeedDesc = null;
             handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
             if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
@@ -531,6 +558,8 @@ namespace MultiDialogsBot.Dialogs
             foreach (var entity in result.Entities)
                 if (entity.Type == "ShowMeAll")
                     return EKeywords.ShowMeAll;
+                else if (entity.Type == "StartAgain")
+                    return EKeywords.StartAgain;
             return EKeywords.None;
         }
 

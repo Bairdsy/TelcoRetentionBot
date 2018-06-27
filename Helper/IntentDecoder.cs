@@ -42,6 +42,14 @@ namespace MultiDialogsBot.Helper
             }
         }
 
+        public bool LastOneWasNeed
+        {
+            get; set;
+        }
+
+        public string FeatureOrNeedDesc
+        { get; set; }
+
         public HandSets PhonesLeft { get { return handSets; } }
         public List<NodeLUISPhoneDialog.EIntents> Exclude
         {

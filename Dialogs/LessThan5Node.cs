@@ -23,14 +23,23 @@ namespace MultiDialogsBot.Dialogs
         public const char NONE_OF_THESE_MODELS = ':';
 
         List<string> modelList;
-        string selectedModel;
-        bool weAreOnBranch7,firstTime = true;
+        string selectedModel,needIntent,featureIntent;
+        bool weAreOnBranch7,firstTime = true, answerWasFeature;
         int numTimesRubbishEntered = 0;
 
-        public LessThan5Node(List<string> models2Show, bool insideBranch7)
+        public LessThan5Node(List<string> models2Show, bool insideBranch7,bool isNeed = false,string text = null)
         {
             modelList = models2Show;
             weAreOnBranch7 = insideBranch7;
+
+            if (insideBranch7)
+            {
+                answerWasFeature = !isNeed;
+                if (isNeed)
+                    needIntent = text;
+                else
+                    featureIntent = text;
+            }
         }
 
 
@@ -132,12 +141,19 @@ namespace MultiDialogsBot.Dialogs
 
             if (!weAreOnBranch7)
             {
-
                 await context.PostAsync("If you change your mind I can help you to choose something else. Just type \"Start Again\" to find a more suitable model");
             }
             else if (firstTime)
             {
-                await context.PostAsync($"Great, as you ->Bot responde regards the utterance goes here<- , Here are our TOP {x} models to choose from. Or let's look at some other options, please type \"Start again\"");
+                if (!answerWasFeature)
+                {
+                    await context.PostAsync($"Great, {needIntent} , Here are our TOP {x} models to choose from. Or let's look at some other options, please type \"Start again\"");
+                }
+                else
+                {
+                    await context.PostAsync($"Great, here are the TOP {x} models for {(featureIntent != null ? "for " + featureIntent : "")} to choose from.");
+                    await context.PostAsync("Or let's work out some other options if you are not happy with these ones, please type \"Start again\"");
+                }
                 firstTime = false;
             }
             reply.AttachmentLayout = "carousel";
@@ -155,7 +171,7 @@ namespace MultiDialogsBot.Dialogs
                         new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },   
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
-                };      
+                };          
                 if ((reviewsUrl = GetModelReviewsUrl(model)) != null)
                 {
                     heroCard.Buttons.Add(new CardAction() { Title = "Expert Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });

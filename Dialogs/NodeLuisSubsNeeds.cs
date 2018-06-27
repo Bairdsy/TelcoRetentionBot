@@ -18,6 +18,8 @@ namespace MultiDialogsBot.Dialogs
     [Serializable]
     public class NodeLuisSubsNeeds : LuisDialog<object>
     {
+        static readonly Dictionary<ENeeds,string> responses;
+
         public enum ENeeds
         {
             PictureLover = 0,
@@ -28,6 +30,22 @@ namespace MultiDialogsBot.Dialogs
         };
 
         double topEntitySkore;
+
+        static   NodeLuisSubsNeeds()
+        {
+            responses = new Dictionary<ENeeds, string>()
+            {
+                { ENeeds.PictureLover,"As you are a photo lover, you can upload your photos to the Cloud, like Google Photos or iCloud."},
+                { ENeeds.MovieWatcher,"As you enjoy using your phone as TV, " },
+                { ENeeds.ShowOff, "As you love to have the latest," },
+                { ENeeds.GamesAddict,"As you are fond of playing with your phone," }
+            };
+        }
+
+        public static string GetNeedIntentDesc(ENeeds needIntent)
+        {
+            return responses[needIntent];
+        }
 
         [LuisIntent("None")]
         public async Task None(IDialogContext context,LuisResult result)

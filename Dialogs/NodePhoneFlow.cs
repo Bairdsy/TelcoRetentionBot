@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
-
+  
 using MultiDialogsBot.Database;
 using MultiDialogsBot.Helper;
 
@@ -415,7 +415,6 @@ namespace MultiDialogsBot.Dialogs
             }
             else    
                 await RecommendPhoneAsync(context, null, null);
-             //   await ShowCurrentPhoneAsync(context);
         }
 
         private async Task ChangeBrandAnswerReceived(IDialogContext context,IAwaitable<object> awaitable)
@@ -488,7 +487,9 @@ namespace MultiDialogsBot.Dialogs
             List<string> modelsInBag;
             int handSetsLeft= 4;
             IntentDecoder decoder = null;
+            string keyword = null;
 
+            LuisCalled = true;
             try
             {
                 decoder = (IntentDecoder)(await awaitable);
@@ -499,30 +500,18 @@ namespace MultiDialogsBot.Dialogs
             {
                 if (debugMessages) await context.PostAsync("DEBUG : xception message " + xception.Message);
             }
-            
-//            if (handSetsLeft <= BotConstants.MAX_CAROUSEL_CARDS)   // It's narrowed down enough
-//            {
-                modelsInBag = handSets.GetBagModels();
-                if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag has {modelsInBag.Count}");
-                context.Call(new LessThan5Node(modelsInBag,true), FinalSelectionReceivedAsync);
- //           }  
- //           else
- //           {
- //               context.Call(new KnockOutRecommendationsNode(decoder), DoneNarrowingFurtherAsync);
- //           }
-        }
-
-        private async Task DoneNarrowingFurtherAsync(IDialogContext context,IAwaitable<object> awaitable)
-        {
-            IntentDecoder decoder;
-            List<string> vector;
-
-            if (debugMessages) await context.PostAsync("DEBUG : DoneNarrowingFurtherAsync()");
-
-            decoder = (IntentDecoder)(await awaitable);
-            handSets = decoder.PhonesLeft;
-            vector = handSets.GetBagModels();
-            context.Call(new LessThan5Node(vector,true), FinalSelectionReceivedAsync);
+            modelsInBag = handSets.GetBagModels();
+            if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag has {modelsInBag.Count}");
+            if (decoder.FeatureOrNeedDesc == "Start Again")
+            {
+                context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
+            }
+            else
+            {
+                if (decoder.FeatureOrNeedDesc == "Show Me All")
+                    decoder.FeatureOrNeedDesc = null;
+                context.Call(new LessThan5Node(modelsInBag, true, decoder.LastOneWasNeed, decoder.FeatureOrNeedDesc), FinalSelectionReceivedAsync);
+            }
         }
 
         private async Task WantsNewerMsgReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)
@@ -577,24 +566,6 @@ namespace MultiDialogsBot.Dialogs
                     context.Call(new ColorsNode(selection), MessageReceivedAsync);
                     break;
             }
-        }
-
-        private async Task FinalSelectionReceivedAsync2(IDialogContext context,IAwaitable<object> awaitable)
-        {
-            string selection = (string)(await awaitable);
-
-
-            if (debugMessages) await context.PostAsync("DEBUG: Final selection received : " + selection);
-            if (selection[0] == '~') /* subscriber doesn't want the phone we narrowed down to */
-            {
-                if (selection.Length > 1)
-                    context.Call(new BrandModelNode(new List<string>(selection.Substring(1).Split('~'))),FinalSelectionReceivedAsync);
-                else
-                    context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
-            }
-
-            else
-                context.Call(new ColorsNode(selection), MessageReceivedAsync);
         }
 
         private bool IndicatedModelsAndOrBrands(out List<string> wantedBrands,out List<string> wantedModels)
