@@ -22,6 +22,16 @@ namespace  MultiDialogsBot.Dialogs
 
         abstract public Task StartAsync(IDialogContext context);
         
+        protected async Task PlanPricesButtonHandlerAsync(IDialogContext context, string modelPicked)
+        {
+            HandSetFeatures handSetFeatures;
+
+            if (handSets == null)
+                InitializeDataStruct();
+            handSetFeatures = handSets.GetModelFeatures(modelPicked);
+            await context.PostAsync(handSetFeatures.GetPlanPrices());
+        }
+
         protected string GetEquipmentImageURL(string model,bool madCalmPic)
         {
             if (handSets == null)

@@ -75,8 +75,7 @@ namespace MultiDialogsBot.Dialogs
             else if (buttonPressed.StartsWith("Plan Prices for "))
             {
                 modelPicked = buttonPressed.Substring(16);
-                handSetFeatures = handSets.GetModelFeatures(modelPicked);
-                await context.PostAsync(handSetFeatures.GetPlanPrices());
+                await PlanPricesButtonHandlerAsync(context, modelPicked);
             }
             else  // Anything else 
             {
@@ -96,7 +95,7 @@ namespace MultiDialogsBot.Dialogs
 
         private void AskChangeBrandOrDifferentModel(IDialogContext context)
         {
-            List<string> opt = new List<string>() { "Change Brand" };
+            List<string> opt = new List<string>() { "Change Brand" };  
             string prompt,brand = GetModelBrand(modelList[0]);
             Dictionary<string, bool> modelSet = GetBrandModels(brand);
 
