@@ -168,7 +168,7 @@
             if (message.Text.All(Char.IsDigit))
             {
                 int subsno = Int32.Parse(message.Text);
-                await context.PostAsync($"DEBUG: Searching for documents matching [{message.Text}][{subsno}]");
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: Searching for documents matching [{message.Text}][{subsno}]");
                 _client = new MongoClient("mongodb://telcoretentiondb:HsQmjXjc0FBMrWYbJr8eUsGdWoTuaYXvdO2PRj13sxoPYijxxcxG5oSDfhFtVFWAFeWxFbuyf1NbxnFREFssAw==@telcoretentiondb.documents.azure.com:10255/?ssl=true&replicaSet=globaldb");
                 _database = _client.GetDatabase("madcalm");
 
@@ -198,7 +198,7 @@
                     }
                 }
 
-                await context.PostAsync($"DEBUG:Total matching documents found is [{count}].");
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG:Total matching documents found is [{count}].");
 
                 var hset_collection = _database.GetCollection<BsonDocument>("handsets");
                 var hset_filter = Builders<BsonDocument>.Filter.Eq("Maker", HSET_Brand) & Builders<BsonDocument>.Filter.Eq("Model", HSET_Model);

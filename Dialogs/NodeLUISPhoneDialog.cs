@@ -138,7 +138,8 @@ namespace MultiDialogsBot.Dialogs
         {
             await ShowDebugInfoAsync(context, result);
             if (CommonDialog.debugMessages)  await context.PostAsync("I understand that the most important thing for you is the price");
-            desiredFeature = EIntents.Cheap;
+            await context.PostAsync("Ryan's node to kick in");
+            desiredFeature = EIntents.Cheap; 
             await ProcessNeedOrFeatureAsync(context, result);
         }
 
