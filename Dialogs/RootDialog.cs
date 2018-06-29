@@ -31,7 +31,7 @@
 
         public override async Task StartAsync(IDialogContext context)
         {
-            context.Wait(this.MainEntryPoint);
+            context.Wait(this.ShowCharacters);
         }   
 
         private async Task MainEntryPoint(IDialogContext context,IAwaitable<IMessageActivity> awaitable)
@@ -61,85 +61,211 @@
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);
         }
 
-        public virtual async Task ShowCharacters(IDialogContext context)
+        public virtual async Task ShowCharacters(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            var Card_1 = new HeroCard
+            var heroCard = new HeroCard
             {
-                Title = "Ryan",
-                Subtitle = "The tech lover.",
-                Text = "Ryan loves to have the latest tech.  He loves to have the internet everywhere he goes and his phone is great for this as he travels a lot for his work.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_c.png") }*/,
-                Buttons = new List<CardAction> { }
-            };
-
-            var Card_2 = new HeroCard
-            {
-                Title = "Pete",
-                Subtitle = "The travelling business man.",
-                Text = "Pete's business takes him all over the world and he always takes his phone with him.  He has been with the same carrier for a long time and needs lots of international calls, roaming and data included.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_d.png") }*/,
-                Buttons = new List<CardAction> { }
-            };
-
-            var Card_3 = new HeroCard
-            {
-                Title = "Jennifer",
-                Subtitle = "Family all over the world.",
-                Text = "Jennifer has recently moved overseas.  She loves to keep in touch with her family back home and all over the world, so needs lots of international calls included.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/girl_a.png") }*/,
-                Buttons = new List<CardAction> { }
-            };
-
-            var Card_4 = new HeroCard
-            {
-                Title = "Mervyn",
-                Subtitle = "The data user.",
-                Text = "Mervyn is a millennial who is just starting out in the workplace - so his budget is tight.  He does really use his phone for calls or texts but is always on the latest apps or browsing the internet.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_a.png") }*/,
-                Buttons = new List<CardAction> { }
-            };
-
-            var Card_5 = new HeroCard
-            {
-                Title = "Tania",
-                Subtitle = "The techo-phobe.",
-                Text = "Tania has just gotten used to using her phone to call and text, so she doesn't really use it for data.  She just wants something easy to use and simple.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/girl_d.png") }*/,
-                Buttons = new List<CardAction> { }
-            };
-
-            var Card_6 = new HeroCard
-            {
-                Title = "Oliver",
-                Subtitle = "The heavy user.",
-                Text = "Oliver uses his phone for absolutely everything.  He is always calling, text or browsing the internet.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_b.png") }*/,
-                Buttons = new List<CardAction> { }
-            };
-
-            var Card_7 = new HeroCard
-            {
-                Title = "Amanda",
-                Subtitle = "The chatter-box",
-                Text = "Amanda is always on the phone to friends and family but is also conscious of how much she uses so that she doesnt get charged extra.",
-                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/girl_b.png") }*/,
+                Title = "Hi There!",
+                Subtitle = "Im MC - the MadCalm demo bot.",
+                Text = "Im here to show you how great a chat bot can be for helping customers to change their plan or get a new phone.  First of all though, we need to choose a customer to use for the rest of the demo, so please make a selection from the list below.",
+                Images = new List<CardImage> { new CardImage("http://madcalm.com/wp-content/uploads/2018/06/MADCALM-HELLO.png") },
                 Buttons = new List<CardAction> { }
             };
 
             var message = context.MakeMessage();
-            /************/
-            String strAppPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
-            String strFilePath = System.IO.Path.Combine(strAppPath, "Resources");
-            String strFullFilename = System.IO.Path.Combine(strFilePath, "Vinnie.png");
-            /***********/
-        /*    heroCard.Images = new List<CardImage> { new CardImage(strFullFilename) };
-            message.Attachments.Add(heroCard.ToAttachment());*/
+            message.Attachments.Add(heroCard.ToAttachment());
 
             await context.PostAsync(message);
-            PromptDialog.Choice(context, this.OnOptionSelected, new List<string>() { YesOption, BusyOption, NoOption, CallBackOption }, "Are you able to go through this with me now?", "Not a valid option", 3);
-            //context.Wait(this.OnOptionSelected);
+            await Task.Delay(5000);
+
+
+            var reply = ((Activity)context.Activity).CreateReply();
+
+            var Card_1 = new ThumbnailCard
+            {
+                Title = "Ryan",
+                Subtitle = "The tech lover.",
+                Text = "Ryan loves to have the latest tech.  He loves to have the internet everywhere he goes and his phone is great for this as he travels a lot for his work.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_c.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "876524834") }
+            };
+
+            var Card_2 = new ThumbnailCard
+            {
+                Title = "Pete",
+                Subtitle = "The travelling business man.",
+                Text = "Pete's business takes him all over the world and he always takes his phone with him.  He has been with the same carrier for a long time and needs lots of international calls, roaming and data included.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_d.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "872033118") }
+            };
+
+            var Card_3 = new ThumbnailCard
+            {
+                Title = "Jennifer",
+                Subtitle = "Family all over the world.",
+                Text = "Jennifer has recently moved overseas.  She loves to keep in touch with her family back home and all over the world, so needs lots of international calls included.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/girl_a.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "857701192") }
+            };
+
+            var Card_4 = new ThumbnailCard
+            {
+                Title = "Mervyn",
+                Subtitle = "The data user.",
+                Text = "Mervyn is a millennial who is just starting out in the workplace - so his budget is tight.  He doesn't really use his phone for calls or texts but is always on the latest apps or browsing the internet.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_a.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "876403453") }
+            };
+
+            var Card_5 = new ThumbnailCard
+            {
+                Title = "Tania",
+                Subtitle = "The techo-phobe.",
+                Text = "Tania has just gotten used to using her phone to call and text, so she doesn't really use it for data.  She just wants something easy to use and simple.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/girl_d.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "830123752") }
+            };
+
+            var Card_6 = new ThumbnailCard
+            {
+                Title = "Oliver",
+                Subtitle = "The heavy user.",
+                Text = "Oliver uses his phone for absolutely everything.  He is always calling, text or browsing the internet.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_b.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "834795990") }
+            };
+
+            var Card_7 = new ThumbnailCard
+            {
+                Title = "Amanda",
+                Subtitle = "The chatter-box",
+                Text = "Amanda is always on the phone to friends and family but is also conscious of how much she uses so that she doesnt get charged extra.",
+                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/girl_b.png") },
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "830313284") }
+            };
+
+            reply.AttachmentLayout = "carousel";
+            reply.Attachments.Add(Card_1.ToAttachment());
+            reply.Attachments.Add(Card_2.ToAttachment());
+            reply.Attachments.Add(Card_3.ToAttachment());
+            reply.Attachments.Add(Card_6.ToAttachment());
+            reply.Attachments.Add(Card_4.ToAttachment());
+            reply.Attachments.Add(Card_5.ToAttachment());
+            reply.Attachments.Add(Card_7.ToAttachment());
+
+
+            await context.PostAsync(reply);
+            context.Wait(CharacterSelectedAsync);
+
 
         }
+
+        private async Task CharacterSelectedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+        {
+            var message = await result;
+
+            if (message.Text.All(Char.IsDigit))
+            {
+                int subsno = Int32.Parse(message.Text);
+                await context.PostAsync($"DEBUG: Searching for documents matching [{message.Text}][{subsno}]");
+                _client = new MongoClient("mongodb://telcoretentiondb:HsQmjXjc0FBMrWYbJr8eUsGdWoTuaYXvdO2PRj13sxoPYijxxcxG5oSDfhFtVFWAFeWxFbuyf1NbxnFREFssAw==@telcoretentiondb.documents.azure.com:10255/?ssl=true&replicaSet=globaldb");
+                _database = _client.GetDatabase("madcalm");
+
+                var collection = _database.GetCollection<BsonDocument>("offers");
+                var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsno); // new BsonDocument(); 
+                var count = 0;
+                using (var cursor = await collection.FindAsync(filter))
+                {
+                    while (await cursor.MoveNextAsync())
+                    {
+                        var batch = cursor.Current;
+                        foreach (var document in batch)
+                        {
+                            // process document
+                            count++;
+
+                            await this.StoreDocumentValues(context, document);
+
+                            var brand = document.GetElement("HSet Brand").Value;
+                            var model = document.GetElement("HSet Model").Value;
+
+                            HSET_Brand = (string)brand;
+                            HSET_Model = (string)model;
+
+                            //await context.PostAsync($"Found matching document no [{count}] Handset [{HSET_Brand}][{HSET_Model}]");
+                        }
+                    }
+                }
+
+                await context.PostAsync($"DEBUG:Total matching documents found is [{count}].");
+
+                var hset_collection = _database.GetCollection<BsonDocument>("handsets");
+                var hset_filter = Builders<BsonDocument>.Filter.Eq("Maker", HSET_Brand) & Builders<BsonDocument>.Filter.Eq("Model", HSET_Model);
+                using (var hset_cursor = await hset_collection.FindAsync(hset_filter))
+                {
+                    while (await hset_cursor.MoveNextAsync())
+                    {
+                        var hset_batch = hset_cursor.Current;
+                        foreach (var hset_document in hset_batch)
+                        {
+                            // process document
+                            var IMAGE = hset_document.GetElement("Image").Value;
+                            context.ConversationData.SetValue("Handset_Image", hset_document.GetElement("Image").Value);
+
+                            //await context.PostAsync($"Handset image is [{IMAGE}].");
+
+                        }
+                    }
+                }
+
+                context.Wait(this.MainEntryPoint);//await this.ShowOptions(context);
+            }
+            else
+            {
+                context.Done(1);
+            }
+        }
+
+
+
+        public async Task StoreDocumentValues(IDialogContext context, BsonDocument document)
+        {
+            string resType = (string)document.GetElement("Result Type Code").Value;
+
+            context.ConversationData.SetValue("HandsetMakerKey", document.GetElement("HSet Brand").Value);
+            context.ConversationData.SetValue("HandsetModelKey", document.GetElement("HSet Model").Value);
+            context.ConversationData.SetValue("SubsNumber", document.GetElement("Anon Subsno").Value);
+            context.ConversationData.SetValue("SubsName", document.GetElement("Subscriber Name").Value);
+            context.ConversationData.SetValue("CustNumber", document.GetElement("Cust No").Value);
+            context.ConversationData.SetValue("CurrentPlan", document.GetElement("Current Plan").Value);
+            context.ConversationData.SetValue(resType + "_OfferPlan", document.GetElement("Offer Plan").Value);
+            context.ConversationData.SetValue(resType + "_OfferVoice", document.GetElement("Offer Voice Add-On").Value);
+            context.ConversationData.SetValue(resType + "_OfferText", document.GetElement("Offer Text Add-On").Value);
+            context.ConversationData.SetValue(resType + "_OfferData", document.GetElement("Offer Data Add-On").Value);
+            context.ConversationData.SetValue(resType + "_OfferPlanCode", document.GetElement("Offer Plan").Value);
+            context.ConversationData.SetValue(resType + "_OfferVoiceCode", document.GetElement("Offer Voice Code").Value);
+            context.ConversationData.SetValue(resType + "_OfferTextCode", document.GetElement("Offer Text Code").Value);
+            context.ConversationData.SetValue(resType + "_OfferDataCode", document.GetElement("Offer Data Code").Value);
+            context.ConversationData.SetValue("CurrentRev", document.GetElement("Current Revenue").Value);
+            context.ConversationData.SetValue("CurrentMAF", document.GetElement("Current MAF").Value);
+            context.ConversationData.SetValue("CurrentRent", document.GetElement("Current Rental").Value);
+            context.ConversationData.SetValue("CurrentOvg", document.GetElement("Current Overage").Value);
+            context.ConversationData.SetValue(resType + "_OfferRev", document.GetElement("Offer Revenue").Value);
+            context.ConversationData.SetValue(resType + "_OfferMAF", document.GetElement("Offer MAF").Value);
+            context.ConversationData.SetValue(resType + "_OfferRent", document.GetElement("Offer Rental").Value);
+            context.ConversationData.SetValue(resType + "_OfferOvg", document.GetElement("Offer Overage").Value);
+            context.ConversationData.SetValue("Month1", document.GetElement("Analysed Month 1").Value);
+            context.ConversationData.SetValue("Month2", document.GetElement("Analysed Month 2").Value);
+            context.ConversationData.SetValue("Month3", document.GetElement("Analysed Month 3").Value);
+            context.ConversationData.SetValue("ValueScore", document.GetElement("Value Score").Value);
+            context.ConversationData.SetValue("ValueRank", document.GetElement("Value Rank").Value);
+
+            string Handset = document.GetElement("HSet Brand").Value + " " + document.GetElement("HSet Model").Value;
+            context.ConversationData.SetValue("Handset", Handset);
+
+
+        }
+
 
         private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)            
         {
@@ -302,58 +428,7 @@
 
 
  
-        public async Task StoreDocumentValues(IDialogContext context, BsonDocument document)
-        {
-            string resType = (string)document.GetElement("Result_Type").Value;
-
-            context.ConversationData.SetValue("HandsetMakerKey", document.GetElement("HSet_Brand").Value);
-            context.ConversationData.SetValue("HandsetModelKey", document.GetElement("HSet_Model").Value);
-            context.ConversationData.SetValue("SubsNumber", document.GetElement("Anon_Subsno").Value);
-            context.ConversationData.SetValue("CustNumber", document.GetElement("Cust_No").Value);
-            context.ConversationData.SetValue("CurrentPlan", document.GetElement("Current_Plan").Value);
-            context.ConversationData.SetValue(resType + "_OfferPlan", document.GetElement("Offer_Plan").Value);
-            context.ConversationData.SetValue(resType + "_OfferVoice", document.GetElement("Offer_Voice_AddOn").Value);
-            context.ConversationData.SetValue(resType + "_OfferText", document.GetElement("Offer_Text_AddOn").Value);
-            context.ConversationData.SetValue(resType + "_OfferData", document.GetElement("Offer_Data_AddOn").Value);
-            context.ConversationData.SetValue("CurrentRev", document.GetElement("Current_Revenue").Value);
-            context.ConversationData.SetValue("CurrentMAF", document.GetElement("Current_MAF").Value);
-            context.ConversationData.SetValue("CurrentRent", document.GetElement("Current_Rental").Value);
-            context.ConversationData.SetValue("CurrentOvg", document.GetElement("Current_Overage").Value);
-            context.ConversationData.SetValue(resType + "_OfferRev", document.GetElement("Offer_Revenue").Value);
-            context.ConversationData.SetValue(resType + "_OfferMAF", document.GetElement("Offer_MAF").Value);
-            context.ConversationData.SetValue(resType + "_OfferRent", document.GetElement("Offer_Rental").Value);
-            context.ConversationData.SetValue(resType + "_OfferOvg", document.GetElement("Offer_Overage").Value);
-            context.ConversationData.SetValue("Month1", document.GetElement("Analysed_Month_1").Value);
-            context.ConversationData.SetValue("Month2", document.GetElement("Analysed_Month_2").Value);
-            context.ConversationData.SetValue("Month3", document.GetElement("Analysed_Month_3").Value);
-            context.ConversationData.SetValue(resType + "_Message1", document.GetElement("Sales_Message__1").Value);
-            context.ConversationData.SetValue(resType + "_Message2", document.GetElement("Sales_Message__2").Value);
-            context.ConversationData.SetValue(resType + "_Message3", document.GetElement("Sales_Message__3").Value);
-            context.ConversationData.SetValue(resType + "_Message4", document.GetElement("Sales_Message__4").Value);
-            context.ConversationData.SetValue(resType + "_Message5", document.GetElement("Sales_Message__5").Value);
-            context.ConversationData.SetValue(resType + "_Message6", document.GetElement("Sales_Message__6").Value);
-            context.ConversationData.SetValue(resType + "_Message7", document.GetElement("Sales_Message__7").Value);
-            context.ConversationData.SetValue(resType + "_Message8", document.GetElement("Sales_Message__8").Value);
-            context.ConversationData.SetValue(resType + "_Message9", document.GetElement("Sales_Message__9").Value);
-            context.ConversationData.SetValue(resType + "_Message10", document.GetElement("Sales_Message__10").Value);
-            context.ConversationData.SetValue(resType + "_Value1", document.GetElement("Reserved_Column_16").Value);
-            context.ConversationData.SetValue(resType + "_Value2", document.GetElement("Reserved_Column_17").Value);
-            context.ConversationData.SetValue(resType + "_Value3", document.GetElement("Reserved_Column_18").Value);
-            context.ConversationData.SetValue(resType + "_Value4", document.GetElement("Reserved_Column_19").Value);
-            context.ConversationData.SetValue(resType + "_Value5", document.GetElement("Reserved_Column_20").Value);
-            context.ConversationData.SetValue(resType + "_Value6", document.GetElement("Reserved_Column_21").Value);
-            context.ConversationData.SetValue(resType + "_Value7", document.GetElement("Reserved_Column_22").Value);
-            context.ConversationData.SetValue(resType + "_Value8", document.GetElement("Reserved_Column_23").Value);
-            context.ConversationData.SetValue(resType + "_Value9", document.GetElement("Reserved_Column_24").Value);
-            context.ConversationData.SetValue(resType + "_Value10", document.GetElement("Reserved_Column_25").Value);
-            context.ConversationData.SetValue(resType + "_BirthDate", document.GetElement("DATE_OF_BIRTH").Value);
-
-            string Handset = document.GetElement("HSet_Brand").Value + " " + document.GetElement("HSet_Model").Value;
-            context.ConversationData.SetValue("Handset", Handset);
-
-
-        }
-
+ 
         public virtual async Task ShowOptions(IDialogContext context)
         {
             var heroCard = new HeroCard
