@@ -436,7 +436,7 @@ namespace MultiDialogsBot.Dialogs
                 decoder.LastOneWasNeed = true;
                 decoder.FeatureOrNeedDesc = NodeLuisSubsNeeds.GetNeedIntentDesc(result.Item1);
                 handSetsLeft = needsScores.GetTopFive(needsIntent);
-                await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+                await UpdateUserAsync(context, handSetsLeft, handSetsNow);    
             }
             else
             {
@@ -444,7 +444,7 @@ namespace MultiDialogsBot.Dialogs
                 {
                     topButtons.SetNewFreq(desiredFeature, sb);
                     switch (desiredFeature)
-                    {
+                    {  
                         case EIntents.Camera:
                             if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
                             {
