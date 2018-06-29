@@ -70,6 +70,11 @@ namespace MultiDialogsBot.Dialogs
                 unwantedModels = string.Concat(NONE_OF_THESE_MODELS, string.Join(NONE_OF_THESE_MODELS.ToString(), models2Exclude));
                 context.Done(unwantedModels);
             }
+            else if (buttonPressed.StartsWith("Plan Prices for "))
+            {
+                await context.PostAsync("Ryan's node to kick in");
+                context.Wait(MessageReceivedAsync);
+            }
             else  // Anything else 
             {
                 if (++numTimesRubbishEntered <= MAX_NUMBER_OF_TIMES_RUBBISH_ENTERED)

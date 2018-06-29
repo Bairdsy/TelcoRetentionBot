@@ -57,6 +57,8 @@ namespace MultiDialogsBot.Dialogs
             string phoneMatchMsg = "The phone match message will be inserted here";
 
             await context.PostAsync($"Great Choice - The {chosenModel} is perfect for you because {phoneMatchMsg}. Now we need to work out what plan you should be on");
+            context.ConversationData.SetValue("SelectedPhone", chosenModel);
+            await context.PostAsync("Ryan's node to kick in");
         }
 
         private async Task ColorSelectionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)

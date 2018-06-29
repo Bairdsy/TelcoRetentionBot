@@ -65,7 +65,6 @@ namespace MultiDialogsBot.Dialogs
         IntentDecoder decoder;
         HandSets handSetsBag;
         TopFeatures topButtons;
-        int numberOfIterations = 1;
 
         EIntents desiredFeature;
         double desiredFeatureScore;
@@ -83,7 +82,7 @@ namespace MultiDialogsBot.Dialogs
             handSetsBag = handSets;
             brandDesired = brand;
             ReleaseDateCurrentModel = currentModelReleaseDate;
-            decoder = mostDemanded.AssociatedDecoder; //new IntentDecoder(handSets, brand, currentModelReleaseDate,narrowedListOfModels);
+            decoder = mostDemanded.AssociatedDecoder; 
             topButtons = mostDemanded;
             needsScores = new ScoreFuncs(handSets);
         }
@@ -102,7 +101,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task BandWidth(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that you want a phone with access to internet and with wide bandwidth");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that you want a phone with access to internet and with wide bandwidth");
             desiredFeature = EIntents.BandWidth;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -111,7 +110,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task BatteryLife(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand you want a big battery life");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand you want a big battery life");
             desiredFeature = EIntents.BatteryLife;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -120,7 +119,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task Brand(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is brand");
+            if (CommonDialog.debugMessages)  await context.PostAsync("I understand that the most important thing for you is brand");
             desiredFeature = EIntents.Brand;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -129,7 +128,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task Camera(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of a camera");
+            if (CommonDialog.debugMessages)  await context.PostAsync("I understand that the most important thing for you is the presence of a camera");
             desiredFeature = EIntents.Camera;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -138,13 +137,16 @@ namespace MultiDialogsBot.Dialogs
         public async Task Cheap(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages)  await context.PostAsync("I understand that the most important thing for you is the price");
+            desiredFeature = EIntents.Cheap;
+            await ProcessNeedOrFeatureAsync(context, result);
         }
 
         [LuisIntent("DualCamera")]
         public async Task DualCamera(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that you want a phone with Dual Camera");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that you want a phone with Dual Camera");
             desiredFeature = EIntents.DualCamera;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -153,7 +155,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task DualSIM(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I undertand that you would like a phone with DualSIM");
+            if (CommonDialog.debugMessages) await context.PostAsync("I undertand that you would like a phone with DualSIM");
             desiredFeature = EIntents.DualSIM;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -252,8 +254,15 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("Small")]
         public async Task Small(IDialogContext context, LuisResult result)         
         {
+            string currentModel;
+
+
+            if (!context.ConversationData.TryGetValue("HandsetModelKey",out currentModel))
+                currentModel = "It's not there";
+
             await ShowDebugInfoAsync(context, result);
             await context.PostAsync("I understand that the most important thing for you are the dimensions of your new phone");
+            await context.PostAsync("Your current phone is " + currentModel);
             desiredFeature = EIntents.Small;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -399,10 +408,9 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync("I'm afraid that's a very high standard, I don't have any equipment that fulfills it.");
                 handSetsLeft = handSetsB4;
             }
-            else
-                await context.PostAsync($"I narrowed it down to {handSetsLeft} handsets that fulfill your requirements");
-            if (/*(numberOfIterations++ == 1) &&*/ (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS))
+            if  (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS)
             {
+                await context.PostAsync($"We have now {handSetsLeft} models that might be suitable for your needs. I could help short list further if you tell me what else is important for you");
                 sb = new StringBuilder("");
                 reply.SuggestedActions = topButtons.GetTop4Buttons(sb);
                 await context.PostAsync(reply);
@@ -432,7 +440,7 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
-                try
+                try 
                 {
                     topButtons.SetNewFreq(desiredFeature, sb);
                     switch (desiredFeature)
@@ -493,7 +501,7 @@ namespace MultiDialogsBot.Dialogs
             string ans = await awaitable;
             
 
-            await context.PostAsync("He picked = " + ans);    
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He picked = " + ans);    
             decoder.StrKeyWords = new List<string>() { ans.ToLower() };
             await DecodeAndProcessIntentAsync(context);
         }
@@ -502,7 +510,7 @@ namespace MultiDialogsBot.Dialogs
         {
             int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
             string featureText;
-
+              
             decoder.LastOneWasNeed = false;
             if (smallDesc.TryGetValue(desiredFeature, out featureText))
                 decoder.FeatureOrNeedDesc = featureText;
@@ -577,18 +585,5 @@ namespace MultiDialogsBot.Dialogs
             decoder.StrKeyWords = returnVal;
             return decoder.StrKeyWords.Count != 0;
         } 
-
-        /*       private string Scores()
-         *      {
-                   StringBuilder sb = new StringBuilder();
-                   List<string> basket;
-                   ScoreFuncs funcs = new ScoreFuncs(handSetsBag);    
-
-                   basket = handSetsBag.GetBagModels();
-                   foreach (var model in basket)
-                       sb.Append($"{model} ==> score = {funcs.PictureLoverScore(model)}\r\n");
-                   return sb.ToString();
-               }
-               */
     }
 }

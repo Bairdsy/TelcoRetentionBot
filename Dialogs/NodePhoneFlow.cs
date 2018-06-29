@@ -67,8 +67,8 @@ namespace MultiDialogsBot.Dialogs
         private async Task MessageReceivedWithDecisionAsync(IDialogContext context,IAwaitable<IMessageActivity> awaitable)
         {
             IMessageActivity messageActivity = await awaitable;
-            string response = messageActivity.Text;
-            bool hasDecided = response.ToLower().Contains("yes");
+            string response = messageActivity.Text.TrimStart(' ');
+            bool knowsWhatHeWants = !(response.ToLower().StartsWith("no") && ((response.Length == 2) || char.IsLetter(response[2])));
             List<string> wantedBrands,wantedModels;
             int totalPhones = 3;
             Activity activity;
@@ -82,7 +82,7 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync("Error...xception message = " + xception.Message);
             }   
 
-            if (hasDecided)
+            if (knowsWhatHeWants)
             {   
                 phraseFromSubs = response;
                 if (debugMessages) await context.PostAsync("DEBUG : Response received " + response);
@@ -268,7 +268,7 @@ namespace MultiDialogsBot.Dialogs
             sb = new StringBuilder("DEBUG : Models indicated : ");
             foreach (string model in wantedModels)
                 sb.Append("-->" + model + "\r\n");
-            if (debugMessages) await context.PostAsync("DEBUG : models identified  : " + sb.ToString());
+            if (debugMessages) await context.PostAsync("DEBUG : models identified  : " + sb.ToString()); 
             selectResult = SelectWithFilter(wantedModels);
             sb = new StringBuilder("DEBUG : Models selected by filter: ");
             foreach (string model in selectResult)
@@ -413,7 +413,12 @@ namespace MultiDialogsBot.Dialogs
                 selectedModel = option.Substring(7);
                 context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);
             }
-            else    
+            else if (option.StartsWith("Plan Prices for"))
+            {
+                await context.PostAsync("Ryan's node to kick in");
+                context.Wait(MessageReceivedAsync);
+            }
+            else
                 await RecommendPhoneAsync(context, null, null);
         }
 

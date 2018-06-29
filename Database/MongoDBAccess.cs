@@ -205,7 +205,7 @@ namespace MultiDialogsBot.Database
             var filter = Builders<BsonDocument>.Filter.Eq("utterance", utterance2Add);
             var filter2 = Builders<BsonDocument>.Filter.Eq("intent", intent);
             var cur = utterancesCollection.Find(filter & filter2).ToCursor();
-            int numberOfTimesSeen = 0;
+            int numberOfTimesSeen = 0; 
 
             foreach (var doc in cur.ToEnumerable())
             {
@@ -213,7 +213,7 @@ namespace MultiDialogsBot.Database
                 {
                     numberOfTimesSeen = int.Parse(doc.GetElement("count").Value.ToString());
                 }
-                catch (Exception xception)
+                catch (Exception xception)      
                 {
                     throw new Exception("Error...Could not parse the mumeric value in the document, something is very wrong! Error Message : " +xception.Message);
                 }

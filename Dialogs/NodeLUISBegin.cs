@@ -44,7 +44,8 @@ namespace MultiDialogsBot.Dialogs
         {
             { "Upgrade Both" , new Tuple<string,EIntent>("want to upgrade both",EIntent.Both)},
             {"Upgrade Equipment",new Tuple<string,EIntent>("want to upgrade equipment only",EIntent.HandSet) },
-            { "Upgrade plan", new Tuple<string,EIntent>("want to upgrade plan",EIntent.Plan)}
+            { "Upgrade plan", new Tuple<string,EIntent>("want to upgrade plan",EIntent.Plan)},
+            
 
         };  
         
@@ -66,17 +67,22 @@ namespace MultiDialogsBot.Dialogs
 
 
             if (typosWarning != null)
+            {
                 await context.PostAsync(typosWarning);
-
+                initialPhrase = result.AlteredQuery.ToLower();
+            }
+            else
+                initialPhrase = result.Query.ToLower();
             await this.PostDebugInfoAsync(context, result, intention);
 
             if (degreeOfCertain == EDegreeOfCertain.High)
             {
-                await context.PostAsync($"I understand that you {humanFriendlyIntent[intention].Item1}");
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I understand that you {humanFriendlyIntent[intention].Item1}");
                 context.Done(humanFriendlyIntent[intention].Item2);
             }
             else if (degreeOfCertain == EDegreeOfCertain.Medium)
             {
+                nonUnderstoodUtterance = initialPhrase;
                 if (closeToSecond)
                     secondIntention = ObtainSecondMostLikelyIntent(result);
                 await DoubleCheck(context, intention,secondIntention);
@@ -92,9 +98,9 @@ namespace MultiDialogsBot.Dialogs
         {
             string intention = "Upgrade Equipment";  
             string secondIntention = null;    
-            bool closeToSecond = CloseToSecond(result);
+            bool closeToSecond = CloseToSecond(result);  
             string typosWarning = TyposInformation(result);
-
+              
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
             if (typosWarning != null)
@@ -125,7 +131,7 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("Upgrade plan")]
         public async Task UpgradePlan(IDialogContext context,LuisResult result)
         {
-            string intention = "Upgrade plan";  // humanFriendlyIntent["Upgrade plan"].Item1;
+            string intention = "Upgrade plan";
             string secondIntention = null;
             string typosWarning = TyposInformation(result);
             bool typos = typosWarning != null;
@@ -134,17 +140,22 @@ namespace MultiDialogsBot.Dialogs
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
             if (typos)
+            {
                 await context.PostAsync(typosWarning);
-
+                initialPhrase = result.AlteredQuery.ToLower();
+            }
+            else
+                initialPhrase = result.Query.ToLower();
             await this.PostDebugInfoAsync(context, result, intention);
 
             if (degreeOfCertain == EDegreeOfCertain.High)
             {
                 await context.PostAsync($"I understand that you {humanFriendlyIntent[intention].Item1}");
-                context.Done(humanFriendlyIntent[intention].Item2);
+                context.Done(Tuple.Create(initialPhrase,humanFriendlyIntent[intention].Item2));
             }
             else if (degreeOfCertain == EDegreeOfCertain.Medium)
             {
+                nonUnderstoodUtterance = initialPhrase;
                 if (closeToSecond)
                     secondIntention = ObtainSecondMostLikelyIntent(result);
                 await DoubleCheck(context, intention,secondIntention);
@@ -166,22 +177,24 @@ namespace MultiDialogsBot.Dialogs
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
             if (typos)
+            {
                 await context.PostAsync(typosWarning);
-
+                initialPhrase = result.AlteredQuery;
+            }
+            else
+                initialPhrase = result.Query;
             await this.PostDebugInfoAsync(context, result, "No intention" );
 
-            await context.PostAsync($"Sorry, can't understand what you want to do");
-            context.Done(0);
+            await context.PostAsync($"That's fine, I'm here to help you, if need be, at any time");
+            context.Done(Tuple.Create(initialPhrase,EIntent.None));
         }
 
         [LuisIntent("")]
         public async Task NoneAtAll(IDialogContext context,LuisResult result)
         {
-            double degreeOfCertain = ObtainTopIntentScore(result);     
+            double degreeOfCertain = ObtainTopIntentScore(result);
 
-            await context.PostAsync("Sorry, can't understand what you want to do");
-            await context.PostAsync("Could you please rephrase?");
-            context.Wait(this.MessageReceived);
+            await AskToRephraseAsync(context, result);
         }
     
         private async Task PostDebugInfoAsync(IDialogContext context, LuisResult result, string intention)   
@@ -293,9 +306,9 @@ namespace MultiDialogsBot.Dialogs
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of method CheckUserAnswerAsync()");
             if (humanFriendlyIntent.TryGetValue(text, out tuple))  
             {    
-                try    
+                try
                 {
-                    if (CommonDialog.debugMessages) await context.PostAsync("Checking if we saw utterance enough times...");
+                    if (CommonDialog.debugMessages) await context.PostAsync("Checking if we saw utterance enough times, the non-unnderstood utterance is " + nonUnderstoodUtterance);
                     LUISUpdated = await updater.UpdateUtteranceAsync(text, nonUnderstoodUtterance);
                     if (LUISUpdated)
                     {
@@ -362,7 +375,6 @@ namespace MultiDialogsBot.Dialogs
                     new CardAction(){ Title = "No", Type=ActionTypes.ImBack, Value="No" , /*Image = "https://emojipedia-us.s3.amazonaws.com/thumbs/120/apple/129/thumbs-down-sign_1f44e.png"*/}
                 }
             };
-           // await context.PostAsync("Sien tcha hun\";");
             if (secondMostLikely != null)
             {   
                 friendly2 = humanFriendlyIntent[secondMostLikely].Item1;

@@ -246,6 +246,13 @@ namespace MultiDialogsBot.Database
             return handSetFeatures.ReleaseDate;
         }
 
+        public double GetModelSize(string model)
+        {
+            HandSetFeatures features = masterDict.GetEquipmentFeatures(model);
+
+            return Miscellany.Product(features.BodySize);
+        }
+
         /***********************************************
          * To handle the bag of handsets               *
          * that we wannt to reduce more and more       *

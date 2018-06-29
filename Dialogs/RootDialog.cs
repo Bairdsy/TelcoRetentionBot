@@ -57,13 +57,94 @@
             await context.PostAsync(salutation + "John Doe");
             await context.PostAsync("Welcome to the phones and plans page, if you need any assistance at any point\r\n I'd be delighted to help you choose the best phone and plan for you");
             await context.PostAsync("If you are an existing customer I can certainly make sure that any recommendation\r\n is highly personalized to your usage and phone requirements");
-            await context.PostAsync("Let me know if I can help you with a new phone or plan");
+            await context.PostAsync("Can I help you with a new phone or plan?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);
+        }
+
+        public virtual async Task ShowCharacters(IDialogContext context)
+        {
+            var Card_1 = new HeroCard
+            {
+                Title = "Ryan",
+                Subtitle = "The tech lover.",
+                Text = "Ryan loves to have the latest tech.  He loves to have the internet everywhere he goes and his phone is great for this as he travels a lot for his work.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_c.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var Card_2 = new HeroCard
+            {
+                Title = "Pete",
+                Subtitle = "The travelling business man.",
+                Text = "Pete's business takes him all over the world and he always takes his phone with him.  He has been with the same carrier for a long time and needs lots of international calls, roaming and data included.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_d.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var Card_3 = new HeroCard
+            {
+                Title = "Jennifer",
+                Subtitle = "Family all over the world.",
+                Text = "Jennifer has recently moved overseas.  She loves to keep in touch with her family back home and all over the world, so needs lots of international calls included.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/girl_a.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var Card_4 = new HeroCard
+            {
+                Title = "Mervyn",
+                Subtitle = "The data user.",
+                Text = "Mervyn is a millennial who is just starting out in the workplace - so his budget is tight.  He does really use his phone for calls or texts but is always on the latest apps or browsing the internet.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_a.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var Card_5 = new HeroCard
+            {
+                Title = "Tania",
+                Subtitle = "The techo-phobe.",
+                Text = "Tania has just gotten used to using her phone to call and text, so she doesn't really use it for data.  She just wants something easy to use and simple.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/girl_d.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var Card_6 = new HeroCard
+            {
+                Title = "Oliver",
+                Subtitle = "The heavy user.",
+                Text = "Oliver uses his phone for absolutely everything.  He is always calling, text or browsing the internet.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/boy_b.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var Card_7 = new HeroCard
+            {
+                Title = "Amanda",
+                Subtitle = "The chatter-box",
+                Text = "Amanda is always on the phone to friends and family but is also conscious of how much she uses so that she doesnt get charged extra.",
+                Images = null/*new List<CardImage> { new CardImage("www.madcalm.com/wp-content/uploads/2018/06/girl_b.png") }*/,
+                Buttons = new List<CardAction> { }
+            };
+
+            var message = context.MakeMessage();
+            /************/
+            String strAppPath = System.IO.Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName);
+            String strFilePath = System.IO.Path.Combine(strAppPath, "Resources");
+            String strFullFilename = System.IO.Path.Combine(strFilePath, "Vinnie.png");
+            /***********/
+        /*    heroCard.Images = new List<CardImage> { new CardImage(strFullFilename) };
+            message.Attachments.Add(heroCard.ToAttachment());*/
+
+            await context.PostAsync(message);
+            PromptDialog.Choice(context, this.OnOptionSelected, new List<string>() { YesOption, BusyOption, NoOption, CallBackOption }, "Are you able to go through this with me now?", "Not a valid option", 3);
+            //context.Wait(this.OnOptionSelected);
+
         }
 
         private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)            
         {
             var ret = await result;
+            Tuple<string, NodeLUISBegin.EIntent> luisOutput = ret as Tuple<string, NodeLUISBegin.EIntent>;
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
             if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet)
@@ -73,8 +154,15 @@
                 await context.PostAsync("Ryan's node to kick in");
                 context.Wait(MessageReceivedAsync);
             }
-           // else 
-                //PromptDialog.Choice(context, this.PhoneSelection, new List<string>() { NewPhone, CurrentPhone, NotSure }, "Have you thought about whether you want to get a new phone or if you are happy with your current phone?", "Not a valid option", 3);
+            else if (luisOutput.Item2 == NodeLUISBegin.EIntent.Both)
+            {
+                await context.PostAsync("Ryan's node to kick in to handle \"both\" situation");
+                context.Wait(MessageReceivedAsync);
+            }
+            else
+            {
+                context.Wait(MainEntryPoint);
+            }
         }
 
         private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
