@@ -10,7 +10,7 @@ using Microsoft.Bot.Connector;
 
 
 using MultiDialogsBot.Helper;
-
+using MultiDialogsBot.Database;
 
 namespace MultiDialogsBot.Dialogs
 {
@@ -58,6 +58,8 @@ namespace MultiDialogsBot.Dialogs
             IMessageActivity msg = (IMessageActivity)(await awaitable);
             string modelPicked,unwantedModels,buttonPressed = msg.Text ;
             string[] models2Exclude;
+            HandSetFeatures handSetFeatures;
+            
 
             if (buttonPressed.StartsWith("I want "))
             {
@@ -72,8 +74,9 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (buttonPressed.StartsWith("Plan Prices for "))
             {
-                await context.PostAsync("Ryan's node to kick in");
-                context.Wait(MessageReceivedAsync);
+                modelPicked = buttonPressed.Substring(16);
+                handSetFeatures = handSets.GetModelFeatures(modelPicked);
+                await context.PostAsync(handSetFeatures.GetPlanPrices());
             }
             else  // Anything else 
             {

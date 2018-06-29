@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using System.Text;
+
+
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -84,6 +87,8 @@ namespace MultiDialogsBot.Database
         public string SpecsUrl { get; private set; }
 
         public string ReviewsUrl { get; private set; }
+
+  
 
         public void CopyTo(HandSetFeatures other)
         {
@@ -299,6 +304,15 @@ namespace MultiDialogsBot.Database
             ScreenSize = 1; // Just one inch
             BodySize = new double[]{ 1000,1000,1000};  // one cubic meter
             Colors = new List<string>();
+        }
+
+        public string GetPlanPrices ()
+        {
+            StringBuilder sb = new StringBuilder($"The prices for {Model} are:\r\n");
+
+            foreach (var plan in Price.Keys)
+                sb.Append($"{plan} : ${Price[plan]}\r\n");
+            return sb.ToString();
         }
 
         public override string ToString()

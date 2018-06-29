@@ -16,9 +16,12 @@ namespace MultiDialogsBot.Helper
 
         delegate int sgn(Tuple<HandSetFeatures, HandSetFeatures> x);
 
+        public string CurrentPhone { get; set; }
 
         HandSets basket;
         NodeLuisSubsNeeds.ENeeds intent;
+
+
 
         public ScoreFuncs(HandSets bag)
         {
@@ -27,9 +30,9 @@ namespace MultiDialogsBot.Helper
             {
                 {NodeLuisSubsNeeds.ENeeds.MovieWatcher,x => -Math.Sign(MovieWatcherScore(x.Item1) - MovieWatcherScore(x.Item2)) },
                 {NodeLuisSubsNeeds.ENeeds.PictureLover,x => -Math.Sign(PictureLoverScore(x.Item1) - PictureLoverScore(x.Item2)) },
-                { NodeLuisSubsNeeds.ENeeds.GamesAddict,x => -Math.Sign(GamesAddictScore(x.Item1) - GamesAddictScore(x.Item2)) },
-                {NodeLuisSubsNeeds.ENeeds.Camera, x => -Math.Sign(CameraScore(x.Item1) - CameraScore(x.Item2)) }
-
+                {NodeLuisSubsNeeds.ENeeds.GamesAddict,x => -Math.Sign(GamesAddictScore(x.Item1) - GamesAddictScore(x.Item2)) },
+                {NodeLuisSubsNeeds.ENeeds.Camera, x => -Math.Sign(CameraScore(x.Item1) - CameraScore(x.Item2)) },
+                {NodeLuisSubsNeeds.ENeeds.PhoneSize, x => -Math.Sign(SameSizeScore(x.Item1) - SameSizeScore(x.Item2)) }
             };
             getters = new Dictionary<NodeLuisSubsNeeds.ENeeds, HandSets.accessor>()
             {
@@ -37,6 +40,7 @@ namespace MultiDialogsBot.Helper
                 {NodeLuisSubsNeeds.ENeeds.PictureLover,x => PictureLoverScore(x) },
                 {NodeLuisSubsNeeds.ENeeds.GamesAddict,x => GamesAddictScore(x) },
                 {NodeLuisSubsNeeds.ENeeds.ShowOff, x => 1 },
+                {NodeLuisSubsNeeds.ENeeds.PhoneSize, x => SameSizeScore(x) },
                 {NodeLuisSubsNeeds.ENeeds.Camera, x => CameraScore(x) }
             };
         }
@@ -123,6 +127,31 @@ namespace MultiDialogsBot.Helper
             secondaryCameraScore = LogisticFunc(phone.SecondaryCamera, max - min);
 
             return (secondaryCameraScore + 2 * dualCameraScore + 3 * screenSizeScore + 4 * cameraScore) / 10;
+        }
+
+        private double SameSizeScore(HandSetFeatures phone)
+        {
+            HandSetFeatures currentPhoneFeatures = basket.GetModelFeatures(CurrentPhone);
+            double currentPhoneSize,candidatePhoneSize,m,b;  // m = declive
+
+            currentPhoneSize = Miscellany.Product(currentPhoneFeatures.BodySize);
+            candidatePhoneSize = Miscellany.Product(phone.BodySize);
+            if ((candidatePhoneSize >= (currentPhoneSize * 0.95)) && (candidatePhoneSize <= (currentPhoneSize * 1.05)))
+                return 1;
+            if ((candidatePhoneSize <= (currentPhoneSize * 0.8)) || (candidatePhoneSize >= (currentPhoneSize * 1.2)))
+                return 0;
+            if (candidatePhoneSize < currentPhoneSize)
+            {
+                m = 1 / (0.15 * currentPhoneSize);
+                b = -16 / 3;
+                return candidatePhoneSize * m + b;
+            }
+            else
+            {
+                m = -1 / (0.15 * currentPhoneSize);
+                b = 8;
+            }
+            return candidatePhoneSize * m + b;
         }
 
         private double MovieWatcherScore(HandSetFeatures phone)  

@@ -44,7 +44,7 @@ namespace MultiDialogsBot.Dialogs
         private async Task ChoiceMadeAsync(IDialogContext context, IAwaitable<object> awaitable)
         {
             Activity reply,ans = ((Activity)(await awaitable));
-            string contents = ans.Text;
+            string contents = ans.Text;  
             string model = null;
             StringBuilder errorMsg = new StringBuilder();
             string errStr = "Sorry. I don't quite follow what you're saying. Click on \"Pick Me\" if there is a phone you like, or click on \"Phone Price per Plan\" to see the cost for that phone on the different plans available";
@@ -203,7 +203,7 @@ namespace MultiDialogsBot.Dialogs
                     Buttons = new List<CardAction>
                     {
                         new CardAction() { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want a " + model },
-                        new CardAction() { Title = "Plan Prices", Type = ActionTypes.ImBack, Value = "Show me Plan Prices"},
+                        new CardAction() { Title = "Plan Prices", Type = ActionTypes.ImBack, Value = "Show me Plan Prices for " + model},
                         new CardAction() { Title = "Specifications", Type = ActionTypes.OpenUrl, Value = GetModelSpecsUrl(model)},
                     },
                 };

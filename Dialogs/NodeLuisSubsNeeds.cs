@@ -26,7 +26,8 @@ namespace MultiDialogsBot.Dialogs
             MovieWatcher ,
             ShowOff,
             GamesAddict,
-            Camera /* This one is part of the other LUIS APP */
+            PhoneSize,
+            Camera /* These last two are part of the other LUIS APP */
         };
 
         double topEntitySkore;

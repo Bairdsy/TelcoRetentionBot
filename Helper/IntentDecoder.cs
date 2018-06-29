@@ -569,7 +569,7 @@ namespace MultiDialogsBot.Helper
                     GetScreenSizeCompositeEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Small:
-                    ExtractPhoneSizeInfo(result);
+                   // ExtractPhoneSizeInfo(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Weight:
                     GetWeightCompositeEntity(result);
@@ -679,6 +679,12 @@ namespace MultiDialogsBot.Helper
                 returnValue.Add(vector[i].intent);
             }
             return returnValue;
+        }
+
+        public void SetSizeRequirements(double threshold, bool descOrder)
+        {
+            Threshold = threshold;
+            desc = descOrder;
         }
 
         private List<List<string>> GetAllCombinations(List<string> colors)

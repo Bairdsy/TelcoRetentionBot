@@ -446,7 +446,13 @@ namespace MultiDialogsBot.Dialogs
                     topButtons.SetNewFreq(desiredFeature, sb);
                     switch (desiredFeature)
                     {
-                       // case EIntents.Small: 
+                        case EIntents.Small:
+                            if (!ExtractPhoneSizeInfo(res))
+                            {
+                                PromptDialog.Choice(context, ProcessSizeChoice, new List<string>() { "BIGGER", "SMALLER", "THE SAME" }, "Are you looking for a phone with a similar size as your existing model or something bigger or smaller?", "Not understood, please try again", 3);
+                            }
+                          //  await DecodeAndProcessIntentAsync(context); 
+                            break;
                         case EIntents.Camera:
                             if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
                             {
@@ -498,6 +504,35 @@ namespace MultiDialogsBot.Dialogs
             }
         }
 
+        private async Task ProcessSizeChoice(IDialogContext context,IAwaitable<string> awaitable)
+        {
+            string ans = await awaitable;
+            string currentModel;
+            HandSetFeatures phoneFeatures;
+            int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
+
+            context.ConversationData.TryGetValue("HandsetModelKey", out currentModel);
+            currentModel = "iphone 7 plus  256gb";
+            phoneFeatures = handSetsBag.GetModelFeatures(currentModel);
+
+            if (ans == "THE SAME")
+            {
+                needsScores.CurrentPhone = currentModel;
+                handSetsLeft = needsScores.GetTopFive(NodeLuisSubsNeeds.ENeeds.PhoneSize);
+                await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            } 
+            else
+            {
+                if (ans == "SMALLER")
+                {
+                    decoder.SetSizeRequirements(Miscellany.Product(phoneFeatures.BodySize), false);
+                }
+                else
+                    decoder.SetSizeRequirements(Miscellany.Product(phoneFeatures.BodySize), true);
+                await DecodeAndProcessIntentAsync(context);
+            }
+        }
+
         private async Task ProcessEnumeratedChoice(IDialogContext context,IAwaitable<string> awaitable)
         {
             string ans = await awaitable;
@@ -512,12 +547,14 @@ namespace MultiDialogsBot.Dialogs
         {
             int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
             string featureText;
-              
+
+            if (CommonDialog.debugMessages) await context.PostAsync("Beginning of DecodeAndProcessIntentAsync() method;");
             decoder.LastOneWasNeed = false;
             if (smallDesc.TryGetValue(desiredFeature, out featureText))
                 decoder.FeatureOrNeedDesc = featureText;
             else
                 decoder.FeatureOrNeedDesc = null;
+            if (CommonDialog.debugMessages) await context.PostAsync("I'm going to call the decoder with " + desiredFeature.ToString());
             handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
             if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
             await UpdateUserAsync(context, handSetsLeft, handSetsNow);
@@ -556,11 +593,56 @@ namespace MultiDialogsBot.Dialogs
                     foreach (var child in cEntity.Children)
                         if ((child.Type == "builtin.number") && double.TryParse(child.Value, out megaPixels))
                         {
-                            //Threshold = megaPixels;
                             return true;
                         }
                 }
             return false;
+        }
+
+        private bool ExtractPhoneSizeInfo(LuisResult result)
+        {
+            bool desc = false;  // By default, ascending
+            double threshold = -1;
+            string[] tokens;
+            int index = 0;
+            bool additionalInfoDetected = false;
+            double[] volume = new double[3];
+
+            foreach (var cEntity in result.CompositeEntities)
+                if (cEntity.ParentType == "SizeComposite")
+                {
+                    foreach (var child in cEntity.Children)
+                        switch (child.Type)
+                        {
+                            case "OrderByWay":
+                                desc = ("small" != child.Value.ToLower() && ("smallest" != child.Value.ToLower()));
+                                additionalInfoDetected = true;
+                                break;
+                            case "buildin.number":
+                                if ((index < 3) && double.TryParse(child.Value, out volume[index]))
+                                {
+                                    ++index;
+                                }
+                                break;
+                            case "DimensionsRegEx":
+                                if (index >= 3)
+                                    continue; // We already have the info we need about the desired volume threshold
+                                tokens = child.Value.ToLower().Split('x');
+                                if (double.TryParse(tokens[0], out volume[0]) && double.TryParse(tokens[1], out volume[1]) && double.TryParse(tokens[2], out volume[2]))
+                                    index = 3;
+                                break;
+                            default:
+                                break;
+                        }
+                    if (index == 3)  // OK, we have valid data
+                    {
+                        additionalInfoDetected = true;
+                        threshold = Miscellany.Product(volume);
+                    }
+                }
+            if (additionalInfoDetected)
+                decoder.SetSizeRequirements(threshold, desc);
+            return additionalInfoDetected;
         }
 
         private EKeywords CheckForKeywords(LuisResult result)
