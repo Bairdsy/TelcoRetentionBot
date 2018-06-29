@@ -432,19 +432,20 @@ namespace MultiDialogsBot.Dialogs
 
             if (needsScore > desiredFeatureScore)  // WE have a need 
             {
-                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString());
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString()); 
                 decoder.LastOneWasNeed = true;
                 decoder.FeatureOrNeedDesc = NodeLuisSubsNeeds.GetNeedIntentDesc(result.Item1);
                 handSetsLeft = needsScores.GetTopFive(needsIntent);
                 await UpdateUserAsync(context, handSetsLeft, handSetsNow);    
-            }
+            }  
             else
             {
                 try 
                 {
                     topButtons.SetNewFreq(desiredFeature, sb);
                     switch (desiredFeature)
-                    {  
+                    {
+                       // case EIntents.Small: 
                         case EIntents.Camera:
                             if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
                             {
@@ -475,7 +476,7 @@ namespace MultiDialogsBot.Dialogs
                             {
                                 PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagBrands(), "Could you please indicate your favourite brand?", "Not understood, please try again", 3);
                             }
-                            else
+                            else   
                                 await DecodeAndProcessIntentAsync(context);
                             break;
                         default:
@@ -488,7 +489,7 @@ namespace MultiDialogsBot.Dialogs
                 catch (ArgumentException)
                 {
                     await context.PostAsync("Argument xception");
-                }
+                } 
                 catch (Exception xception)
                 {
                     await context.PostAsync($"Error...Exception Message = {xception.Message}");

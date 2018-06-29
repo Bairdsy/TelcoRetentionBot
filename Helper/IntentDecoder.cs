@@ -425,7 +425,7 @@ namespace MultiDialogsBot.Helper
             foreach (var cEntity in result.CompositeEntities)
                 if (cEntity.ParentType == "cameracomposite")
                 {
-                    foreach (var child in cEntity.Children)
+                    foreach (var child in cEntity.Children) 
                         if ((child.Type == "builtin.number") && double.TryParse(child.Value, out megaPixels))
                         {
                             Threshold = megaPixels;
@@ -464,11 +464,12 @@ namespace MultiDialogsBot.Helper
                         }
         }
 
-        private void ExtractPhoneSizeInfo(LuisResult result)
+        private bool ExtractPhoneSizeInfo(LuisResult result)
         {
             desc = false;  // By default, ascending
             string[] tokens;
             int index = 0;
+            bool additionalInfoDetected = false;
             double[] volume = new double[3];
 
             foreach (var cEntity in result.CompositeEntities)
@@ -479,6 +480,7 @@ namespace MultiDialogsBot.Helper
                         {
                             case "OrderByWay":
                                 desc = ("small" != child.Value.ToLower() && ("smallest" != child.Value.ToLower()));
+                                additionalInfoDetected = true;
                                 break;
                             case "buildin.number":
                                 if ((index < 3) && double.TryParse(child.Value, out volume[index]))
@@ -498,9 +500,11 @@ namespace MultiDialogsBot.Helper
                         }
                     if (index == 3)  // OK, we have valid data
                     {
+                        additionalInfoDetected = true;
                         Threshold = Prod(volume);
                     }
                 }
+            return additionalInfoDetected;
         }
         
         private bool GetOSData(LuisResult result)
