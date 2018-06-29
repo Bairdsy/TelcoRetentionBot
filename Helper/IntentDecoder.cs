@@ -469,7 +469,7 @@ namespace MultiDialogsBot.Helper
             desc = false;  // By default, ascending
             string[] tokens;
             int index = 0;
-            bool additionalInfoDetected = false;
+            bool additionalInfoDetected = false; 
             double[] volume = new double[3];
 
             foreach (var cEntity in result.CompositeEntities)

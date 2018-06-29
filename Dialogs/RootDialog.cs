@@ -34,14 +34,15 @@
             context.Wait(this.ShowCharacters);
         }   
 
-        private async Task MainEntryPoint(IDialogContext context,IAwaitable<IMessageActivity> awaitable)
+        private async Task MainEntryPoint(IDialogContext context/*,IAwaitable<IMessageActivity> awaitable*/)
         {
             DateTime time = DateTime.Now;
             int hour = time.Hour;
-            string salutation;
+            string salutation,subsName;
             TimeZone tz = TimeZone.CurrentTimeZone;
 
-            context.ConversationData.SetValue("HandsetModelKey", "iphone 7 plus- 256gb");
+
+            //context.ConversationData.SetValue("HandsetModelKey", "iphone 7 plus- 256gb");
             if (CommonDialog.debugMessages)
             { 
                 await context.PostAsync("DEBUG : Beginning of program");
@@ -53,8 +54,8 @@
                 salutation = "Good afternoon, ";
             else
                 salutation = "Good evening, ";
-
-            await context.PostAsync(salutation + "John Doe");
+            context.ConversationData.TryGetValue("SubsName", out subsName);
+            await context.PostAsync(salutation + subsName);
             await context.PostAsync("Welcome to the phones and plans page, if you need any assistance at any point\r\n I'd be delighted to help you choose the best phone and plan for you");
             await context.PostAsync("If you are an existing customer I can certainly make sure that any recommendation\r\n is highly personalized to your usage and phone requirements");
             await context.PostAsync("Can I help you with a new phone or plan?");
@@ -217,8 +218,8 @@
                         }
                     }
                 }
-
-                context.Wait(this.MainEntryPoint);//await this.ShowOptions(context);
+                await MainEntryPoint(context);
+              //  context.Wait(this.MainEntryPoint);//await this.ShowOptions(context);
             }
             else
             {
@@ -261,14 +262,14 @@
             context.ConversationData.SetValue("ValueRank", document.GetElement("Value Rank").Value);
 
             string Handset = document.GetElement("HSet Brand").Value + " " + document.GetElement("HSet Model").Value;
-            context.ConversationData.SetValue("Handset", Handset);
+            context.ConversationData.SetValue("Handset", Handset); 
 
 
         }
 
 
-        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)            
-        {
+        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)             
+        { 
             var ret = await result;
             Tuple<string, NodeLUISBegin.EIntent> luisOutput = ret as Tuple<string, NodeLUISBegin.EIntent>;
 
@@ -277,7 +278,7 @@
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
             else if (((Tuple<string,NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.Plan)
             {
-                await context.PostAsync("Ryan's node to kick in");
+                await context.PostAsync("Ryan's node to kick in-");
                 context.Wait(MessageReceivedAsync);
             }
             else if (luisOutput.Item2 == NodeLUISBegin.EIntent.Both)
@@ -287,7 +288,7 @@
             }
             else
             {
-                context.Wait(MainEntryPoint);
+                context.Wait(ShowCharacters);
             }
         }
 
