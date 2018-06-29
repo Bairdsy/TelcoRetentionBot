@@ -275,16 +275,21 @@
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
             if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet)
-                context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
-            else if (((Tuple<string,NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.Plan)
             {
+                context.ConversationData.SetValue("FlowType", "equipment");
+                context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
+            }
+            else if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.Plan)
+            {
+                context.ConversationData.SetValue("FlowType", "plan only");
                 await context.PostAsync("Ryan's node to kick in-");
                 context.Wait(MessageReceivedAsync);
             }
             else if (luisOutput.Item2 == NodeLUISBegin.EIntent.Both)
             {
-                await context.PostAsync("Ryan's node to kick in to handle \"both\" situation");
-                context.Wait(MessageReceivedAsync);
+                context.ConversationData.SetValue("FLowType", "both");
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Both intent detected");
+                context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
             }
             else
             {

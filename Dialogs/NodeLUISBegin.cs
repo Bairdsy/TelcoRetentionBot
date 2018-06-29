@@ -78,7 +78,7 @@ namespace MultiDialogsBot.Dialogs
             if (degreeOfCertain == EDegreeOfCertain.High)
             {
                 if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I understand that you {humanFriendlyIntent[intention].Item1}");
-                context.Done(humanFriendlyIntent[intention].Item2);
+                context.Done(Tuple.Create(initialPhrase,humanFriendlyIntent[intention].Item2));
             }
             else if (degreeOfCertain == EDegreeOfCertain.Medium)
             {
@@ -133,7 +133,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string intention = "Upgrade plan";
             string secondIntention = null;
-            string typosWarning = TyposInformation(result);
+            string typosWarning = TyposInformation(result); 
             bool typos = typosWarning != null;
             bool closeToSecond = CloseToSecond(result);
 
@@ -363,7 +363,7 @@ namespace MultiDialogsBot.Dialogs
             Activity reply, lastMessage = (Activity) context.Activity;
             Attachment imageAttachment = new Attachment()
             {
-                ContentUrl = "https://image.freepik.com/free-vector/businessman-with-doubts_23-2147618177.jpg",
+                ContentUrl = "http://madcalm.com/wp-content/uploads/2018/06/MADCALM-CONFUSED.png", // "https://image.freepik.com/free-vector/businessman-with-doubts_23-2147618177.jpg",
                 ContentType = "image/png",
                 Name = "Bender_Rodriguez.png"  
             };                    
