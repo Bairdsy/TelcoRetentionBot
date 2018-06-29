@@ -56,6 +56,11 @@ namespace MultiDialogsBot.Dialogs
                 if (!GetAllModels().Contains(model))
                     model = null;
             }
+            else if (contents.StartsWith("Show me Plan Prices for "))
+            {
+                await PlanPricesButtonHandlerAsync(context, contents.Substring(24));
+                return;
+            }
 
             if (model != null)
             {
