@@ -23,18 +23,21 @@ namespace MultiDialogsBot.Database
             IEnumerator IEnumerable.GetEnumerator() { return models.Values.GetEnumerator();}
 
             Dictionary<string, HandSetFeatures> models;
+            Dictionary<string, HandSetFeatures> spaceLess;
+
             public string BrandLogoURL { get; set; }
 
             public Models ()
             {
                 models = new Dictionary<string, HandSetFeatures>();
+                spaceLess = new Dictionary<string, HandSetFeatures>();
             }
-
+            /*
             public Models(string brandImageURL) : this()
             {
                 BrandLogoURL = brandImageURL;
             }
-
+            */
             public void Add(HandSetFeatures newModel)
             {
                 HandSetFeatures old;
@@ -42,6 +45,7 @@ namespace MultiDialogsBot.Database
                 if (!models.TryGetValue(newModel.Model, out old))
                 {
                     models.Add(newModel.Model, newModel);
+                    spaceLess.Add(RemoveSpaces(newModel.Model), newModel);
                 }
                 else
                     newModel.CopyTo(old);
@@ -92,7 +96,15 @@ namespace MultiDialogsBot.Database
 
             public string GetSpecificModelBrand(string model)
             {
-                return models[model].Brand;
+                HandSetFeatures features;
+
+                if (models.TryGetValue(model, out features))
+                    return features.Brand;
+                //return models[model].Brand;
+                if (spaceLess.TryGetValue(RemoveSpaces(model), out features))
+                    return features.Brand;
+                else
+                    throw new Exception($"Error....I don't have the {model} model in my database");
             }
 
             public List<string> SelectWithRegEx(List<string> regex_filters)
@@ -111,10 +123,23 @@ namespace MultiDialogsBot.Database
                 }
                 return  returnVal;
             }
-
+             
             public HandSetFeatures GetEquipmentFeatures(string model)
             {
-                return models[model];
+                HandSetFeatures features;
+
+                if (models.TryGetValue(model, out features))
+                    return features;
+                //return models[model];
+                if (models.TryGetValue(RemoveSpaces(model), out features))  
+                    return features;
+                else
+                    throw new Exception($"Error...could not find the {model} model in database");
+            }
+
+            private string RemoveSpaces(string strWithSpaces)
+            {
+                return string.Concat(strWithSpaces.ToLower().Split(' '));
             }
         }
 

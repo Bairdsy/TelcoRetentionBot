@@ -58,8 +58,6 @@ namespace MultiDialogsBot.Dialogs
             IMessageActivity msg = (IMessageActivity)(await awaitable);
             string modelPicked,unwantedModels,buttonPressed = msg.Text ;
             string[] models2Exclude;
-            HandSetFeatures handSetFeatures;
-            
 
             if (buttonPressed.StartsWith("I want "))
             {
@@ -118,6 +116,11 @@ namespace MultiDialogsBot.Dialogs
                 selectedModel = model = buttonPressed.Substring(7);
                 context.Done(model);
             }
+            else if (buttonPressed.StartsWith("Plan Prices for "))
+            {
+                model = buttonPressed.Substring(16);
+                await PlanPricesButtonHandlerAsync(context, model);
+            }
             else if (buttonPressed.StartsWith("No"))
             {
                 string brand = Miscellany.Capitalize(GetModelBrand(this.selectedModel));
@@ -158,7 +161,7 @@ namespace MultiDialogsBot.Dialogs
                 }
                 else
                 {
-                    await context.PostAsync($"Great, here are the TOP {x} models for {(featureIntent != null ? "for " + featureIntent : "")} to choose from.");
+                    await context.PostAsync($"Great, here are the TOP {x} models {(featureIntent != null ? "for " + featureIntent : "")} to choose from.");
                     await context.PostAsync("Or let's work out some other options if you are not happy with these ones, please type \"Start again\"");
                 }
                 firstTime = false;

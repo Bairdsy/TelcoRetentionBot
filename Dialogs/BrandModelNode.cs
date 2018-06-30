@@ -65,7 +65,7 @@ namespace MultiDialogsBot.Dialogs
             if (model != null)
             {
                 if (debugMessages) await context.PostAsync("DEBUG: OK, you picked " + model);
-                context.Done(model);
+                context.Done(model); 
             }
             else if ((failureNumber != 0) && (contents.ToLower() == "start again"))
             {

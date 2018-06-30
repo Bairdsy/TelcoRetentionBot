@@ -77,6 +77,7 @@ namespace MultiDialogsBot.Dialogs
             smallDesc = new Dictionary<EIntents, string>()
             {
                 {EIntents.BatteryLife,"Battery life" },
+                {EIntents.Small, "Physical Size" }
             };
 
             handSetsBag = handSets;
@@ -359,6 +360,8 @@ namespace MultiDialogsBot.Dialogs
             var msg = context.MakeMessage();
             string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
 
+            if (desiredFeature == EIntents.None)
+                return;
             if (EKeywords.ShowMeAll == keywords)
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is " + "Show Me All");

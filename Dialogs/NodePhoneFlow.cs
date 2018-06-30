@@ -288,7 +288,8 @@ namespace MultiDialogsBot.Dialogs
             }
             else if ((x = handSets.BagCount()) <= BotConstants.MAX_CAROUSEL_CARDS)
             {
-                await context.PostAsync($"Great choice! There are {x} different versions for you to choose from");
+                if (x > 1)
+                    await context.PostAsync($"Great choice! There are {x} different versions for you to choose from");
                 context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);
             }  
             else
@@ -403,8 +404,9 @@ namespace MultiDialogsBot.Dialogs
         {
             IMessageActivity activity = (IMessageActivity) await awaitable;
             string option = activity.Text,selectedModel;
-
-            if (option.Equals("I'll pick"))
+            var totalPhones = GetModelCount();
+              
+            if (option.Equals("I'll pick")) 
             {
                 context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
             }
@@ -413,10 +415,21 @@ namespace MultiDialogsBot.Dialogs
                 selectedModel = option.Substring(7);
                 context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);
             }
-            else if (option.StartsWith("Plan Prices for"))
+            else if (option.StartsWith("Plan Prices for "))
             {
-                await context.PostAsync("Ryan's node to kick in");
-                context.Wait(MessageReceivedAsync);
+                List<CardAction> buttons; 
+
+                selectedModel = option.Substring(16);
+                await PlanPricesButtonHandlerAsync(context, selectedModel);
+                activity = ((Activity)(context.Activity)).CreateReply();
+                activity.Text = $"There are {totalPhones} phones to choose from or I can help you choose one";
+                buttons = new List<CardAction>()
+                {
+                    new CardAction(){Title = "I'll decide by myself",Type=ActionTypes.ImBack,Value = "I'll pick"},
+                    new CardAction(){Title = "Help me work it out, based on what's important for me",Type= ActionTypes.ImBack,Value = "Help me work it out"}
+                };
+                activity.SuggestedActions = new SuggestedActions(actions: buttons);
+                await context.PostAsync(activity);           
             }
             else
                 await RecommendPhoneAsync(context, null, null);
@@ -465,14 +478,14 @@ namespace MultiDialogsBot.Dialogs
             try
             {
                 topFeatures = new TopFeatures(theDecoder);    
-                handSets.InitializeBag(brand, lowerThreshold);       
+                handSets.InitializeBag(brand, lowerThreshold);
                 count = handSets.BagCount();
                 if (count > BotConstants.MAX_CAROUSEL_CARDS)
                 {
                     if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                     if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
                     Activity message = (Activity)context.Activity;
-                    Activity reply = message.CreateReply($"We have over { count} different models of phone to choose from. As you are unsure what is your best model then let me know what is imporrtant to you and I'll select a few for you to choose from. If you like a particular brand just say which ones. Or you can choose features (like weight, battery life, camera...) or just tell me how you mistly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)\r\nYou can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
+                    Activity reply = message.CreateReply($"We have over { count} different models of phone to choose from. As you are unsure what is your best model then let me know what is imporrtant to you and I'll select a few for you to choose from. If you like a particular brand just say which ones. Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)\r\nYou can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
                     reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
                     await context.PostAsync(reply);   
@@ -492,7 +505,7 @@ namespace MultiDialogsBot.Dialogs
             List<string> modelsInBag;
             int handSetsLeft= 4;
             IntentDecoder decoder = null;
-            string keyword = null;
+            bool showGreatChoiceBanner = true;
 
             LuisCalled = true;
             try
@@ -514,8 +527,12 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 if (decoder.FeatureOrNeedDesc == "Show Me All")
+                {
                     decoder.FeatureOrNeedDesc = null;
-                context.Call(new LessThan5Node(modelsInBag, true, decoder.LastOneWasNeed, decoder.FeatureOrNeedDesc), FinalSelectionReceivedAsync);
+                    /* In this case, there is no need to write "Great Choice! ... */
+                    showGreatChoiceBanner = false;
+                }
+                context.Call(new LessThan5Node(modelsInBag, showGreatChoiceBanner  , decoder.LastOneWasNeed, decoder.FeatureOrNeedDesc), FinalSelectionReceivedAsync);
             }
         }
 
