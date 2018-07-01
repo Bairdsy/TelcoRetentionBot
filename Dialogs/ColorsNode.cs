@@ -58,7 +58,14 @@ namespace MultiDialogsBot.Dialogs
 
             await context.PostAsync($"Great Choice - The {chosenModel} is perfect for you because {phoneMatchMsg}. Now we need to work out what plan you should be on");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
-            await context.PostAsync("Ryan's node to kick in");
+            //Ryans flow kicks in
+            context.Call(new PlanNode(), this.PlanFlowDone);
+        }
+
+        private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
+        {
+            await context.PostAsync("End of plan Flow");
+            context.Wait(MessageReceivedAsync);
         }
 
         private async Task ColorSelectionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)

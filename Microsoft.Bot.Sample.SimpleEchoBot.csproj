@@ -263,6 +263,7 @@
     <Compile Include="Dialogs\NodeLuisSubsNeeds.cs" />
     <Compile Include="Dialogs\NodePhoneFlow.cs" />
     <Compile Include="Dialogs\Node_Template - Copy - Copy.cs" />
+    <Compile Include="Dialogs\PlanNode.cs" />
     <Compile Include="Dialogs\RootDialog - Copy.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Dialogs\SupportDialog.cs" />
