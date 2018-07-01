@@ -159,7 +159,12 @@ namespace MultiDialogsBot.Dialogs
 
         private async Task ProcessAfterPlanAsync(IDialogContext context,IAwaitable<object> awaitable)
         {
+            string chosenPlanName;
+
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessAfterPlanAsync");
+            context.ConversationData.TryGetValue("ChosenPlanName", out chosenPlanName);
+
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : name of chosen plan = " + chosenPlanName);
             await ProcessNeedOrFeatureAsync(context, res);
         }
 
@@ -406,7 +411,7 @@ namespace MultiDialogsBot.Dialogs
             }
             catch (Exception xception)
             {
-                await context.PostAsync("DEBUG : Error...failure to forward to LUIS Subscriber needs node, xception message = " + xception.Message);
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Error...failure to forward to LUIS Subscriber needs node, xception message = " + xception.Message);
             }
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : End of ProcessNeedOrFeatureAsync()");
         }

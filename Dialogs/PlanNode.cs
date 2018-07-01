@@ -20,7 +20,7 @@
 
         public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync($"DEBUG: entering node2");
+            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: entering node2");
 
             if (context.ConversationData.TryGetValue("SubsNumber", out subsno))
             {

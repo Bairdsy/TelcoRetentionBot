@@ -17,7 +17,7 @@ namespace MultiDialogsBot.Dialogs
     public class BrandModelNode : CommonDialog
     {
         const int MAX_FAILURES = 3;
-
+         
         string brandChosen;
         int availableModelsCount,failureNumber = 0;
         List<string> brandModels, xclude = null;
