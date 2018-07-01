@@ -121,7 +121,7 @@ namespace MultiDialogsBot.Helper
         {   
             string englishDesc;
             Tuple<string, string, int> tuple;    
-            int freq,index;
+            int freq,index;   
 
             for (int i = 0; i < ranking.Count; ++i)       
             { 

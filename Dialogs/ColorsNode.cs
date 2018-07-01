@@ -29,7 +29,7 @@ namespace MultiDialogsBot.Dialogs
             if (debugMessages) await context.PostAsync($"DEBUG : StartAsync() method in ColorsNode object, I received {chosenModel} model to present");
 
             colors = GetColors(chosenModel);
-            if (colors.Count != 1)
+            if (colors.Count != 1)   // This way works well because context.Wait(MessageReceivedAsync) is commented out
                 PromptDialog.Choice(context, 
                                   ColorSelectionReceivedAsync,
                                   colors,
@@ -39,7 +39,7 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 await CongratulateSubsAsync(context);
-                context.Wait(MessageReceivedAsync);
+                // context.Wait(MessageReceivedAsync);   <----------- Needs to be commented out as well
             }
         }
 
@@ -52,14 +52,22 @@ namespace MultiDialogsBot.Dialogs
             context.Wait(MessageReceivedAsync);
         }
 
-        private async Task CongratulateSubsAsync(IDialogContext context)
+        private async Task CongratulateSubsAsync(IDialogContext context )
         {
             string phoneMatchMsg = "The phone match message will be inserted here";
 
             await context.PostAsync($"Great Choice - The {chosenModel} is perfect for you because {phoneMatchMsg}. Now we need to work out what plan you should be on");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in
-            context.Call(new PlanNode(), this.PlanFlowDone);
+            await context.PostAsync("DEBUG : I'm going to call Ryan's node");
+            try
+            {
+                context.Call(new PlanNode(),PlanFlowDone);
+            }
+            catch (Exception xception)
+            {
+                await context.PostAsync("Error...xception message = " + xception.ToString());
+            }
         }
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
@@ -72,7 +80,7 @@ namespace MultiDialogsBot.Dialogs
         {
             await CongratulateSubsAsync(context);
 
-            context.Wait(MessageReceivedAsync);
+          //  context.Wait(MessageReceivedAsync);
         }
     }
 

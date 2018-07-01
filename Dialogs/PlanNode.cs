@@ -20,7 +20,7 @@
 
         public async Task StartAsync(IDialogContext context)
         {
-            //await context.PostAsync($"DEBUG: entering node2");
+            await context.PostAsync($"DEBUG: entering node2");
 
             if (context.ConversationData.TryGetValue("SubsNumber", out subsno))
             {
@@ -176,6 +176,7 @@
                                     msg.Attachments.Add(Card.ToAttachment());
 
                                     await context.PostAsync(msg);
+                                    context.Done(2);
                                 }
 
                                 
@@ -209,6 +210,7 @@
                 case "i'm sure":
                 case "I'm sure":
                     //  call the next node here
+                    context.Done(2);
                     break;
                 case "No":
                 case "no":

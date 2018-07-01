@@ -151,9 +151,16 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync("I understand that the most important thing for you is the price, but this will depend on what plan you take it with.  Lets work the plan out first then and come back to the phone.");
                 //await context.PostAsync("Ryan's node to kick in");
                 desiredFeature = EIntents.Cheap;
-                //context.Call(new PlanNode(), ProcessNeedOrFeatureAsync);
+                res = result;
+                context.Call(new PlanNode(), ProcessAfterPlanAsync);
             }
  
+        }
+
+        private async Task ProcessAfterPlanAsync(IDialogContext context,IAwaitable<object> awaitable)
+        {
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessAfterPlanAsync");
+            await ProcessNeedOrFeatureAsync(context, res);
         }
 
         [LuisIntent("DualCamera")]

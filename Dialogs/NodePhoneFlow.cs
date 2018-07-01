@@ -415,7 +415,7 @@ namespace MultiDialogsBot.Dialogs
             else if (option.StartsWith("I want "))
             {
                 selectedModel = option.Substring(7);
-                context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);
+                context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);  
             }
             else if (option.StartsWith("Plan Prices for "))
             {
@@ -433,10 +433,10 @@ namespace MultiDialogsBot.Dialogs
                 activity.SuggestedActions = new SuggestedActions(actions: buttons);
                 await context.PostAsync(activity);           
             }
-            else if (option.ToLower().StartsWith("no"))
+            else if (option.StartsWith("Help me work it out"))
                 await RecommendPhoneAsync(context, null, null);
             else if (!firstTime && option.ToLower().StartsWith("start again"))
-            {
+            { 
                 if (LuisCalled)
                     context.Call(new BrandModelNode( ), FinalSelectionReceivedAsync);
                 else
