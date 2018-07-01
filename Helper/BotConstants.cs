@@ -12,5 +12,7 @@ namespace MultiDialogsBot.Helper
 
         public const double PERCENT_HIGH_CERTAINTY = 0.75;
         public const double PERCENT_MEDIUM_CERTAINTY = 0.40;
+
+        public const int MAX_ATTEMPTS = 3;
     }
 }

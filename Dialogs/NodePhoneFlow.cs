@@ -23,7 +23,8 @@ namespace MultiDialogsBot.Dialogs
     {
         string preferredBrand;
         string phraseFromSubs;
-        bool LuisCalled = false; 
+        bool LuisCalled = false,firstTime ;
+        int numberOfFailures = 0;
 
         public NodePhoneFlow(string input)
         {
@@ -109,6 +110,7 @@ namespace MultiDialogsBot.Dialogs
                 };
                 activity.SuggestedActions = new SuggestedActions(actions : buttons);
                 await context.PostAsync(activity);
+                firstTime = false;
                 context.Wait(PickOrRecommendOptionReceivedAsync);
             }
         }
@@ -408,7 +410,7 @@ namespace MultiDialogsBot.Dialogs
               
             if (option.Equals("I'll pick")) 
             {
-                context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
+                context.Call(new BrandModelNode(), FinalSelectionReceivedAsync); 
             }
             else if (option.StartsWith("I want "))
             {
@@ -431,8 +433,30 @@ namespace MultiDialogsBot.Dialogs
                 activity.SuggestedActions = new SuggestedActions(actions: buttons);
                 await context.PostAsync(activity);           
             }
-            else
+            else if (option.ToLower().StartsWith("no"))
                 await RecommendPhoneAsync(context, null, null);
+            else if (!firstTime && option.ToLower().StartsWith("start again"))
+            {
+                if (LuisCalled)
+                    context.Call(new BrandModelNode( ), FinalSelectionReceivedAsync);
+                else
+                {
+                    await CallLuisPhoneNodeAsync(GetAllModels(), context);
+                }
+            }
+            else 
+            {
+                if (++numberOfFailures <= BotConstants.MAX_ATTEMPTS)
+                {
+                    await context.PostAsync("Sorry. I don't quite follow what you're saying. Click on \"Pick Me\" if there is a phone you like, or cliclk on \"Phone Price per Plan\" to see if the cost for that phone on the different plans available.");
+                    await context.PostAsync("You can also click \"Expert Reviews\" or \"Specifications\" for more details on any phone. Or if you want to go back to choose another brand or model type \"Start Again\"");
+                }
+                else
+                {
+                    await context.PostAsync("Too many failed attempts, I'm sorry but I cannot understand what you want to do, recovery from this situation is left to Help Node");
+                    context.Wait(MessageReceivedAsync);
+                }
+            }
         }
 
         private async Task ChangeBrandAnswerReceived(IDialogContext context,IAwaitable<object> awaitable)

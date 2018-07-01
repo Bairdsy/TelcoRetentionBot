@@ -19,6 +19,7 @@ namespace MultiDialogsBot.Helper
 
         IntentDecoder theDecoder;
         List<Tuple<string, string,int>> ranking;
+        Dictionary<string, int> numberOfHits;
 
         public IntentDecoder AssociatedDecoder
         {
@@ -61,6 +62,9 @@ namespace MultiDialogsBot.Helper
 
             theDecoder = decoder;
             ranking = MongoDBAccess.Instance.GetFeatureRanking();
+            numberOfHits = new Dictionary<string, int>();
+            foreach (var tuple in ranking)
+                numberOfHits.Add(tuple.Item1, tuple.Item3);
         }
 
         public int numberOfFeatures()
@@ -92,6 +96,7 @@ namespace MultiDialogsBot.Helper
             }
             intents2Exclude = theDecoder.Exclude;
             ranking = new List<Tuple<string, string,int>>(ranking.Where((tuple, i) => (!indexes4Removal.Contains(i) && !intents2Exclude.Contains(english2Intent[tuple.Item1]))));
+            
             for (int i = 0; i < ranking.Count; ++i)
             {
                 debug.Append(this.ranking[i].Item1 + " ==> ");
@@ -118,22 +123,23 @@ namespace MultiDialogsBot.Helper
             Tuple<string, string, int> tuple;    
             int freq,index;
 
-            for (int i = 0; i < ranking.Count; ++i)    
-            {
+            for (int i = 0; i < ranking.Count; ++i)       
+            { 
                 debug.Append(this.ranking[i].Item1 + " ==> ");
                 debug.Append($"name: {ranking[i].Item1}, description : {ranking[i].Item2}");
                 debug.Append("\r\n");
             }
             if (!englishDescriptions.TryGetValue(feature,out englishDesc))
                 return;
- 
-            tuple = ranking.Where(x => x.Item1.ToLower() == englishDesc.ToLower()).Single();
-            
-            index = ranking.IndexOf(tuple);
+            /*
+                       tuple = ranking.Where(x => x.Item1.ToLower() == englishDesc.ToLower()).Single();
 
-            freq = tuple.Item3;
-            tuple = new Tuple<string, string, int>(tuple.Item1,tuple.Item2, ++freq);
-            ranking[index] = tuple;
+                       index = ranking.IndexOf(tuple);
+
+                       freq = tuple.Item3;
+                       tuple = new Tuple<string, string, int>(tuple.Item1,tuple.Item2, ++freq);
+                       ranking[index] = tuple;*/
+            freq = numberOfHits[englishDescriptions[feature]];
             MongoDBAccess.Instance.SetFeatureFrequency(englishDescriptions[feature], freq);
             ranking.Sort((x, y) => -Math.Sign(x.Item3 - y.Item3));
         }

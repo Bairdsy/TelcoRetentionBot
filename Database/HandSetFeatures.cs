@@ -98,26 +98,21 @@ namespace MultiDialogsBot.Database
         }
             
 
-       // public HandSetFeatures(BsonDocument bsonElements,List<BsonDocument> features = null) : this()    
+
         public HandSetFeatures(BsonDocument bsonElements) : this()
         {
             string key,data;
             DateTime result;
-            int batteryLifeInHours;
+            int batteryLifeInHours, counter = 0; ;
             double cameraResolutionMPixels;
             int weight,xRes,yRes,megs,gigs,generic;
             double price,res;
 
-
-        /*    Brand = bsonElements.GetElement("Brand").Value.ToString(); // bsonElements.GetElement("Maker").Value.ToString()  ;
-            Model = bsonElements.GetElement("Model").Value.ToString()  ;*/
-            ImageURL = "https://image.freepik.com/free-icon/not-available-abbreviation-inside-a-circle_318-33662.jpg"; // bsonElements.GetElement("Image").Value.ToString(); Vai mudar quando passarmos para a  nova
+            ImageURL = "https://image.freepik.com/free-icon/not-available-abbreviation-inside-a-circle_318-33662.jpg"; 
             keyValuePairs = new Dictionary<string, string>();
 
-            /*  if ((features != null) && (features.Count != 0))
-              {*/
-            int counter = 0;
-            foreach (var element in /*features[0]*/ bsonElements)
+            
+            foreach (var element in bsonElements)
             {
                 ++counter;
                 if (element == null)
@@ -136,7 +131,7 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key == "Model")
                 {
-                    Model = data.Replace('-',' ');   // To avoid problems with hyphens
+                    Model = data.Replace('-',' ').Replace("be you","beyou");   // To avoid problems with hyphens
                 }
                 else if ((key == "Release date") && DateTime.TryParse(data, out result))   // Release date
                 {

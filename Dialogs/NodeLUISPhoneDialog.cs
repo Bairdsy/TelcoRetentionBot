@@ -434,6 +434,7 @@ namespace MultiDialogsBot.Dialogs
             NodeLuisSubsNeeds.ENeeds needsIntent = result.Item1;
             int handSetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
 
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of the method ProcessLuisNeedResult()");
             if (needsScore > desiredFeatureScore)  // WE have a need 
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString()); 
@@ -446,7 +447,9 @@ namespace MultiDialogsBot.Dialogs
             {
                 try 
                 {
+                    if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm goin to set frequency");
                     topButtons.SetNewFreq(desiredFeature, sb);
+                    if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : New Frequency set, getting into the switch to switch to correct one (no pun intented)");
                     switch (desiredFeature)
                     {
                         case EIntents.Small:
@@ -468,6 +471,7 @@ namespace MultiDialogsBot.Dialogs
                         case EIntents.OS:
                             if (!GetOSData(res))
                             {
+                                if (CommonDialog.debugMessages) await context.PostAsync("Handling OS intent");
                                 PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagOSes(), "Could you please indicate your favourite Operating System?", "Not understood, please try again", 3);
                             }
                             else
