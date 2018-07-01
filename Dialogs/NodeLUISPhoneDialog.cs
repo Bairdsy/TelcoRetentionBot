@@ -138,10 +138,22 @@ namespace MultiDialogsBot.Dialogs
         public async Task Cheap(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            if (CommonDialog.debugMessages)  await context.PostAsync("I understand that the most important thing for you is the price");
-            await context.PostAsync("Ryan's node to kick in");
-            desiredFeature = EIntents.Cheap; 
-            await ProcessNeedOrFeatureAsync(context, result);
+            string chosenPlan;
+
+            if (context.ConversationData.TryGetValue("ChosenPlanName", out chosenPlan))
+            {
+                await context.PostAsync("I understand that the most important thing for you is the price.");
+                desiredFeature = EIntents.Cheap;
+                await ProcessNeedOrFeatureAsync(context, result);
+            }
+            else
+            {
+                await context.PostAsync("I understand that the most important thing for you is the price, but this will depend on what plan you take it with.  Lets work the plan out first then and come back to the phone.");
+                //await context.PostAsync("Ryan's node to kick in");
+                desiredFeature = EIntents.Cheap;
+                //context.Call(new PlanNode(), ProcessNeedOrFeatureAsync);
+            }
+ 
         }
 
         [LuisIntent("DualCamera")]
