@@ -24,7 +24,7 @@ namespace Microsoft.Bot.Sample.SimpleEchoBot
 
             if (message.Text == "reset")
             {
-                PromptDialog.Confirm(
+                PromptDialog.Confirm( 
                     context,
                     AfterResetAsync,
                     "Are you sure you want to reset the count?",
