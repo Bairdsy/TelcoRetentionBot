@@ -29,7 +29,7 @@ namespace MultiDialogsBot.Dialogs
             if (debugMessages) await context.PostAsync($"DEBUG : StartAsync() method in ColorsNode object, I received {chosenModel} model to present");
 
             colors = GetColors(chosenModel);
-            if (colors.Count != 1)   // This way works well because context.Wait(MessageReceivedAsync) is commented out
+            if (colors.Count != 1)   
                 PromptDialog.Choice(context, 
                                   ColorSelectionReceivedAsync,
                                   colors,
@@ -39,7 +39,6 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 await CongratulateSubsAsync(context);
-                // context.Wait(MessageReceivedAsync);   <----------- Needs to be commented out as well
             }
         }
          
@@ -49,9 +48,8 @@ namespace MultiDialogsBot.Dialogs
         {
             if (debugMessages) await context.PostAsync("DEBUG : ColorsNode object - End of dialog");
             await context.PostAsync("0 OK, 0:1");
-            // context.Wait(MessageReceivedAsync);
             context.Done(0);
-        }
+        } 
 
         private async Task CongratulateSubsAsync(IDialogContext context )
         {
