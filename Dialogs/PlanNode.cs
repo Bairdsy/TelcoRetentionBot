@@ -17,9 +17,11 @@
         string subsno;
         protected static IMongoClient _client;
         protected static IMongoDatabase _database;
+        int failCount;
 
         public async Task StartAsync(IDialogContext context)
         {
+            failCount = 0;
             if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: entering node2");
 
             if (context.ConversationData.TryGetValue("SubsNumber", out subsno))
@@ -31,7 +33,7 @@
                 _database = _client.GetDatabase("madcalm");
 
 
-                await context.PostAsync($"Great.  I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
+                await context.PostAsync($"I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
                 await Task.Delay(3000);
                // await this.ShowUsageCards(context);
                 //await Task.Delay(4000);
@@ -66,8 +68,8 @@
 
                             if (count == 0)
                             {
-                               Name = "Recommended for you - " + Name;
-                               await context.PostAsync(generic_msg);
+                               Name = "*Recommended for you* - " + Name;
+                               await context.PostAsync($"**{generic_msg}**");
                                 await context.PostAsync($"Based on that, Ive ranked all of your options from best (leftmost) to worst (rightmost) in the list below.  You can also click on Show Analysis to see my analysis of your usage over the last 3 months.");
                             }
                             var Card = new HeroCard
@@ -76,7 +78,7 @@
                                 Subtitle = Highlight,
                                 Text = Warning,
                                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/07/" + Image + ".png") },
-                                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "Choose " + Code), new CardAction(ActionTypes.ImBack, "Show Analysis", value: "Analyse") }
+                                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "Choose " + Code), new CardAction(ActionTypes.ImBack, "Show Analysis", value: "Analyse") }
                             };
                             CardList.Add(Card);
                             count++;
@@ -108,16 +110,6 @@
             var optionSelected = message.Text;
             try
             {
-                switch (optionSelected)
-                {
-                    case "analyse":
-                    case "Analyse":
-                        await this.ShowUsageCards(context);
-                        context.Wait(this.ChosenPlan);
-                        break;
-                        //context.Call(new Node10(), this.ResumeAfterOptionDialog);
-                        //break;
-                }
                 StringComparison comparison = StringComparison.InvariantCulture;
                 if (optionSelected.StartsWith("Choose", comparison))
                 {
@@ -178,14 +170,36 @@
                                     await context.PostAsync(msg);
                                     context.Done(2);
                                 }
-
-                                
-
                             }
                         }
                     }
-
                 }
+                else
+                {
+                    switch (optionSelected)
+                    {
+                        case "analyse":
+                        case "Analyse":
+                            await this.ShowUsageCards(context);
+                            context.Wait(this.ChosenPlan);
+                            break;
+                        //context.Call(new Node10(), this.ResumeAfterOptionDialog);
+                        //break;
+                        default:
+                            await context.PostAsync($"I'm sorry.  I don't understand that response.  If you have finished looking at your analysis please scroll back up and choose a plan from the list.");
+                            failCount++;
+                            if (failCount < 3)
+                            {
+                                context.Wait(this.ChosenPlan);
+                            }
+                            else
+                            {
+                                context.Call(new PlanNode(), ResumeAfterOptionDialog);
+                            }
+                            break;
+                    }
+                }
+
             }
 
             catch (TooManyAttemptsException ex)
