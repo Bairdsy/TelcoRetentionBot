@@ -149,11 +149,7 @@ namespace MultiDialogsBot.Dialogs
             HeroCard heroCard;
             int x = modelList.Count;
 
-            if (!weAreOnBranch7)
-            {
-                await context.PostAsync("If you change your mind I can help you to choose something else. Just type \"Start Again\" to find a more suitable model");
-            }
-            else if (firstTime)
+             if (firstTime)
             {
                 if (!answerWasFeature)
                 {
@@ -166,7 +162,7 @@ namespace MultiDialogsBot.Dialogs
                 }
                 firstTime = false;
             }
-            reply.AttachmentLayout = "carousel";
+            reply.AttachmentLayout = "carousel"; 
             foreach (var model in models)
             {
                 heroCard = new HeroCard()

@@ -55,12 +55,12 @@ namespace MultiDialogsBot.Dialogs
         {
             string phoneMatchMsg = "The phone match message will be inserted here";
 
-            await context.PostAsync($"Great Choice - The {chosenModel} is perfect for you because **{phoneMatchMsg}** . Now we need to work out what plan you should be on");
+            await context.PostAsync($"Excellent selection - The {chosenModel} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm going to call Ryan's node");
             try
-            {
+            { 
                 context.Call(new PlanNode(),PlanFlowDone);
             }
             catch (Exception xception)   

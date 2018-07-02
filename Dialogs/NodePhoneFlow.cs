@@ -23,7 +23,7 @@ namespace MultiDialogsBot.Dialogs
     {
         string preferredBrand;
         string phraseFromSubs;
-        bool LuisCalled = false,firstTime ;
+        bool LuisCalled = false,firstTime,isUnsure = true ;
         int numberOfFailures = 0;
 
         public NodePhoneFlow(string input)
@@ -314,7 +314,8 @@ namespace MultiDialogsBot.Dialogs
             if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
             if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
             await context.PostAsync($"We have over {basket.Count} different models of phone to choose from.");
-            await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
+            await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from");
+            await context.PostAsync(" If you like a particular brand just say which ones.");
             await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
             reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
             if (debugMessages) await context.PostAsync("DEBUG : Results " + sb.ToString());
@@ -512,11 +513,13 @@ namespace MultiDialogsBot.Dialogs
                     if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                     if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
                     Activity message = (Activity)context.Activity;
-                    Activity reply = message.CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
+                    Activity reply = message.CreateReply(isUnsure ?   "You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"" :
+                                                                      "Remember that you can always ask for all phones and work through the different options on your own,just enter \"Start Again\"");
                     reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
                     await context.PostAsync($"We have over { count} different models of phone to choose from. ");
-                    await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
+                    if (isUnsure)
+                        await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
                     await context.PostAsync("Or you can choose features (like weight, battery life, camera...) ");
                     await context.PostAsync("or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
                     await context.PostAsync(reply);   
@@ -600,9 +603,11 @@ namespace MultiDialogsBot.Dialogs
             switch (selection[0])
             {
                 case LessThan5Node.SOME_OTHER_BRAND:
+                    isUnsure = false;
                     await RecommendPhoneAsync(context, "!" + selection.Substring(1));
                     break;
                 case LessThan5Node.STICK_WITH_BRAND:
+                    isUnsure = false;
                     await RecommendPhoneAsync(context, selection.Substring(1));
                     break;
                 case LessThan5Node.NONE_OF_THESE_MODELS:
