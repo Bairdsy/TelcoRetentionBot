@@ -112,10 +112,10 @@ namespace MultiDialogsBot.Dialogs
                 moreThanOne = (brandModels.Count != 1);
                 brand = Miscellany.Capitalize(brand);
                 var reply = messageActivity.CreateReply(moreThanOne ? "Which model would you like to have? Please pick one" : $"This is the only model I have available from {brand}");
-
+                 
                 ComposeModelCarousel(brand, brandModelsList, reply);
                 await context.PostAsync(reply);
-                if (debugMessages) await context.PostAsync("Exiting BrandChoiceMadeAskModelAsync(), brand is available on stock");
+                if (debugMessages) await context.PostAsync("DEBUG : Exiting BrandChoiceMadeAskModelAsync(), brand is available on stock");
                 context.Wait(ChoiceMadeAsync);
             }
             else if (unavailable)
@@ -123,13 +123,13 @@ namespace MultiDialogsBot.Dialogs
                 int x = availableModelsCount;
 
                 await context.PostAsync($"Unfortunately we don't have that brand in stock, but you can choose from over {x} plus models from Apple, Samsung, Nokia and other leading brands. Type the brands below from this list");
-                if (debugMessages) await context.PostAsync("Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
+                if (debugMessages) await context.PostAsync("DEBUG : Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
                 context.Wait(BrandChoiceMadeAskModelAsync);
             }
             else
             {
                 await context.PostAsync("Not understood, please pick or type the brand you like");
-                if (debugMessages) await context.PostAsync("Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
+                if (debugMessages) await context.PostAsync("DEBUG : Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
                 context.Wait(BrandChoiceMadeAskModelAsync);
             }
         }

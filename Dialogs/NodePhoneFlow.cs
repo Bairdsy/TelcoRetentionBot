@@ -279,14 +279,15 @@ namespace MultiDialogsBot.Dialogs
             AddUncoveredBrands(wantedBrands, selectResult);
             sb = new StringBuilder("DEBUG : Models selected including uncovered brands: ");
             foreach (string model in selectResult)
-                sb.Append("-->" + model + "\r\n");
+                sb.Append("-->" + model + "\r\n"); 
             if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + sb.ToString());
             handSets.InitializeBag(selectResult);
             if (debugMessages) await context.PostAsync("DEBUG : contents of bag : " + handSets.BuildStrRep());
             if (selectResult.Count == 0)
             {
-                await context.PostAsync("Sorry I got that wrong, could you just type the specific model and brand so I can show it to you?");
-                context.Call(new BrandModelNode(), MessageReceivedAsync);
+                // await context.PostAsync("Sorry I got that wrong, could you just type the specific model and brand so I can show it to you?");
+                await context.PostAsync("I didn’t understand you, Could you just type the specific model or brand so I can present it to you ? or click on any brands below from this list");
+                context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
             }
             else if ((x = handSets.BagCount()) <= BotConstants.MAX_CAROUSEL_CARDS)
             {
@@ -373,7 +374,9 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("NodePhoneFlow - The End");
 
             await context.PostAsync(  "0 OK, 0:1");
-            context.Wait(MessageReceivedAsync);
+
+            context.Done(0);
+            //context.Wait(MessageReceivedAsync);
         }
 
         private void AddUncoveredBrands(List<string> brands, List<string> models)

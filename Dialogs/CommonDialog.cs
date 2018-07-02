@@ -82,15 +82,6 @@ namespace  MultiDialogsBot.Dialogs
                  InitializeDataStruct();
             brandSet = handSets.GetAllBrands();
 
-
-            /*
-             if (brandSet.Keys.Contains("HIGH"))
-             {
-                 brandSet.Add("HTC", false);
-                 brandSet.Add("High Technology Computer", false);
-                 brandSet.Add("High Tech Computer", false);
-             }*/
-
             return brandSet;
         }
 

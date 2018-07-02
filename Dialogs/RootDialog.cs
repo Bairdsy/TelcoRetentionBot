@@ -299,14 +299,16 @@
 
         private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
         {
-            await context.PostAsync("End of phone Flow");
-            context.Wait(MessageReceivedAsync);
+            await context.PostAsync("End of phone Flow - enter something");
+            context.Wait(CharacterSelectedAsync);
+            //  context.Wait(MessageReceivedAsync);
         }
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("End of plan Flow");
-            context.Wait(MessageReceivedAsync);
+            await context.PostAsync("End of plan Flow - enter something");
+            //     context.Wait(MessageReceivedAsync);
+            context.Wait(CharacterSelectedAsync);
         }
 
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)

@@ -49,7 +49,8 @@ namespace MultiDialogsBot.Dialogs
         {
             if (debugMessages) await context.PostAsync("DEBUG : ColorsNode object - End of dialog");
             await context.PostAsync("0 OK, 0:1");
-            context.Wait(MessageReceivedAsync);
+            // context.Wait(MessageReceivedAsync);
+            context.Done(0);
         }
 
         private async Task CongratulateSubsAsync(IDialogContext context )
@@ -64,7 +65,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 context.Call(new PlanNode(),PlanFlowDone);
             }
-            catch (Exception xception)
+            catch (Exception xception)   
             {
                 await context.PostAsync("Error...xception message = " + xception.ToString());
             }
@@ -72,7 +73,7 @@ namespace MultiDialogsBot.Dialogs
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("End of plan Flow");
+            await context.PostAsync("End of plan Flow - enter something"); 
             context.Wait(MessageReceivedAsync);
         }
 

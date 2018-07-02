@@ -432,7 +432,7 @@ namespace MultiDialogsBot.Dialogs
             if (handSetsLeft == handSetsB4)
                 await context.PostAsync("Unfortunately, that doesn't help in narrowing the list down");
             else if (handSetsLeft == 0)
-            {
+            {   
                 await context.PostAsync("I'm afraid that's a very high standard, I don't have any equipment that fulfills it.");
                 handSetsLeft = handSetsB4;
             }
