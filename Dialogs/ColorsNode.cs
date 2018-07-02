@@ -80,8 +80,6 @@ namespace MultiDialogsBot.Dialogs
         private async Task ColorSelectionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)
         {
             await CongratulateSubsAsync(context);
-
-          //  context.Wait(MessageReceivedAsync);
         }
     }
 
