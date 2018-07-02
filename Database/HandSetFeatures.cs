@@ -7,7 +7,9 @@ using System.Text;
 
 
 using MongoDB.Bson;
-using MongoDB.Driver;
+
+
+using MultiDialogsBot.Helper;
 
 
 namespace MultiDialogsBot.Database
@@ -303,10 +305,10 @@ namespace MultiDialogsBot.Database
 
         public string GetPlanPrices ()
         {
-            StringBuilder sb = new StringBuilder($"The prices for {Model} are:\r\n");
+            StringBuilder sb = new StringBuilder($"The prices for {Miscellany.Capitalize(Model)} are:\r\n");
 
             foreach (var plan in Price.Keys)
-                sb.Append($"{plan} : ${Price[plan]}\r\n");
+                sb.Append($"{Miscellany.Capitalize(plan)} : ${Price[plan]}\r\n");
             return sb.ToString();
         }
 

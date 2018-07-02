@@ -321,7 +321,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync(reply);
             context.Call(new NodeLUISPhoneDialog(topFeatures, handSets, null, null, basket), LuisResponseHandlerAsync);
             LuisCalled = true;
-        }
+        } 
 
         private async Task ShowCurrentPhoneAsync(IDialogContext context)
         {
@@ -512,9 +512,13 @@ namespace MultiDialogsBot.Dialogs
                     if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                     if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
                     Activity message = (Activity)context.Activity;
-                    Activity reply = message.CreateReply($"We have over { count} different models of phone to choose from. As you are unsure what is your best model then let me know what is imporrtant to you and I'll select a few for you to choose from. If you like a particular brand just say which ones. Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)\r\nYou can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
+                    Activity reply = message.CreateReply("You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"");
                     reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
+                    await context.PostAsync($"We have over { count} different models of phone to choose from. ");
+                    await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
+                    await context.PostAsync("Or you can choose features (like weight, battery life, camera...) ");
+                    await context.PostAsync("or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
                     await context.PostAsync(reply);   
                     context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
                 }
