@@ -45,7 +45,7 @@ namespace MultiDialogsBot.Database
                 if (!models.TryGetValue(newModel.Model, out old))
                 {
                     models.Add(newModel.Model, newModel);
-                    spaceLess.Add(RemoveSpaces(newModel.Model), newModel);
+                    spaceLess.Add(Miscellany.RemoveSpaces(newModel.Model), newModel);
                 }
                 else
                     newModel.CopyTo(old);
@@ -101,7 +101,7 @@ namespace MultiDialogsBot.Database
                 if (models.TryGetValue(model, out features))
                     return features.Brand;
                 //return models[model].Brand;
-                if (spaceLess.TryGetValue(RemoveSpaces(model), out features))
+                if (spaceLess.TryGetValue(Miscellany.RemoveSpaces(model), out features))
                     return features.Brand;
                 else
                     throw new Exception($"Error....I don't have the {model} model in my database");
@@ -131,15 +131,10 @@ namespace MultiDialogsBot.Database
                 if (models.TryGetValue(model, out features))
                     return features;
                 //return models[model];
-                if (models.TryGetValue(RemoveSpaces(model), out features))  
+                if (models.TryGetValue(Miscellany.RemoveSpaces(model), out features))  
                     return features;
                 else
                     throw new Exception($"Error...could not find the {model} model in database");
-            }
-
-            private string RemoveSpaces(string strWithSpaces)
-            {
-                return string.Concat(strWithSpaces.ToLower().Split(' '));
             }
         }
 

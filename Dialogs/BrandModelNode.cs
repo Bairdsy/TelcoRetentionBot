@@ -50,11 +50,13 @@ namespace MultiDialogsBot.Dialogs
             string errStr = "Sorry. I don't quite follow what you're saying. Click on \"Pick Me\" if there is a phone you like, or click on \"Phone Price per Plan\" to see the cost for that phone on the different plans available";
             string errStr2 = "You can also click \"Expert reviews\" or \"Specifications\" for more details on any phone. Or if you want to go back to choose another brand or model type \"Start Again\"";
 
-            if (contents.StartsWith("I want a "))
+            if (contents.StartsWith("I want a ")   )
             {
                 model = contents.Substring(9);
                 if (!GetAllModels().Contains(model))
+                {
                     model = null;
+                }
             }
             else if (contents.StartsWith("Show me Plan Prices for "))
             {
@@ -62,7 +64,7 @@ namespace MultiDialogsBot.Dialogs
                 return;
             }
 
-            if (model != null)
+            if ((model = IdentifyModel(contents)) != null)
             {
                 if (debugMessages) await context.PostAsync("DEBUG: OK, you picked " + model);
                 context.Done(model); 
@@ -119,7 +121,7 @@ namespace MultiDialogsBot.Dialogs
                 context.Wait(ChoiceMadeAsync);
             }
             else if (unavailable)
-            {
+            {  
                 int x = availableModelsCount;
 
                 await context.PostAsync($"Unfortunately we don't have that brand in stock, but you can choose from over {x} plus models from Apple, Samsung, Nokia and other leading brands. Type the brands below from this list");
@@ -224,6 +226,16 @@ namespace MultiDialogsBot.Dialogs
             Dictionary<string, bool> modelsBag = GetBrandModels(brand);
 
             return false;
+        }
+
+        private string IdentifyModel(string input)
+        {
+            string temp = Miscellany.RemoveSpaces(input.ToLower());
+
+            foreach (var model in brandModels)
+                if (temp.Contains(Miscellany.RemoveSpaces(model.ToLower())))
+                    return model;
+            return null;
         }
     }
 }

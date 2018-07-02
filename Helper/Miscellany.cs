@@ -27,5 +27,10 @@ namespace MultiDialogsBot.Helper
                 returnValue *= factor;
             return returnValue;
         }
+
+        public static string RemoveSpaces(string strWithSpaces)
+        {
+            return string.Concat(strWithSpaces.ToLower().Split(' '));
+        }
     }
 }
