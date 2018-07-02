@@ -42,7 +42,7 @@ namespace MultiDialogsBot.Dialogs
                 // context.Wait(MessageReceivedAsync);   <----------- Needs to be commented out as well
             }
         }
-
+         
       
 
         public async Task MessageReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
@@ -57,7 +57,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string phoneMatchMsg = "The phone match message will be inserted here";
 
-            await context.PostAsync($"Great Choice - The {chosenModel} is perfect for you because {phoneMatchMsg}. Now we need to work out what plan you should be on");
+            await context.PostAsync($"Great Choice - The {chosenModel} is perfect for you because **{phoneMatchMsg}** . Now we need to work out what plan you should be on");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm going to call Ryan's node");
