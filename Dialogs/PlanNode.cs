@@ -35,8 +35,8 @@
 
                 await context.PostAsync($"I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
                 await Task.Delay(3000);
-               // await this.ShowUsageCards(context);
-                //await Task.Delay(4000);
+                await this.ShowSummaryCardAsync(context);
+                await Task.Delay(3000);
 
                 string generic_msg;
                 var CardList = new List<HeroCard>();
@@ -304,6 +304,10 @@
                                 title = "Roaming Summary";
                                 subtitle = "These are the roaming countries where you have used your phone over the last 3 months.";
                                 break;
+                            case "SUMMARY":
+                                title = "High Level Summary";
+                                subtitle = "A high level summary of your average usage over the last 3 months.";
+                                break;
 
                         }
 
@@ -325,6 +329,44 @@
 
             await context.PostAsync(reply);
             await context.PostAsync($"Here is your analysis.  You can scroll back up and still choose a plan from the list above once you are finished looking.");
+        }
+
+
+        protected async Task ShowSummaryCardAsync(IDialogContext context)
+        {
+            int subsno;
+            context.ConversationData.TryGetValue("SubsNumber", out subsno);
+
+            var reply = context.MakeMessage();
+
+            var collection = _database.GetCollection<BsonDocument>("images");
+            var filter = Builders<BsonDocument>.Filter.Eq("Anon_Subsno", subsno) & Builders<BsonDocument>.Filter.Eq("Name", "SUMMARY");
+            //await context.PostAsync($"Querying collection [{subsno}]");
+            using (var cursor = await collection.FindAsync(filter))
+            {
+                
+                while (await cursor.MoveNextAsync())
+                {
+                    var batch = cursor.Current;
+                    foreach (var document in batch)
+                    {
+                        var image = document.GetElement("Image").Value;
+
+                        //await context.PostAsync($"Read name[{name}] and image[{image}]");
+
+                        var Card = new HeroCard
+                        {
+                            Title = "Analysis Summary",
+                            Text = "Here is a high level summary of my analysis of the way you use your phone.  If you'd like to see more detail, click on Show Analysis in the plan list.",
+                            Images = new List<CardImage> { new CardImage((string)image) },
+                        };
+                        reply.Attachments.Add(Card.ToAttachment());
+
+
+                    }
+                }
+            }
+            await context.PostAsync(reply);
         }
 
         private async Task ResumeAfterOptionDialog(IDialogContext context, IAwaitable<object> result)
