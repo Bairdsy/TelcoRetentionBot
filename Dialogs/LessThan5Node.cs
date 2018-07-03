@@ -118,23 +118,30 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (buttonPressed.StartsWith("Plan Prices for "))
             {
-                model = buttonPressed.Substring(16);
+                model = buttonPressed.Substring(16);  
                 await PlanPricesButtonHandlerAsync(context, model);
             }
             else if (buttonPressed.StartsWith("No"))
             {
-                string brand = Miscellany.Capitalize(GetModelBrand(this.selectedModel));
+                string brandLower;
+                string brand = Miscellany.Capitalize(brandLower = GetModelBrand(this.selectedModel));
+                int numberOfModels = GetBrandModels(brandLower).Count;
 
-                options = new List<string>() { $"Yes, I want to stay with {brand}", "No" };
-                PromptDialog.Choice(context, 
-                    WrongRecoverOptionReceivedAsync, 
-                    options, 
-                    $"Do you still want to look at {brand} range or look at other phones?",
-                    "Not understood, please try again",
-                    4);
+                if (numberOfModels > 1)
+                {
+                    options = new List<string>() { $"Yes, I want to stay with {brand}", "No" };
+                    PromptDialog.Choice(context,
+                        WrongRecoverOptionReceivedAsync,
+                        options,
+                        $"Do you still want to look at {brand} range or look at other phones?",
+                        "Not understood, please try again",
+                        4);
+                }
+                else  // If it is just one, there is really no point in asking if he wants to stick with the same brand...
+                    context.Done(SOME_OTHER_BRAND + brandLower);   
             }
         }
-
+          
         private async Task MessageReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
         {
             await context.PostAsync("LessThan5Node object - End of dialog");

@@ -18,7 +18,7 @@ namespace MultiDialogsBot.Helper
             tokens = allLower.Split(' ');
 
 
-            if (tokens[0].StartsWith("iphone"))
+            if (tokens[0].StartsWith("iphone"))     
                 returnValue.Append("iP" + tokens[0].Substring(2));
             else if (tokens[0].StartsWith("htc") || tokens[0].StartsWith("nokia"))
                 returnValue.Append(tokens[0].ToUpper());
