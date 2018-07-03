@@ -392,8 +392,8 @@ namespace MultiDialogsBot.Dialogs
                 decoder.FeatureOrNeedDesc = "Show Me All";
                 context.Done(decoder);
                 return;
-            }
-            else if (EKeywords.StartAgain == keywords)
+            } 
+            else if (EKeywords.StartAgain == keywords) 
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Found one keyword, it is " + "Start Again");
                 decoder.FeatureOrNeedDesc = "Start Again";
