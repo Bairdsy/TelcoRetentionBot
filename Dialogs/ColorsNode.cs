@@ -23,16 +23,19 @@ namespace MultiDialogsBot.Dialogs
               
         public override async Task StartAsync(IDialogContext context) 
         {
-            List<string> colors;
+            List<string> colors,capitalColors;
             string modelCapitalized = Miscellany.Capitalize(chosenModel);
 
             if (debugMessages) await context.PostAsync($"DEBUG : StartAsync() method in ColorsNode object, I received {chosenModel} model to present");
 
             colors = GetColors(chosenModel);
-            if (colors.Count != 1)   
+            capitalColors = new List<string>();
+            foreach (var color in colors)
+                capitalColors.Add(Miscellany.Capitalize(color));
+            if (colors.Count != 1)    
                 PromptDialog.Choice(context, 
                                   ColorSelectionReceivedAsync,
-                                  colors,
+                                  capitalColors,
                                   $"OK. There are a few different options for you to pick for {modelCapitalized} from below:",
                                   "Sorry, not a valid option",
                                   4);

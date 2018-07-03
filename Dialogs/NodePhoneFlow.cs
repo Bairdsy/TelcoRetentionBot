@@ -652,19 +652,27 @@ namespace MultiDialogsBot.Dialogs
             reply.Text = $"Here are our latest TOP {x} sellers to choose from or let's work some other options based on what's important for you";
             foreach(var model in topSellers)
             {
-                heroCard = new HeroCard()
+                try
                 {
-                    Title = Miscellany.Capitalize(GetModelBrand(model)),
-                    Subtitle = Miscellany.Capitalize(model),
-                    Text = "",
-                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model, true), "img/jpeg") },
-                    Buttons = new List<CardAction>()
+                    heroCard = new HeroCard()
+                    {
+                        Title = Miscellany.Capitalize(GetModelBrand(model)),
+                        Subtitle = Miscellany.Capitalize(model),
+                        Text = "",
+                        Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model, true), "img/jpeg") },
+                        Buttons = new List<CardAction>()
                     {
                         new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
                         new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
-                };
+                    };
+                }
+                catch (Exception xception)
+                {
+                    if (CommonDialog.debugMessages) await context.PostAsync("Error...xception message = " + xception.ToString());
+                    heroCard = null;
+                }
                 if ((reviewsUrl = GetModelReviewsUrl(model)) != null)
                 {
                     heroCard.Buttons.Add(new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });

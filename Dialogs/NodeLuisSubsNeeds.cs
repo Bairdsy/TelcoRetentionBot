@@ -52,7 +52,8 @@ namespace MultiDialogsBot.Dialogs
         public async Task None(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("Not understood");
+            if (CommonDialog.debugMessages)  await context.PostAsync("Not understood");
+            context.Done(new Tuple<ENeeds, double>(ENeeds.PictureLover, 0));
         }
 
         [LuisIntent("PictureLover")]

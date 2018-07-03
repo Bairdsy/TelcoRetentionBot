@@ -23,6 +23,7 @@ namespace MultiDialogsBot.Dialogs
     public class NodeLUISPhoneDialog : LuisDialog<object>
     {
         readonly Dictionary<EIntents, string> smallDesc;
+        readonly Dictionary<EIntents, string> acknowledgeMessages;
 
         public enum EIntents
         {
@@ -79,6 +80,32 @@ namespace MultiDialogsBot.Dialogs
                 {EIntents.BatteryLife,"Battery life" },
                 {EIntents.Small, "Physical Size" }
             };
+            acknowledgeMessages = new Dictionary<EIntents, string>()
+            {
+                {EIntents.BandWidth,"I understand that you want a phone with access to internet and with wide bandwidth" },
+                { EIntents.BatteryLife,"I understand you want a big battery life" },
+                {EIntents.Brand, "I understand that the most important thing for you is brand" },
+                {EIntents.Camera, "I understand that the most important thing for you is the presence of a camera" },
+                // {EIntents.Cheap,  "I understand that the most important thing for you is the price."},
+                {EIntents.DualCamera, "I understand that you want a phone with Dual Camera" },
+                {EIntents.DualSIM,"I undertand that you would like a phone with DualSIM" },
+                {EIntents.ExpandableMemory, "I understand that an expandable memory is the most important thing for you"},
+                {EIntents.FMRadio, "I understand that the most important thing for you is the presence of an FM Radio Antenna" },
+                {EIntents.FaceID, "I understand that the most important thing for you is the presence of Face ID recognition"  },
+                {EIntents.GPS, "I understand that the most important thing for you is the presence of GPS" },
+                {EIntents.HDVoice, "I understand that the most important thing for you is the presence of High Definition voice" },   
+                {EIntents.HighResDisplay, "I understand that the most important thing for you is a High resolution display" },
+                {EIntents.LargeStorage, "I understand that the most important thing for you is a phone with a large storage capability" },
+                {EIntents.OS, "I understand that the most important thing for you in a phone is the operating System" },
+                {EIntents.ScreenSize, "I understand that the most important thing for you on a phone is the screen size" },
+                {EIntents.SecondaryCamera, "I understand that the most important thing for you is the presence of a secondary camera"},
+                {EIntents.Small, "I understand that the most important thing for you are the dimensions of your new phone" },
+                {EIntents.WaterResist, "I understand that the most important thing for you is that your phone should be water resistant" },
+                {EIntents.Weight , "I understand that the most important thing for you is the weight of your phone"},
+                {EIntents.WiFi, "I understand that the most important thing for you is the presence of WiFi" },
+                {EIntents.Color,"I understand that the most important thing for you is the color"  },
+                {EIntents.Newest, "I understant that you want a recent model" }
+            };
 
             handSetsBag = handSets;
             brandDesired = brand;
@@ -91,7 +118,7 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("None")]
         public async Task None(IDialogContext context,LuisResult result)  
         {
-            await context.PostAsync("Not understood");
+       //     await context.PostAsync("Not understood");
             await ShowDebugInfoAsync(context, result);
             if (CommonDialog.debugMessages) await context.PostAsync("I could not understand that, I'm afraid");
             desiredFeature = EIntents.None;
@@ -189,7 +216,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task ExpandableMemory(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that an expandable memory is the most important thing for you");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that an expandable memory is the most important thing for you");
             desiredFeature = EIntents.ExpandableMemory;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -198,7 +225,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task FMRadio(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of an FM Radio Antenna");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of an FM Radio Antenna");
             desiredFeature = EIntents.FMRadio;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -207,7 +234,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task FaceID(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of Face ID recognition");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of Face ID recognition");
             desiredFeature = EIntents.FaceID;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -216,7 +243,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task GPS(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of GPS");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of GPS");
             desiredFeature = EIntents.GPS;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -226,7 +253,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task HDVoice(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of High Definition voice");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of High Definition voice");
             desiredFeature = EIntents.HDVoice;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -235,7 +262,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task HighResDisplay(IDialogContext context, LuisResult result)
         { 
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is a High resolution display");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is a High resolution display");
             desiredFeature = EIntents.HighResDisplay;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -244,7 +271,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task LargeStorage(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is a phone with a large storage capability");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is a phone with a large storage capability");
             desiredFeature = EIntents.LargeStorage;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -253,7 +280,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task OS(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you in a phone is the operating System");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you in a phone is the operating System");
             desiredFeature = EIntents.OS;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -262,7 +289,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task ScreenSize(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you on a phone is the screen size");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you on a phone is the screen size");
             desiredFeature = EIntents.ScreenSize;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -271,7 +298,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task SecondaryCamera(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of a secondary camera");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of a secondary camera");
             desiredFeature = EIntents.SecondaryCamera;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -286,7 +313,7 @@ namespace MultiDialogsBot.Dialogs
                 currentModel = "It's not there";
 
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you are the dimensions of your new phone");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you are the dimensions of your new phone");
             await context.PostAsync("Your current phone is " + currentModel);
             desiredFeature = EIntents.Small;
             await ProcessNeedOrFeatureAsync(context, result);
@@ -296,7 +323,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task WaterResist(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is that your phone should be water resistant");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is that your phone should be water resistant");
             desiredFeature = EIntents.WaterResist;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -305,7 +332,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task Weight(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the weight of your phone");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the weight of your phone");
             desiredFeature = EIntents.Weight;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -314,7 +341,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task WiFi(IDialogContext context, LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the presence of WiFi");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of WiFi");
             desiredFeature = EIntents.WiFi;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -323,7 +350,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task Color(IDialogContext context,LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understand that the most important thing for you is the color");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the color");
             desiredFeature = EIntents.Color;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -332,7 +359,7 @@ namespace MultiDialogsBot.Dialogs
         public async Task Newest(IDialogContext context , LuisResult result)
         {
             await ShowDebugInfoAsync(context, result);
-            await context.PostAsync("I understant that you want a recent model");
+            if (CommonDialog.debugMessages) await context.PostAsync("I understant that you want a recent model");
             desiredFeature = EIntents.Newest;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -381,7 +408,7 @@ namespace MultiDialogsBot.Dialogs
         {
             EKeywords keywords = CheckForKeywords(luisResult);
             var msg = context.MakeMessage(); 
-            string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
+            string temp,text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
 
             if (EKeywords.ShowMeAll == keywords)
             {
@@ -397,8 +424,6 @@ namespace MultiDialogsBot.Dialogs
                 context.Done(decoder);
                 return;
             }
-            if (desiredFeature == EIntents.None)
-                return;
             res = luisResult;
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
@@ -449,11 +474,12 @@ namespace MultiDialogsBot.Dialogs
             }
         }
 
-        public async Task ProcessLuisNeedsResult(IDialogContext context,IAwaitable<object> awaitable)
+        public async Task ProcessLuisNeedsResult(IDialogContext context,IAwaitable<object> awaitable)  
         {
             Tuple<NodeLuisSubsNeeds.ENeeds, double> result = (Tuple<NodeLuisSubsNeeds.ENeeds,double>) await awaitable;
             StringBuilder sb = new StringBuilder();
             double needsScore = result.Item2;
+            string temp;
             NodeLuisSubsNeeds.ENeeds needsIntent = result.Item1;
             int handSetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
 
@@ -464,12 +490,21 @@ namespace MultiDialogsBot.Dialogs
                 decoder.LastOneWasNeed = true;
                 decoder.FeatureOrNeedDesc = NodeLuisSubsNeeds.GetNeedIntentDesc(result.Item1);
                 handSetsLeft = needsScores.GetTopFive(needsIntent);
-                await UpdateUserAsync(context, handSetsLeft, handSetsNow);    
+                await UpdateUserAsync(context, handSetsLeft, handSetsNow);     
             }  
             else
             {
                 try 
                 {
+                    if (desiredFeature == EIntents.None)
+                    {
+                        await context.PostAsync("I'm sorry, I'm afraid I didn't understand that, could you please rephrase?");
+                        return;
+                    }
+                    else if (acknowledgeMessages.TryGetValue(desiredFeature, out temp))
+                    {
+                        await context.PostAsync(temp);
+                    }
                     if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm goin to set frequency");
                     topButtons.SetNewFreq(desiredFeature, sb);
                     if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : New Frequency set, getting into the switch to switch to correct one (no pun intented)");
