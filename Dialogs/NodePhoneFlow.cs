@@ -285,12 +285,11 @@ namespace MultiDialogsBot.Dialogs
             if (debugMessages) await context.PostAsync("DEBUG : contents of bag : " + handSets.BuildStrRep());
             if (selectResult.Count == 0)
             {
-                // await context.PostAsync("Sorry I got that wrong, could you just type the specific model and brand so I can show it to you?");
-                await context.PostAsync("I didn’t understand you, Could you just type the specific model or brand so I can present it to you ? or click on any brands below from this list");
+                await context.PostAsync("I didn’t understand you, Could you just type the specific model or brand so I can present it to you ? ");
                 context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
-            }
+            }  
             else if ((x = handSets.BagCount()) <= BotConstants.MAX_CAROUSEL_CARDS)
-            {
+            {  
                 if (x > 1)
                     await context.PostAsync($"Great choice! There are {x} different versions for you to choose from");
                 context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);

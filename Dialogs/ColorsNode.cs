@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Bot.Builder.Dialogs;
 
-
+using MultiDialogsBot.Helper;
  
 
 namespace MultiDialogsBot.Dialogs      
@@ -16,7 +16,7 @@ namespace MultiDialogsBot.Dialogs
         string chosenModel;
 
           
-        public ColorsNode(string model)
+        public ColorsNode(string model)  
         {
             chosenModel = model;
         }
@@ -24,7 +24,7 @@ namespace MultiDialogsBot.Dialogs
         public override async Task StartAsync(IDialogContext context) 
         {
             List<string> colors;
-            
+            string modelCapitalized = Miscellany.Capitalize(chosenModel);
 
             if (debugMessages) await context.PostAsync($"DEBUG : StartAsync() method in ColorsNode object, I received {chosenModel} model to present");
 
@@ -33,7 +33,7 @@ namespace MultiDialogsBot.Dialogs
                 PromptDialog.Choice(context, 
                                   ColorSelectionReceivedAsync,
                                   colors,
-                                  "OK. There are a few different options for you to pick for that phone from below:",
+                                  $"OK. There are a few different options for you to pick for {modelCapitalized} from below:",
                                   "Sorry, not a valid option",
                                   4);
             else
