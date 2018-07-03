@@ -132,7 +132,7 @@
                 Subtitle = "The heavy user.",
                 Text = "Oliver uses his phone for absolutely everything.  He is always calling, text or browsing the internet.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_b.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "834795990") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "834795990") }
             };
 
             var Card_7 = new ThumbnailCard
