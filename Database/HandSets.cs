@@ -242,6 +242,7 @@ namespace MultiDialogsBot.Database
                 return handSetFeatures.PhonePictureUrl;
         }
 
+
         public string GetSpecsUrl(string model)
         {
             HandSetFeatures features;

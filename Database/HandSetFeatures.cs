@@ -303,14 +303,7 @@ namespace MultiDialogsBot.Database
             Colors = new List<string>();
         }
 
-        public string GetPlanPrices ()
-        {
-            StringBuilder sb = new StringBuilder($"The prices for {Miscellany.Capitalize(Model)} are:\r\n");
-
-            foreach (var plan in Price.Keys)
-                sb.Append($"{Miscellany.Capitalize(plan)} : ${Price[plan]}\r\n");
-            return sb.ToString();
-        }
+ 
 
         public override string ToString()
         {
