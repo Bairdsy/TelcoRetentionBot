@@ -150,7 +150,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (degreeOfCertain == EDegreeOfCertain.High)
             {
-                await context.PostAsync($"I understand that you {humanFriendlyIntent[intention].Item1}");
+                if (CommonDialog.debugMessages) await context.PostAsync($"I understand that you {humanFriendlyIntent[intention].Item1}");
                 context.Done(Tuple.Create(initialPhrase,humanFriendlyIntent[intention].Item2));
             }
             else if (degreeOfCertain == EDegreeOfCertain.Medium)
@@ -185,7 +185,7 @@ namespace MultiDialogsBot.Dialogs
                 initialPhrase = result.Query;
             await this.PostDebugInfoAsync(context, result, "No intention" );
 
-            await context.PostAsync($"That's fine, I'm here to help you, if need be, at any time");
+            await context.PostAsync($"I'm sorry.  I didn't understand that response.");
             context.Done(Tuple.Create(initialPhrase,EIntent.None));
         }
 
@@ -211,14 +211,14 @@ namespace MultiDialogsBot.Dialogs
         {
             if (numberOfTries >= MAX_TRIES)
             {
-                await context.PostAsync("I'm sorry, I'm afraid I cannot understand at all what you want to do. Would you like to talk to a human?");
+                await context.PostAsync("I'm sorry, I'm afraid I can't understand what you want to do. Would you like to talk to a human?");
                 numberOfTries = 1; // reset it
                 context.Done(0);
                 return;
             }
             if (numberOfTries++ == 1)
             {
-                await context.PostAsync("I apologise, could not understand what you would like to do. ");
+                await context.PostAsync("Sorry, I couldn't understand what you would like to do. ");
                 await context.PostAsync("Would it be possible to rephrase?");
                 context.Wait(this.MessageReceived);
             }

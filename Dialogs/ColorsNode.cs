@@ -71,8 +71,8 @@ namespace MultiDialogsBot.Dialogs
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("End of plan Flow - enter something"); 
-            context.Wait(MessageReceivedAsync);
+           await context.PostAsync("O.K.  Now I need to take you through the terms and conditions to finalise your order."); 
+             context.Wait(MessageReceivedAsync);
         }
 
         private async Task ColorSelectionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)

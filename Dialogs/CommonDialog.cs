@@ -5,6 +5,7 @@ using System.Web;
 
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Connector;
 using MultiDialogsBot.Database;
 
 using System.Text;
@@ -29,7 +30,16 @@ namespace  MultiDialogsBot.Dialogs
             if (handSets == null)
                 InitializeDataStruct();
             handSetFeatures = handSets.GetModelFeatures(modelPicked);
-            await context.PostAsync(handSetFeatures.GetPlanPrices());
+
+            var heroCard = new HeroCard()
+            {
+                Images = new List<CardImage> { new CardImage(handSetFeatures.MadCalmPicUrl + ".png", "img/jpeg") }
+            };
+
+            var message = context.MakeMessage();
+            message.Attachments.Add(heroCard.ToAttachment());
+
+            await context.PostAsync(message);
         }
 
         protected string GetEquipmentImageURL(string model,bool madCalmPic)
