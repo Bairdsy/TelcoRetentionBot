@@ -149,7 +149,6 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 await context.PostAsync("I understand that the most important thing for you is the price, but this will depend on what plan you take it with.  Lets work the plan out first then and come back to the phone.");
-                //await context.PostAsync("Ryan's node to kick in");
                 desiredFeature = EIntents.Cheap;
                 res = result;
                 context.Call(new PlanNode(), ProcessAfterPlanAsync);
@@ -381,11 +380,9 @@ namespace MultiDialogsBot.Dialogs
         private async Task ProcessNeedOrFeatureAsync(IDialogContext context, LuisResult luisResult)
         {
             EKeywords keywords = CheckForKeywords(luisResult);
-            var msg = context.MakeMessage();
+            var msg = context.MakeMessage(); 
             string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
 
-            if (desiredFeature == EIntents.None)
-                return;
             if (EKeywords.ShowMeAll == keywords)
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is " + "Show Me All");
@@ -400,6 +397,8 @@ namespace MultiDialogsBot.Dialogs
                 context.Done(decoder);
                 return;
             }
+            if (desiredFeature == EIntents.None)
+                return;
             res = luisResult;
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
@@ -481,7 +480,6 @@ namespace MultiDialogsBot.Dialogs
                             {
                                 PromptDialog.Choice(context, ProcessSizeChoice, new List<string>() { "BIGGER", "SMALLER", "THE SAME" }, "Are you looking for a phone with a similar size as your existing model or something bigger or smaller?", "Not understood, please try again", 3);
                             }
-                          //  await DecodeAndProcessIntentAsync(context); 
                             break;
                         case EIntents.Camera:
                             if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
