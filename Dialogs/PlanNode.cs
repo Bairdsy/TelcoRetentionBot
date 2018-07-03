@@ -44,8 +44,7 @@
                 var collection = _database.GetCollection<BsonDocument>("offer_messages");
                 var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsnum);
                 var sort = Builders<BsonDocument>.Sort.Ascending("Inbound Eligibility").Ascending("Value Rank");
-                int count = 0;
-
+                
                 using (var cursor = await collection.FindAsync(filter, new FindOptions<BsonDocument, BsonDocument>()
                 {
                     Sort = sort
@@ -57,51 +56,84 @@
                         foreach (var document in batch)
                         {
                             generic_msg = (string)document.GetElement("Generic Usage Message").Value;
-                            string Name = (string)document.GetElement("Offer Name").Value;
-                            string Image = (string)document.GetElement("Image Name").Value;
-                            string Highlight = (string)document.GetElement("Plan Highlight").Value;
-                            string Warning = (string)document.GetElement("Plan Warning").Value;
-                            string Message = (string)document.GetElement("Plan Choice Message").Value;
-                            string Code = (string)document.GetElement("Result Type Code").Value;
-
-                            //await context.PostAsync($"DEBUG: Document [{Name}][{Image}][{Code}]");
-
-                            if (count == 0)
-                            {
-                               Name = "*Recommended for you* - " + Name;
-                               await context.PostAsync($"**{generic_msg}**");
-                                await context.PostAsync($"Based on that, Ive ranked all of your options from best (leftmost) to worst (rightmost) in the list below.  You can also click on Show Analysis to see my analysis of your usage over the last 3 months.");
-                            }
-                            var Card = new HeroCard
-                            {
-                                Title = Name,
-                                Subtitle = Highlight,
-                                Text = Warning,
-                                Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/07/" + Image + ".png") },
-                                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "Choose " + Code), new CardAction(ActionTypes.ImBack, "Show Analysis", value: "Analyse") }
-                            };
-                            CardList.Add(Card);
-                            count++;
+                            await context.PostAsync($"**{generic_msg}**");
+                            await Task.Delay(5000);
+                            break;
                         }
                     }
                 }
+                await this.ShowPlanCarouselAsync(context);
 
-                var reply = context.MakeMessage();
-                reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-                reply.Attachments = new List<Attachment>();
-                foreach (HeroCard productCard in CardList)
-                {
-                    reply.Attachments.Add(productCard.ToAttachment());
-                }
-
-                await context.PostAsync(reply);
-                context.Wait(this.ChosenPlan);
-                //context.Done(2);
             }
             else
             {
                 await context.PostAsync($"Hmmm.  Seems I couldnt get the subscriber number.");
             }
+        }
+
+
+        protected async Task ShowPlanCarouselAsync(IDialogContext context)
+        {
+            int subsno;
+
+            var reply = context.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+            reply.Attachments = new List<Attachment>();
+
+            var CardList = new List<HeroCard>();
+            context.ConversationData.TryGetValue("SubsNumber", out subsno);
+
+            var collection = _database.GetCollection<BsonDocument>("offer_messages");
+            var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsno);
+            var sort = Builders<BsonDocument>.Sort.Ascending("Inbound Eligibility").Ascending("Value Rank");
+            int count = 0;
+
+            using (var cursor = await collection.FindAsync(filter, new FindOptions<BsonDocument, BsonDocument>()
+            {
+                Sort = sort
+            }))
+            {
+                while (await cursor.MoveNextAsync())
+                {
+                    var batch = cursor.Current;
+                    foreach (var document in batch)
+                    {
+                        string Name = (string)document.GetElement("Offer Name").Value;
+                        string Image = (string)document.GetElement("Image Name").Value;
+                        string Highlight = (string)document.GetElement("Plan Highlight").Value;
+                        string Warning = (string)document.GetElement("Plan Warning").Value;
+                        string Message = (string)document.GetElement("Plan Choice Message").Value;
+                        string Code = (string)document.GetElement("Result Type Code").Value;
+
+                        //await context.PostAsync($"DEBUG: Document [{Name}][{Image}][{Code}]");
+
+                        if (count == 0)
+                        {
+                            Name = "*Recommended for you* - " + Name;
+                            await context.PostAsync($"I've ranked all of your options from best to worst in the list below.");
+                        }
+                        var Card = new HeroCard
+                        {
+                            Title = Name,
+                            Subtitle = Highlight,
+                            Text = Warning,
+                            Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/07/" + Image + ".png") },
+                            Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "Choose " + Code), new CardAction(ActionTypes.ImBack, "Show Analysis", value: "Analyse") }
+                        };
+                        CardList.Add(Card);
+                        count++;
+                    }
+                }
+            }
+            
+            foreach (HeroCard productCard in CardList)
+            {
+                reply.Attachments.Add(productCard.ToAttachment());
+            }
+
+            await context.PostAsync(reply);
+            context.Wait(this.ChosenPlan);
+
         }
 
         public virtual async Task ChosenPlan(IDialogContext context, IAwaitable<IMessageActivity> result)
@@ -194,7 +226,7 @@
                             }
                             else
                             {
-                                context.Call(new PlanNode(), ResumeAfterOptionDialog);
+                                await this.ShowPlanCarouselAsync(context);
                             }
                             break;
                     }
@@ -229,12 +261,13 @@
                 case "No":
                 case "no":
                 case "Something else":
-                    context.Call(new PlanNode(), ResumeAfterOptionDialog);
+                    await this.ShowPlanCarouselAsync(context);
                     break;
 
 
             }
         }
+
         protected async Task ShowUsageCards(IDialogContext context)
         {
             int subsno;

@@ -56,9 +56,8 @@
                 salutation = "Good evening, ";
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync(salutation + subsName);
-            await context.PostAsync("Welcome to the phones and plans page, if you need any assistance at any point\r\n I'd be delighted to help you choose the best phone and plan for you");
-            await context.PostAsync("If you are an existing customer I can certainly make sure that any recommendation\r\n is highly personalized to your usage and phone requirements");
-            await context.PostAsync("Can I help you with a new phone or plan?");
+            await context.PostAsync("Welcome to the MC upgrade BOT demo.");
+            await context.PostAsync("Can I help you with a new phone, plan or both?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);
         }
 
@@ -88,7 +87,7 @@
                 Subtitle = "The tech lover.",
                 Text = "Ryan loves to have the latest tech.  He loves to have the internet everywhere he goes and his phone is great for this as he travels a lot for his work.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_c.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "876524834") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "876524834") }
             };
 
             var Card_2 = new ThumbnailCard
@@ -97,7 +96,7 @@
                 Subtitle = "The travelling business man.",
                 Text = "Pete's business takes him all over the world and he always takes his phone with him.  He has been with the same carrier for a long time and needs lots of international calls, roaming and data included.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_d.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "872033118") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "872033118") }
             };
 
             var Card_3 = new ThumbnailCard
@@ -106,7 +105,7 @@
                 Subtitle = "Family all over the world.",
                 Text = "Jennifer has recently moved overseas.  She loves to keep in touch with her family back home and all over the world, so needs lots of international calls included.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/girl_a.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "857701192") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "857701192") }
             };
 
             var Card_4 = new ThumbnailCard
@@ -115,7 +114,7 @@
                 Subtitle = "The data user.",
                 Text = "Mervyn is a millennial who is just starting out in the workplace - so his budget is tight.  He doesn't really use his phone for calls or texts but is always on the latest apps or browsing the internet.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/boy_a.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "876403453") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "876403453") }
             };
 
             var Card_5 = new ThumbnailCard
@@ -124,7 +123,7 @@
                 Subtitle = "The techo-phobe.",
                 Text = "Tania has just gotten used to using her phone to call and text, so she doesn't really use it for data.  She just wants something easy to use and simple.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/girl_d.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "830123752") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "830123752") }
             };
 
             var Card_6 = new ThumbnailCard
@@ -142,7 +141,7 @@
                 Subtitle = "The chatter-box",
                 Text = "Amanda is always on the phone to friends and family but is also conscious of how much she uses so that she doesnt get charged extra.",
                 Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/girl_b.png") },
-                Buttons = new List<CardAction> { new CardAction(ActionTypes.ImBack, "Pick Me!", value: "830313284") }
+                Buttons = new List<CardAction> { new CardAction(ActionTypes.PostBack, "Pick Me!", value: "830313284") }
             };
 
             reply.AttachmentLayout = "carousel";
@@ -306,7 +305,7 @@
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("End of plan Flow - enter something");
+            await context.PostAsync("O.K.  Now I need to take you through the terms and conditions to finalise your order.");
             //     context.Wait(MessageReceivedAsync);
             context.Wait(CharacterSelectedAsync);
         }
