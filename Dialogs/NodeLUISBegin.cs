@@ -185,7 +185,7 @@ namespace MultiDialogsBot.Dialogs
                 initialPhrase = result.Query;
             await this.PostDebugInfoAsync(context, result, "No intention" );
 
-            await context.PostAsync($"I'm sorry.  I didn't understand that response.");
+            await context.PostAsync($"That's fine. I'm here to help you, if need be, at any time.");
             context.Done(Tuple.Create(initialPhrase,EIntent.None));
         }
 
