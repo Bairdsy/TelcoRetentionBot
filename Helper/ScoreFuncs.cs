@@ -50,15 +50,22 @@ namespace MultiDialogsBot.Helper
         {
             Tuple<HandSetFeatures, HandSetFeatures> tuple;
 
-            tuple = new Tuple<HandSetFeatures, HandSetFeatures>(x, y);
-            return comparingFunctions[intent](tuple);
+            try
+            {
+                tuple = new Tuple<HandSetFeatures, HandSetFeatures>(x, y);
+                return comparingFunctions[intent](tuple);
+            }
+            catch (Exception xception)
+            {
+                throw new Exception("Error...inner exception message = " + xception.ToString() + "first one is " + x.ToString() + " second one is " + y.ToString());
+            }
         }
 
         public int GetTopFive(NodeLuisSubsNeeds.ENeeds need)
         {
             List<string> returnVal = new List<string>();
             int numberObtained;
-
+ 
             intent = need;
             numberObtained = basket.SortAndGetTop(this, getters[intent]);
             if (numberObtained == 0)
@@ -77,12 +84,13 @@ namespace MultiDialogsBot.Helper
             /**** Camera  ****/
 
             basket.GetMaxAndMinLimits(x => x.Camera, out min, out max);
-            cameraScore = LogisticFunc(phone.Camera, max - min);
+            cameraScore = LogisticFunc(phone.Camera, max - min);   
 
 
             /******* Dual Camera  ****/
 
             basket.GetMaxAndMinLimits(x => x.DualCamera, out min, out max);
+
             dualCameraScore = LogisticFunc(phone.DualCamera, max - min);
 
             /******* Secondary Camera Score  ****/
@@ -106,24 +114,28 @@ namespace MultiDialogsBot.Helper
             /**** Camera (most important) ****/
 
             basket.GetMaxAndMinLimits(x => x.Camera, out min, out max);
+
             cameraScore = LogisticFunc(phone.Camera, max - min);
 
 
 
-            /*** Screen Size (second most important)  ***/
+            /*** Screen Size (second most important)  ***/ 
 
             basket.GetMaxAndMinLimits(x => x.ScreenSize, out min, out max);
+
             screenSizeScore = LogisticFunc(phone.ScreenSize, max - min);
 
 
             /******* Dual Camera (third), let's consider 1 if it has, zero otherwise ****/
 
             basket.GetMaxAndMinLimits(x => x.DualCamera, out min, out max);
+
             dualCameraScore = LogisticFunc(phone.DualCamera, max - min);
 
             /******* Secondary Camera Score (for selfies) ****/
 
             basket.GetMaxAndMinLimits(x => x.SecondaryCamera, out min, out max);
+
             secondaryCameraScore = LogisticFunc(phone.SecondaryCamera, max - min);
 
             return (secondaryCameraScore + 2 * dualCameraScore + 3 * screenSizeScore + 4 * cameraScore) / 10;
@@ -217,6 +229,8 @@ namespace MultiDialogsBot.Helper
         {
             double innerFuncResult;
 
+            if (barLen == 0)
+                return 0;
             innerFuncResult = (12 / barLen)  * x;  // Scales to length 12
             innerFuncResult -= 6;             // Pulls back 6 positions
 

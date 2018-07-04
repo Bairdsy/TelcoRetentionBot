@@ -448,9 +448,16 @@ namespace MultiDialogsBot.Database
         {
             System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder("Contents");
             int counter = 0;
-        
-            bag.Sort(comparer);
- 
+
+            try
+            {
+                foreach (var mobile in bag)
+                    stringBuilder.Append(" --> " + mobile.ToString() + "\r\n");
+                bag.Sort(comparer);
+            }
+            catch (Exception xception)
+            { throw new Exception("Error = " + xception.ToString() + stringBuilder.ToString());
+            }
             for (int i = 0; i < bag.Count; ++i)
             {
                 double temp = getter(bag[i]);

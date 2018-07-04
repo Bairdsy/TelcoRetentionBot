@@ -322,7 +322,7 @@ namespace MultiDialogsBot.Database
             sb.Append("Available in the following colours:");
             foreach (var color in Colors)
                 sb.Append(color + ";");
-            sb.Append(string.Concat("Dimensions : ", (BodySize[0] * BodySize[1] * BodySize[2]), "\r\nMemory : ",MemoryMB.ToString() ));
+            sb.Append(string.Concat("Dimensions : ", (BodySize[0] * BodySize[1] * BodySize[2]), "\r\nMemory : ",MemoryMB.ToString(),"\r\n Dual Camera = " + DualCamera.ToString() ));
             return sb.ToString();
         }
     }

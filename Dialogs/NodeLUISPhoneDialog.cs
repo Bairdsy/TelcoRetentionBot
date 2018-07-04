@@ -489,7 +489,9 @@ namespace MultiDialogsBot.Dialogs
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString()); 
                 decoder.LastOneWasNeed = true;
                 decoder.FeatureOrNeedDesc = NodeLuisSubsNeeds.GetNeedIntentDesc(result.Item1);
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm going to obtain the top");
                 handSetsLeft = needsScores.GetTopFive(needsIntent);
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I've already obtained the top 5");
                 await UpdateUserAsync(context, handSetsLeft, handSetsNow);     
             }  
             else
