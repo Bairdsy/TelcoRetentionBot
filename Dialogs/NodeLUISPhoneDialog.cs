@@ -169,6 +169,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (context.ConversationData.TryGetValue("ChosenPlanName", out chosenPlan))
             {
+                await context.PostAsync("DEBUG : u chose : " + chosenPlan);
                 await context.PostAsync("I understand that the most important thing for you is the price.");
                 desiredFeature = EIntents.Cheap;
                 await ProcessNeedOrFeatureAsync(context, result);

@@ -51,5 +51,50 @@ namespace MultiDialogsBot.Helper
         { 
             return string.Concat(strWithSpaces.ToLower().Split(' '));
         }
+
+        public static string QueryCompare(string query, string alteredQuery, StringBuilder sb = null)
+        {
+            string[] alteredWords,returnValue ;
+            List<Tuple<string, int>> alteredWordIndexes = new List<Tuple<string, int>>();
+            List<string> words;
+            int index, altListIndex, counter = 0 ;
+            string aux;
+
+            words = new List<string>(query.Split(' '));
+            alteredWords = alteredQuery.Split(' ');
+            returnValue = new string[alteredWords.Length];
+            for (index = 0; index < alteredWords.Length; index++)
+                alteredWordIndexes.Add(new Tuple<string, int>(alteredWords[index], index));
+            alteredWordIndexes.Sort((a, b) => (a.Item1.CompareTo(b.Item1)));  
+            words.Sort();
+            index = altListIndex = 0;
+
+            do
+            {
+                if (sb != null)
+                    sb.Append($"it = {counter}, index = {index}, contents = {words[index]}, alteredIndex= {altListIndex},contents = {alteredWordIndexes[altListIndex].Item1}\r\n");
+                while ((index != words.Count) && (0 > words[index].ToLower().CompareTo(alteredWordIndexes[altListIndex].Item1.ToLower())))
+                    index++;
+                 
+                while ((altListIndex != alteredWords.Length) && 
+                       ((index == words.Count) || ((0 > alteredWordIndexes[altListIndex].Item1.ToLower().CompareTo(words[index].ToLower())))))
+                {
+                    aux = alteredWordIndexes[altListIndex].Item1;
+                    returnValue[alteredWordIndexes[altListIndex].Item2] = aux.Length != 0 ? string.Concat("**", aux, "**") : aux;
+                    ++altListIndex;
+                }
+
+                while ((altListIndex != alteredWords.Length) && (index != words.Count) && (alteredWordIndexes[altListIndex].Item1.ToLower() == words[index].ToLower()))
+                { 
+                    returnValue[alteredWordIndexes[altListIndex].Item2] = alteredWordIndexes[altListIndex].Item1;
+                    ++altListIndex;
+                    ++index;
+                }
+                if (++counter >= 100)
+                    break;
+            }
+            while (altListIndex != alteredWords.Length);
+            return string.Join(" ", returnValue);
+        }
     }
 }

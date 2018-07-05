@@ -97,10 +97,18 @@ namespace MultiDialogsBot.Dialogs
         public async Task UpgradeEquipment(IDialogContext context, LuisResult result)
         {
             string intention = "Upgrade Equipment";  
-            string secondIntention = null;    
-            bool closeToSecond = CloseToSecond(result);  
-            string typosWarning = TyposInformation(result);
-              
+            string secondIntention = null;      
+            bool closeToSecond = CloseToSecond(result);
+            string typosWarning = null;
+
+            try
+            {
+                 typosWarning = TyposInformation(result);
+            }
+            catch (Exception xception)
+            {
+                await context.PostAsync("DEBUG : Exception message = " + xception.Message + " <==");
+            }
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
             if (typosWarning != null)
@@ -401,9 +409,13 @@ namespace MultiDialogsBot.Dialogs
 
         private string TyposInformation(LuisResult result)
         {
+            //   System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            string correctedQuery; 
+              
             if (result.AlteredQuery == null)
                 return null;
-            return $"You typed {result.Query}, did you mean {result.AlteredQuery}?";
+            correctedQuery = Miscellany.QueryCompare(result.Query, result.AlteredQuery);
+            return $"You typed {result.Query}, did you mean {correctedQuery}?";
         }
 
     }
