@@ -21,6 +21,8 @@ namespace MultiDialogsBot.Helper
         readonly Dictionary<NodeLUISPhoneDialog.EIntents, HandSets.accessor> getters;
         readonly Dictionary<NodeLUISPhoneDialog.EIntents, Predicate<HandSetFeatures>> booleanFilters;
 
+        readonly Dictionary<string, string> planNamesMapping;
+
         delegate int sgn(Tuple<HandSetFeatures,HandSetFeatures> x);
         delegate int NumberOfDifferent();
 
@@ -49,7 +51,7 @@ namespace MultiDialogsBot.Helper
 
         public string FeatureOrNeedDesc
         { get; set; }
-
+          
         public HandSets PhonesLeft { get { return handSets; } }
         public List<NodeLUISPhoneDialog.EIntents> Exclude
         {
@@ -61,15 +63,29 @@ namespace MultiDialogsBot.Helper
 
         List<NodeLUISPhoneDialog.EIntents> intents2Exclude;
         HandSets handSets;
-        NodeLUISPhoneDialog.EIntents intent;
+        NodeLUISPhoneDialog.EIntents intent;  
         double Threshold { get;  set; }
         
         bool desc;   // Order by DESC/ASC
         public List<string> StrKeyWords { get; set; }
         DateTime DateThreshold { get; set; }
 
+        public string ChosenPlan {
+            get
+            {
+                return chosenPlan;
+            }
+            set
+            {
+                foreach(var key in planNamesMapping.Keys)
+                {
+                    if (value.StartsWith(key))
+                        chosenPlan = planNamesMapping[key];
+                }
+            }
+        }
 
-
+        string chosenPlan = "Be You 40";
 
         public IntentDecoder(HandSets hand_sets,string brand, DateTime? releaseDate,List<string> identifiedMatches)
         {
@@ -79,13 +95,21 @@ namespace MultiDialogsBot.Helper
                 handSets.InitializeBag(brand, releaseDate);
             else
                 handSets.InitializeBag(identifiedMatches);
+
+            planNamesMapping = new Dictionary<string, string>()
+            {
+                {"BeYou 80", "Be You 80" },
+                {"BeYou 60", "Be You 60" },
+                {"BeYou 40", "Be You 40" },
+                {"BeYou SIM","Be You 12 (PAYG)" }
+            };
             intentFilters = new Dictionary<NodeLUISPhoneDialog.EIntents, Predicate<HandSetFeatures>>() {
                 { NodeLUISPhoneDialog.EIntents.BatteryLife,x => x.BatteryLife < Threshold},
                 { NodeLUISPhoneDialog.EIntents.Camera,y => y.Camera < Threshold },
                 { NodeLUISPhoneDialog.EIntents.HighResDisplay,y => Prod(y.DisplayResolution) < Threshold },
                 { NodeLUISPhoneDialog.EIntents.LargeStorage,y => y.MemoryMB < Threshold  },
                 { NodeLUISPhoneDialog.EIntents.ScreenSize, y => !desc ^ (y.ScreenSize < Threshold) },
-                { NodeLUISPhoneDialog.EIntents.Cheap, y => y.Price["Be You 60"] > Threshold },
+                { NodeLUISPhoneDialog.EIntents.Cheap, y => y.Price[chosenPlan] > Threshold },
                 { NodeLUISPhoneDialog.EIntents.Small, y => desc ^ (Prod(y.BodySize) > Threshold) },
                 { NodeLUISPhoneDialog.EIntents.Weight, y => y.Weight > Threshold },
                 { NodeLUISPhoneDialog.EIntents.Color, y => !y.Colors.Exists(x => StrKeyWords.Contains(x.ToLower())) },     
@@ -133,6 +157,7 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.DualSIM, x => !x.DualSIM}, 
                 { NodeLUISPhoneDialog.EIntents.ExpandableMemory, x => !x.ExpandableMemory },
                 { NodeLUISPhoneDialog.EIntents.FaceID, x => !x.FaceId },
+                { NodeLUISPhoneDialog.EIntents.FeaturePhone, x => !x.IsSmartphone },
                 { NodeLUISPhoneDialog.EIntents.GPS, x => !x.GPS },
                 { NodeLUISPhoneDialog.EIntents.WiFi, x => !x.WiFi }, 
                 { NodeLUISPhoneDialog.EIntents.HDVoice, x => ! x.HDVoice },
@@ -157,6 +182,11 @@ namespace MultiDialogsBot.Helper
         public string GetBagStrRep()
         {
             return handSets.BuildStrRep();
+        }
+
+        public void ExcludeThis(NodeLUISPhoneDialog.EIntents intentFeature2Exclude)
+        {
+            intents2Exclude.Add(intentFeature2Exclude);
         }
 
         public bool KnocksSomeButNotAll(NodeLUISPhoneDialog.EIntents desiredFeature)
@@ -200,32 +230,6 @@ namespace MultiDialogsBot.Helper
             throw new Exception("Error...received a feature I don't know about:" + desiredFeature.ToString());
         }
 
-        public int DecodeIntent(NodeLUISPhoneDialog.EIntents intent2Decode, List<string> keywords,bool orderByDesc)
-        {
-            intent = intent2Decode;
-            if (booleanFilters.ContainsKey(intent2Decode))
-                return DecodeIntent(intent2Decode, null);
-            if ((intent2Decode == NodeLUISPhoneDialog.EIntents.Brand) ||
-                (intent2Decode == NodeLUISPhoneDialog.EIntents.OS)    ||
-                (intent2Decode == NodeLUISPhoneDialog.EIntents.Color))    // enumerated
-            {
-                StrKeyWords = keywords;
-                return DecodeIntent(intent2Decode, null);
-            }
-            else  // it can only be numeric
-            {
-                if (intent2Decode == NodeLUISPhoneDialog.EIntents.Small)  // This situation needs a special case
-                    desc = orderByDesc;
-                if (intent2Decode == NodeLUISPhoneDialog.EIntents.Newest) // Convert it back to DateTime
-                    DateThreshold = new DateTime((long)handSets.GetHighStandardThreshold(this, getters[intent2Decode]));
-                else
-                    Threshold = handSets.GetHighStandardThreshold(this, getters[intent2Decode]);
-                DecodeIntent(intent2Decode, null);  // Eliminates the medium and low standard
-                Threshold = -1;
-                DateThreshold = new DateTime(1980, 1, 1);
-                return DecodeIntent(intent2Decode, null);
-            }
-        }
         public int DecodeIntent(NodeLUISPhoneDialog.EIntents intent2Decode,LuisResult result, System.Text.StringBuilder  stringDeDebug = null )
         {
             int handSetsLeft;   
@@ -244,7 +248,7 @@ namespace MultiDialogsBot.Helper
                 if ((intent2Decode == NodeLUISPhoneDialog.EIntents.Color) || (intent2Decode == NodeLUISPhoneDialog.EIntents.OS) || (intent2Decode == NodeLUISPhoneDialog.EIntents.Brand))  
                     // strings, enumerated
                 {
-                    if ((StrKeyWords == null) ||(StrKeyWords.Count == 0))
+                    if ((StrKeyWords == null) || (StrKeyWords.Count == 0))
                         throw new Exception("Error...Either color, brand or OS selected and no string was supplied");
                     if (handSets.KnockOutNumber(predicate) == handSets.BagCount())
                         return 0;
@@ -293,7 +297,6 @@ namespace MultiDialogsBot.Helper
         {
             return MultiDialogsBot.Helper.Miscellany.Product(vector);
         }
-
 
         private void GetDateThreshold (LuisResult result)
         {
@@ -463,86 +466,7 @@ namespace MultiDialogsBot.Helper
                             }
                         }
         }
-
-        private bool ExtractPhoneSizeInfo(LuisResult result)
-        {
-            desc = false;  // By default, ascending
-            string[] tokens;
-            int index = 0;
-            bool additionalInfoDetected = false; 
-            double[] volume = new double[3];
-
-            foreach (var cEntity in result.CompositeEntities)
-                if (cEntity.ParentType == "SizeComposite")
-                {
-                    foreach (var child in cEntity.Children)
-                        switch (child.Type) 
-                        {
-                            case "OrderByWay":
-                                desc = ("small" != child.Value.ToLower() && ("smallest" != child.Value.ToLower()));
-                                additionalInfoDetected = true;
-                                break;
-                            case "buildin.number":
-                                if ((index < 3) && double.TryParse(child.Value, out volume[index]))
-                                {
-                                    ++index;  
-                                }
-                                break;     
-                            case "DimensionsRegEx":
-                                if (index >= 3)
-                                    continue; // We already have the info we need about the desired volume threshold
-                                tokens = child.Value.ToLower().Split('x');
-                                if (double.TryParse(tokens[0], out volume[0]) && double.TryParse(tokens[1], out volume[1]) && double.TryParse(tokens[2], out volume[2]))
-                                    index = 3;
-                                break;
-                            default:
-                                break;
-                        }
-                    if (index == 3)  // OK, we have valid data
-                    {
-                        additionalInfoDetected = true;
-                        Threshold = Prod(volume);
-                    }
-                }
-            return additionalInfoDetected;
-        }
         
-        private bool GetOSData(LuisResult result)
-        {
-            List<string> subsOSChoices = new List<string>();
-
-            foreach (var entity in result.Entities)
-                if (entity.Type == "OperatingSystem")
-                    subsOSChoices.Add(entity.Entity.ToLower());
-
-            StrKeyWords = subsOSChoices;
-            return StrKeyWords.Count != 0;
-        }
-             
-        private void GetPreferredColors(LuisResult result)
-        {
-            List<string> colorVector = new List<string>();
-
-            foreach (var entity in result.Entities)
-                if (entity.Type == "Color")
-                    colorVector.Add(entity.Entity.ToLower());
-            StrKeyWords = colorVector;
-        }
-
-        private List<string> GetSpecificBrands(LuisResult res)
-        {
-            List<string> returnVal = new List<string>();
-            string ent;
-
-            foreach (var entity in res.Entities)
-                if ((entity.Type == "Brand") && (entity.Entity.ToUpper() != "BRAND"))
-                {
-                    ent = entity.Entity.ToLower();
-                    returnVal.Add(ent == "iphone" ? "apple" : ent);
-                }
-            return returnVal;
-        }
-
         private void ExtractEntityInfo (NodeLUISPhoneDialog.EIntents intent,LuisResult result)
         {
             switch (intent)
@@ -551,7 +475,6 @@ namespace MultiDialogsBot.Helper
                     GetBatteryLifeComposedEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Brand:
-                 //   StrKeyWords = GetSpecificBrands(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Camera:
                     GetCameraCompositeEntityData(result);
@@ -563,19 +486,16 @@ namespace MultiDialogsBot.Helper
                     GetMemoryCompositeEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.OS:
-                 //   GetOSData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.ScreenSize:
                     GetScreenSizeCompositeEntityData(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Small:
-                   // ExtractPhoneSizeInfo(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Weight:
                     GetWeightCompositeEntity(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Color:
-                  //  GetPreferredColors(result);
                     break;
                 case NodeLUISPhoneDialog.EIntents.Newest:
                     GetDateThreshold(result);
@@ -586,6 +506,7 @@ namespace MultiDialogsBot.Helper
                 case NodeLUISPhoneDialog.EIntents.ExpandableMemory:
                 case NodeLUISPhoneDialog.EIntents.FMRadio:
                 case NodeLUISPhoneDialog.EIntents.FaceID:
+                case NodeLUISPhoneDialog.EIntents.FeaturePhone:
                 case NodeLUISPhoneDialog.EIntents.GPS:
                 case NodeLUISPhoneDialog.EIntents.HDVoice:
                 case NodeLUISPhoneDialog.EIntents.SecondaryCamera:

@@ -37,6 +37,7 @@ namespace MultiDialogsBot.Dialogs
             DualCamera,
             DualSIM, 
             ExpandableMemory,   
+            FeaturePhone,
             FMRadio,
             FaceID,
             GPS,
@@ -104,7 +105,8 @@ namespace MultiDialogsBot.Dialogs
                 {EIntents.Weight , "I understand that the most important thing for you is the weight of your phone"},
                 {EIntents.WiFi, "I understand that the most important thing for you is the presence of WiFi" },
                 {EIntents.Color,"I understand that the most important thing for you is the color"  },
-                {EIntents.Newest, "I understant that you want a recent model" }
+                {EIntents.Newest, "I understand that you want a recent model" },
+                {EIntents.FeaturePhone, "I understand that you want a simple, classic, feature phone" }
             };
 
             handSetsBag = handSets;
@@ -169,7 +171,6 @@ namespace MultiDialogsBot.Dialogs
 
             if (context.ConversationData.TryGetValue("ChosenPlanName", out chosenPlan))
             {
-                await context.PostAsync("DEBUG : u chose : " + chosenPlan);
                 await context.PostAsync("I understand that the most important thing for you is the price.");
                 desiredFeature = EIntents.Cheap;
                 await ProcessNeedOrFeatureAsync(context, result);
@@ -190,7 +191,8 @@ namespace MultiDialogsBot.Dialogs
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessAfterPlanAsync");
             context.ConversationData.TryGetValue("ChosenPlanName", out chosenPlanName);
-
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : u chose : " + chosenPlanName);
+            decoder.ChosenPlan = chosenPlanName;
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : name of chosen plan = " + chosenPlanName);
             await ProcessNeedOrFeatureAsync(context, res);
         }
@@ -237,6 +239,14 @@ namespace MultiDialogsBot.Dialogs
             await ShowDebugInfoAsync(context, result);
             if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is the presence of Face ID recognition");
             desiredFeature = EIntents.FaceID;
+            await ProcessNeedOrFeatureAsync(context, result);
+        }
+
+        [LuisIntent("FeaturePhone")]
+        public async Task FeaturePhone(IDialogContext context,LuisResult result)
+        {
+            await ShowDebugInfoAsync(context, result);
+            desiredFeature = EIntents.FeaturePhone;
             await ProcessNeedOrFeatureAsync(context, result);
         }
 
@@ -409,8 +419,10 @@ namespace MultiDialogsBot.Dialogs
         {
             EKeywords keywords = CheckForKeywords(luisResult);
             var msg = context.MakeMessage(); 
-            string temp,text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
+            string text = luisResult.AlteredQuery != null ? luisResult.AlteredQuery : luisResult.Query;
 
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
             if (EKeywords.ShowMeAll == keywords)
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is " + "Show Me All");
@@ -426,8 +438,6 @@ namespace MultiDialogsBot.Dialogs
                 return;
             }
             res = luisResult;
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
             msg.Text = text;
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Forwarding it to Luis needs...");
             try
@@ -522,6 +532,7 @@ namespace MultiDialogsBot.Dialogs
                         case EIntents.Camera:
                             if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
                             {
+                                decoder.ExcludeThis(EIntents.Camera);
                                 handSetsLeft = needsScores.GetTopFive(NodeLuisSubsNeeds.ENeeds.Camera);
                                 await UpdateUserAsync(context, handSetsLeft, handSetsNow);
                             }

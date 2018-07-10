@@ -30,6 +30,7 @@ namespace MultiDialogsBot.Dialogs
             Camera /* These last two are part of the other LUIS APP */
         };
 
+        bool checkSpelling;
         double topEntitySkore;
 
         static   NodeLuisSubsNeeds()
@@ -41,6 +42,11 @@ namespace MultiDialogsBot.Dialogs
                 { ENeeds.ShowOff, "As you love to have the latest," },
                 { ENeeds.GamesAddict,"As you are fond of playing with your phone," }
             };
+        }
+
+        public NodeLuisSubsNeeds( )
+        {
+
         }
 
         public static string GetNeedIntentDesc(ENeeds needIntent)
@@ -91,6 +97,8 @@ namespace MultiDialogsBot.Dialogs
 
             context.Done(new Tuple<ENeeds, double>(ENeeds.GamesAddict, topEntitySkore));
         }
+
+
 
         private async Task ShowDebugInfoAsync(IDialogContext context, LuisResult luisResult)
         {

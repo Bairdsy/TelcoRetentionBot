@@ -85,14 +85,14 @@ namespace MultiDialogsBot.Dialogs
 
             if (knowsWhatHeWants)
             {   
-                phraseFromSubs = response;
+                phraseFromSubs = response;  
                 if (debugMessages) await context.PostAsync("DEBUG : Response received " + response);
                 if (IndicatedModelsAndOrBrands(out wantedBrands, out wantedModels))
                     await ProcessSelectedBrandsAndModels(context, wantedBrands, wantedModels);
                 else
-                {
+                {  
                     await context.PostAsync("Great to know. What model do you like the most?");
-                    context.Wait(BrandAndModelReceived);
+                    context.Call(new NodeLUISBegin(true), BrandAndModelReceivedAsync);
                 }
             }
             else
@@ -226,19 +226,31 @@ namespace MultiDialogsBot.Dialogs
         }
 
 
-        private async Task BrandAndModelReceived(IDialogContext context , IAwaitable<object> awaitable)
+        private async Task BrandAndModelReceivedAsync(IDialogContext context , IAwaitable<object> awaitable)
         {
             List<string> brandsWanted = null ,
                          modelsWanted = null ;
             StringBuilder stringBuilder = new StringBuilder("Brands : ");
             Dictionary<string, bool> brandsSet = null;
             Dictionary<string, bool> modelsSet;
+            Tuple<string, NodeLUISBegin.EIntent> result = (Tuple<string,NodeLUISBegin.EIntent>) (await awaitable);
+            string fullSentence;  
 
-            string fullSentence = ((Activity)(await awaitable)).Text;
+            if (debugMessages) await context.PostAsync("Beginning of BrandAndModelReceivedAsync()");  
+              
+            if (result.Item2 != NodeLUISBegin.EIntent.None)
+            {
+                string[] temp = result.Item1.Split(':');
+
+                fullSentence = temp[1];
+                await context.PostAsync($"You typed \"{temp[0]}\", did you mean \"{Miscellany.QueryCompare(temp[0],fullSentence)}\"?");
+            }
+            else
+                fullSentence = result.Item1;
             try
             {
                 brandsSet = GetAllBrands();
-            }
+            }   
             catch (Exception xception)
             {
                 await context.PostAsync("Error... xception message = " + xception.Message);
@@ -345,7 +357,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 await context.PostAsync("Error in GetModelBrand(), exception message= " + xception.Message);    
             }
-            imgURL = GetEquipmentImageURL(subsModel,false);
+            imgURL = GetEquipmentImageURL(subsModel,false,context);
             heroCard = new HeroCard()
             {
                 Title = subsBrand,
@@ -659,7 +671,7 @@ namespace MultiDialogsBot.Dialogs
                         Title = Miscellany.Capitalize(GetModelBrand(model)),
                         Subtitle = Miscellany.Capitalize(model),
                         Text = "",
-                        Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model, true), "img/jpeg") },
+                        Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model, true,context), "img/jpeg") },
                         Buttons = new List<CardAction>()
                     {
                         new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},

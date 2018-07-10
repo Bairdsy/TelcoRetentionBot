@@ -53,7 +53,12 @@ namespace MultiDialogsBot.Dialogs
 
         LuisUpdater updater = new LuisUpdater();
         string nonUnderstoodUtterance,initialPhrase;
+        bool justCheck4Errors;
 
+        public NodeLUISBegin(bool checkSpelling = false)
+        {
+            justCheck4Errors = checkSpelling;
+        }
 
         [LuisIntent("Upgrade Both")]
         public async Task UpgradeBoth(IDialogContext context,LuisResult result)
@@ -62,6 +67,12 @@ namespace MultiDialogsBot.Dialogs
             string secondIntention = null;
             bool closeToSecond = CloseToSecond(result);
             string typosWarning = TyposInformation(result);
+
+            if (justCheck4Errors)
+            {
+                CheckSpelling(context, result);
+                return;
+            }
 
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
@@ -100,6 +111,12 @@ namespace MultiDialogsBot.Dialogs
             string secondIntention = null;      
             bool closeToSecond = CloseToSecond(result);
             string typosWarning = null;
+
+            if (justCheck4Errors)
+            {
+                CheckSpelling(context, result);
+                return;
+            }
 
             try
             {
@@ -145,6 +162,12 @@ namespace MultiDialogsBot.Dialogs
             bool typos = typosWarning != null;
             bool closeToSecond = CloseToSecond(result);
 
+            if (justCheck4Errors)
+            {
+                CheckSpelling(context, result);
+                return;
+            }
+
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
             if (typos)
@@ -180,7 +203,12 @@ namespace MultiDialogsBot.Dialogs
             string typosWarning = TyposInformation(result);
             bool typos = typosWarning != null;
             double score = ObtainTopIntentScore(result);
-            
+
+            if (justCheck4Errors)
+            {
+                CheckSpelling(context, result);
+                return;
+            }
 
             EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
 
@@ -201,6 +229,12 @@ namespace MultiDialogsBot.Dialogs
         public async Task NoneAtAll(IDialogContext context,LuisResult result)
         {
             double degreeOfCertain = ObtainTopIntentScore(result);
+
+            if (justCheck4Errors)
+            {
+                CheckSpelling(context, result);
+                return;
+            }
 
             await AskToRephraseAsync(context, result);
         }
@@ -407,7 +441,7 @@ namespace MultiDialogsBot.Dialogs
             context.Wait(CheckUserAnswerAsync);
         }
 
-        private string TyposInformation(LuisResult result)
+        private string TyposInformation(LuisResult result) 
         {
             //   System.Text.StringBuilder sb = new System.Text.StringBuilder();
             string correctedQuery; 
@@ -415,8 +449,15 @@ namespace MultiDialogsBot.Dialogs
             if (result.AlteredQuery == null)
                 return null;
             correctedQuery = Miscellany.QueryCompare(result.Query, result.AlteredQuery);
-            return $"You typed {result.Query}, did you mean {correctedQuery}?";
+            return $"You typed \"{result.Query}\", did you mean \"{correctedQuery}\"?";
         }
-
+        private void CheckSpelling(IDialogContext context, LuisResult result)
+        {
+            if (CommonDialog.debugMessages) context.PostAsync("Beginning of CheckSpelling() method");
+            if (result.AlteredQuery == null)
+                context.Done(Tuple.Create<string, EIntent>(result.Query, EIntent.None));
+            else
+                context.Done(Tuple.Create<string, EIntent>($"{result.Query}:{result.AlteredQuery}", EIntent.HandSet));
+        }
     }
 }

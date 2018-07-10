@@ -81,7 +81,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 reply = ((Activity)context.Activity).CreateReply(errStr);
                 ++failureNumber;
-                ComposeModelCarousel(brandChosen, brandModels, reply);
+                ComposeModelCarousel(brandChosen, brandModels, reply,context);
                 await context.PostAsync(reply);
                 await context.PostAsync(errStr2);
             }
@@ -115,7 +115,7 @@ namespace MultiDialogsBot.Dialogs
                 brand = Miscellany.Capitalize(brand);
                 var reply = messageActivity.CreateReply(moreThanOne ? "Which model would you like to have? Please pick one" : $"This is the only model I have available from {brand}");
                  
-                ComposeModelCarousel(brand, brandModelsList, reply);
+                ComposeModelCarousel(brand, brandModelsList, reply,context);
                 await context.PostAsync(reply);
                 if (debugMessages) await context.PostAsync("DEBUG : Exiting BrandChoiceMadeAskModelAsync(), brand is available on stock");
                 context.Wait(ChoiceMadeAsync);
@@ -193,7 +193,7 @@ namespace MultiDialogsBot.Dialogs
             context.Wait(MessageReceivedAsync);
         }
 
-        private void  ComposeModelCarousel(string brand,List<string> modelsVector,Activity reply)
+        private void  ComposeModelCarousel(string brand,List<string> modelsVector,Activity reply,IDialogContext context)
         {   
             HeroCard heroCard;
             string reviewsUrl;
@@ -206,7 +206,7 @@ namespace MultiDialogsBot.Dialogs
                     Title = Miscellany.Capitalize(model),
                     Subtitle = "",
                     Text = "From " + Miscellany.Capitalize(brand),
-                    Images = new List<CardImage>() {new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
+                    Images = new List<CardImage>() {new CardImage(GetEquipmentImageURL(model,true,context), "img/jpeg") },
                     Buttons = new List<CardAction>
                     {
                         new CardAction() { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want a " + model },

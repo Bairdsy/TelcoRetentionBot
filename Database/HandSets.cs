@@ -231,13 +231,17 @@ namespace MultiDialogsBot.Database
             return masterDict.SelectWithRegEx(filters);
         }
 
-        public string GetImageURL(string model,bool madCalmImage)
+        public string GetImageURL(string model,bool madCalmImage,bool chosen = false,int planCode = 1)
         {
             HandSetFeatures handSetFeatures;
+            string aux;
 
             handSetFeatures = masterDict.GetEquipmentFeatures(model);
             if (madCalmImage)
-                return handSetFeatures.MadCalmPicUrl + "-1-recommended.png";
+            {
+                aux = chosen ? "chosen" : "recommended";
+                return handSetFeatures.MadCalmPicUrl + $"-{planCode}-{aux}.png";               //" - 1 - recommended.png";
+            }
             else
                 return handSetFeatures.PhonePictureUrl;
         }
@@ -319,8 +323,6 @@ namespace MultiDialogsBot.Database
                         bag.Add(handset);
         }
 
-
-
         public int BagCount()
         {
             return bag.Count;
@@ -394,7 +396,9 @@ namespace MultiDialogsBot.Database
             temp2 = temp.Distinct();
             return new List<string>(temp2);
         }
-
+           
+     //   public double GetPreponderanceOfFeaturePhones
+       
         public double GetHighStandardThreshold(IComparer<HandSetFeatures> comparer,accessor getter)  
         {
             double min, max, temp;
@@ -405,7 +409,7 @@ namespace MultiDialogsBot.Database
             if (min > max )
             {
                 temp = min;
-                min = max;
+                min = max;  
                 max = temp;
                 return (min + (max - min) / 100 * 70);
             }

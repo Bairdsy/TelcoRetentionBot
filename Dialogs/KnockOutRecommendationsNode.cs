@@ -9,7 +9,7 @@ using MultiDialogsBot.Helper;
 
 namespace MultiDialogsBot.Dialogs
 {
-    [Serializable]
+ /*   [Serializable]
     public class KnockOutRecommendationsNode : CommonDialog
     {
         readonly Dictionary<NodeLUISPhoneDialog.EIntents, string> englishDescriptions;
@@ -186,5 +186,5 @@ namespace MultiDialogsBot.Dialogs
                 options.Add(englishDescriptions[feature]);
             PromptDialog.Choice(context, ChoiceReceivedAsync, options, msg, "Not understood, please try again", 4);
         }
-    }
+    }*/
 }

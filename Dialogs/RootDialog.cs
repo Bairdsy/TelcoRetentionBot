@@ -12,26 +12,26 @@
     using MongoDB.Driver;
 
 
-    using Dialogs;
-
+    using MultiDialogsBot.Helper;    
+      
 
     [Serializable]
-    public class RootDialog :  CommonDialog  // IDialog<object>
+    public class RootDialog :  CommonDialog  // IDialog<object>       
     {
-        private const string YesOption = "Yes - lets do it!!";
+        private const string YesOption = "Yes - lets do it!!";  
         private const string BusyOption = "No - Im busy right now.  Lets do it later.";
-        private const string NoOption = "No - Im not interested.";
-        private const string CallBackOption = "No - Id rather talk to a person about it.";
-
-        protected static IMongoClient _client;
+        private const string NoOption = "No - Im not interested.";           
+        private const string CallBackOption = "No - Id rather talk to a person about it.";   
+          
+        protected static IMongoClient _client;    
         protected static IMongoDatabase _database;
-
-        string HSET_Brand;
-        string HSET_Model;
-
+           
+        string HSET_Brand;    
+        string HSET_Model;  
+            
         public override async Task StartAsync(IDialogContext context)
-        {
-            context.Wait(this.ShowCharacters);
+        {     
+            context.Wait(this.ShowCharacters);  
         }   
 
         private async Task MainEntryPoint(IDialogContext context/*,IAwaitable<IMessageActivity> awaitable*/)
@@ -56,6 +56,7 @@
                 salutation = "Good evening, ";
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync(salutation + subsName);
+            Miscellany.InsertDelayAsync(context);
             await context.PostAsync("Welcome to the MC upgrade BOT demo.");
             await context.PostAsync("Can I help you with a new phone, plan or both?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);

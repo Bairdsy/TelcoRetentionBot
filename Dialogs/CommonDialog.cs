@@ -15,11 +15,33 @@ namespace  MultiDialogsBot.Dialogs
     [Serializable]
     public abstract class CommonDialog : IDialog<object>     
     {
+        enum EPlans
+        {
+            BeYouSIM = 0,
+            BeYou40,
+            BeYou60,
+            BeYou80
+        }
+
+        static Dictionary<string, EPlans> planNamesMapping;
+
         public static bool debugMessages ;
      
+
+
         protected static HandSets handSets;
         MongoDBAccess mongoDBAccess = MongoDBAccess.Instance; 
 
+        static CommonDialog()
+        {
+            planNamesMapping = new Dictionary<string, EPlans>()
+            {
+                { "BeYou SIM",EPlans.BeYouSIM },
+                { "BeYou 40",EPlans.BeYou40 },
+                { "BeYou 60",EPlans.BeYou60 },
+                { "BeYou 80",EPlans.BeYou80 },
+            };
+        }
 
         abstract public Task StartAsync(IDialogContext context);
         
@@ -28,7 +50,7 @@ namespace  MultiDialogsBot.Dialogs
             HandSetFeatures handSetFeatures;
 
             if (handSets == null)
-                InitializeDataStruct();
+                InitializeDataStruct();  
             handSetFeatures = handSets.GetModelFeatures(modelPicked);
 
             var heroCard = new HeroCard()
@@ -42,12 +64,34 @@ namespace  MultiDialogsBot.Dialogs
             await context.PostAsync(message);
         }
 
-        protected string GetEquipmentImageURL(string model,bool madCalmPic)
+        protected string GetEquipmentImageURL(string model,bool madCalmPic,IDialogContext context)
         {
+            bool planChosen;
+            int planCode = 1;
+            string temp;
+
             if (handSets == null)
                 InitializeDataStruct();
 
-            return handSets.GetImageURL(model,madCalmPic);
+            try
+            {
+                if (planChosen = context.ConversationData.TryGetValue("ChosenPlanName", out temp))
+                {
+                    foreach(var key in planNamesMapping.Keys)
+                        if (temp.StartsWith(key))
+                        {
+                            planCode = (int)planNamesMapping[key];
+                            break;
+                        }
+                }
+
+                return handSets.GetImageURL(model, madCalmPic, planChosen, planCode);
+            }
+            catch (Exception xception)
+            {
+                if (debugMessages) context.PostAsync("DEBUG : error...message = " + xception.Message);
+                return null;
+            }
         }
 
         protected List<string> GetTop5Sellers()

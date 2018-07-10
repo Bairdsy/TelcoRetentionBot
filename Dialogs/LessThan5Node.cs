@@ -177,7 +177,7 @@ namespace MultiDialogsBot.Dialogs
                     Title = Miscellany.Capitalize(GetModelBrand(model)),
                     Subtitle = Miscellany.Capitalize(model),    
                     Text = "",
-                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model,true), "img/jpeg") },
+                    Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model,true,context), "img/jpeg") },
                     Buttons = new List<CardAction>()
                     {
                         new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
@@ -208,7 +208,7 @@ namespace MultiDialogsBot.Dialogs
             else
                 await context.PostAsync("Great. Based on what you told me, I've narrowed it down to this recommended model");
 
-            equipmentURL = GetEquipmentImageURL(model,true);  
+            equipmentURL = GetEquipmentImageURL(model,true,context);  
             heroCard = new HeroCard()      
             {
                 Title = Miscellany.Capitalize(GetModelBrand(model)),

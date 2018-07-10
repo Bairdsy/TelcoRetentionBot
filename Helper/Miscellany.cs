@@ -4,6 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Bot.Connector;
+using Microsoft.Bot.Builder.Dialogs;
+
+
 namespace MultiDialogsBot.Helper
 {
     public static class Miscellany
@@ -95,6 +102,19 @@ namespace MultiDialogsBot.Helper
             }
             while (altListIndex != alteredWords.Length);
             return string.Join(" ", returnValue);
+        }
+
+        public static async Task InsertDelayAsync(IDialogContext context )
+        {
+            ConnectorClient connectorClient;
+            ITypingActivity typingActivity;
+            IMessageActivity msg = (Activity)context.Activity;
+
+            connectorClient = new ConnectorClient(new Uri(msg.ServiceUrl));
+            typingActivity = ((Activity)msg).CreateReply();
+            typingActivity.Type = ActivityTypes.Typing;
+            connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
+            Thread.Sleep(2500);
         }
     }
 }
