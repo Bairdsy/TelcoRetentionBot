@@ -48,6 +48,7 @@
                 await context.PostAsync("DEBUG : Beginning of program");
                 await context.PostAsync("DEBUG : My timezone is " + tz.StandardName.ToString());
             }
+            await Miscellany.InsertDelayAsync(context);
             if ((hour > 5) && (hour < 12))
                 salutation = "Good morning, ";    
             else if (hour < 19)
@@ -56,8 +57,9 @@
                 salutation = "Good evening, ";
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync(salutation + subsName);
-            Miscellany.InsertDelayAsync(context);
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync("Welcome to the MC upgrade BOT demo.");
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync("Can I help you with a new phone, plan or both?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);
         }

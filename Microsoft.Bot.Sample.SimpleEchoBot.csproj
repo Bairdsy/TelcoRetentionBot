@@ -196,6 +196,9 @@
   <ItemGroup>
     <Content Include="default.htm" />
     <Content Include="Global.asax" />
+    <None Include="Properties\PublishProfiles\multidialogbotprod-Web-Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\multidialogbottestenv2-Web-Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\multidialogbottestnenv1-Web-Deploy.pubxml" />
     <None Include="Resources\Vinnie.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -204,11 +204,16 @@ namespace MultiDialogsBot.Dialogs
 
             this.selectedModel = model;
             if (!weAreOnBranch7)
+            {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Great. Let's have a look at that phone now.");
+            }
             else
+            {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Great. Based on what you told me, I've narrowed it down to this recommended model");
-
-            equipmentURL = GetEquipmentImageURL(model,true,context);  
+            }
+            equipmentURL = GetEquipmentImageURL(model,true,context);    
             heroCard = new HeroCard()      
             {
                 Title = Miscellany.Capitalize(GetModelBrand(model)),

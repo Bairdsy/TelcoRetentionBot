@@ -36,14 +36,14 @@ namespace MultiDialogsBot.Dialogs
             List<string> brandsWanted, modelsWanted ;
             Activity reply, lastMsg = (Activity)context.Activity;
             SuggestedActions suggestedActions = new SuggestedActions
-            {
+            {   
                 Actions = new List<CardAction>()
                 {
                     new CardAction(){Title = "Yes, I know what I want",Type=ActionTypes.ImBack,Value = "Yes"},
                     new CardAction(){Title = "No, I haven't made up my mind", Type = ActionTypes.ImBack, Value = "No"}
                 }
             };
-
+            Miscellany.InsertDelayAsync(context);
             await context.PostAsync("I'd really like to see if I can help you here.");
             try
             {
@@ -55,6 +55,7 @@ namespace MultiDialogsBot.Dialogs
                 {
                     reply = lastMsg.CreateReply("Have you decided already what you want or would you like some support in choosing what's the right phone for you?");
                     reply.SuggestedActions = suggestedActions;
+                    Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(reply);
                     context.Wait(MessageReceivedWithDecisionAsync);
                 }
@@ -90,7 +91,8 @@ namespace MultiDialogsBot.Dialogs
                 if (IndicatedModelsAndOrBrands(out wantedBrands, out wantedModels))
                     await ProcessSelectedBrandsAndModels(context, wantedBrands, wantedModels);
                 else
-                {  
+                {
+                    Miscellany.InsertDelayAsync(context);
                     await context.PostAsync("Great to know. What model do you like the most?");
                     context.Call(new NodeLUISBegin(true), BrandAndModelReceivedAsync);
                 }
@@ -243,6 +245,7 @@ namespace MultiDialogsBot.Dialogs
                 string[] temp = result.Item1.Split(':');
 
                 fullSentence = temp[1];
+                Miscellany.InsertDelayAsync(context);
                 await context.PostAsync($"You typed \"{temp[0]}\", did you mean \"{Miscellany.QueryCompare(temp[0],fullSentence)}\"?");
             }
             else
@@ -301,9 +304,12 @@ namespace MultiDialogsBot.Dialogs
                 context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
             }  
             else if ((x = handSets.BagCount()) <= BotConstants.MAX_CAROUSEL_CARDS)
-            {  
+            {
                 if (x > 1)
+                {
+                    Miscellany.InsertDelayAsync(context);
                     await context.PostAsync($"Great choice! There are {x} different versions for you to choose from");
+                }
                 context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);
             }  
             else
@@ -603,7 +609,7 @@ namespace MultiDialogsBot.Dialogs
          * > it's just that brand, but newer than current phone (deprecated)
          * : it's the brand and model node, he wants to explicitly pick the brand and then model
          * ~ it's everything that is not that brand 
-         * 
+         *     
          */
         private async Task FinalSelectionReceivedAsync(IDialogContext context, IAwaitable<object> awaitable)
         {
@@ -611,9 +617,9 @@ namespace MultiDialogsBot.Dialogs
             List<string> models2Exclude,remainingModels;
 
             if (debugMessages) await context.PostAsync("DEBUG: Final selection received : " + selection);
-            switch (selection[0])
-            {
-                case LessThan5Node.SOME_OTHER_BRAND:
+            switch (selection[0])  
+            {  
+                case LessThan5Node.SOME_OTHER_BRAND:  
                     isUnsure = false;
                     await RecommendPhoneAsync(context, "!" + selection.Substring(1));
                     break;
@@ -623,8 +629,14 @@ namespace MultiDialogsBot.Dialogs
                     break;
                 case LessThan5Node.NONE_OF_THESE_MODELS:
                     models2Exclude = new List<string>(selection.Substring(1).Split(LessThan5Node.NONE_OF_THESE_MODELS));
+                    if (models2Exclude.Count == GetAllModels().Count)
+                    {
+                        await Miscellany.InsertDelayAsync(context);
+                        await context.PostAsync("Let's retry and find a phone that is suitable for your needs");
+                        models2Exclude.Clear();
+                    }
                     if (LuisCalled)
-                        context.Call(new BrandModelNode(models2Exclude), FinalSelectionReceivedAsync);
+                        context.Call(new BrandModelNode(models2Exclude), FinalSelectionReceivedAsync);    
                     else
                     {
                         remainingModels = new List<string>( GetAllModels().Except(models2Exclude));
