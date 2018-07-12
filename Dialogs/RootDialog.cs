@@ -34,13 +34,15 @@
             context.Wait(this.ShowCharacters);  
         }   
 
-        private async Task MainEntryPoint(IDialogContext context)
+        private async Task MainEntryPoint(IDialogContext context/*,IAwaitable<IMessageActivity> awaitable*/)
         {
             DateTime time = DateTime.Now;
             int hour = time.Hour;
             string salutation,subsName;
             TimeZone tz = TimeZone.CurrentTimeZone;
 
+
+            //context.ConversationData.SetValue("HandsetModelKey", "iphone 7 plus- 256gb");
             if (CommonDialog.debugMessages)
             { 
                 await context.PostAsync("DEBUG : Beginning of program");
@@ -56,10 +58,10 @@
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync(salutation + subsName);
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("Welcome to the MC upgrade BOT demo.");
+            await context.PostAsync("Welcome to the MC upgrade BOT demo. Currently the demo covers plan changes, phone upgrades or both of these together.");
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("Can I help you with a new phone, plan or both?");
-            context.Call(new NodeLUISBegin(), DoneInitiaLuisAsync);
+            await context.PostAsync("How can I help you today?");
+            context.Call(new NodeLUISBegin(), DoneInitiaLuis);
         }
 
         public virtual async Task ShowCharacters(IDialogContext context, IAwaitable<IMessageActivity> result)
@@ -268,7 +270,7 @@
         }
 
 
-        private async Task DoneInitiaLuisAsync(IDialogContext context, IAwaitable<object> result)             
+        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)             
         { 
             var ret = await result;
             Tuple<string, NodeLUISBegin.EIntent> luisOutput = ret as Tuple<string, NodeLUISBegin.EIntent>;
@@ -276,34 +278,38 @@
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
             if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet)
             {
-                context.ConversationData.SetValue(BotConstants.FLOW_TYPE_KEY, BotConstants.EQUIPMENT_FLOW_TYPE);
-                await Miscellany.InsertDelayAsync(context);
-                
+                context.ConversationData.SetValue("FlowType", "equipment");
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
             }
             else if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.Plan)
             {
-                context.ConversationData.SetValue(BotConstants.FLOW_TYPE_KEY, BotConstants.PLAN_FLOW_TYPE);
-                await Miscellany.InsertDelayAsync(context);
-                await context.PostAsync("Sure. I can help you to choose a new plan.");
+                context.ConversationData.SetValue("FlowType", "plan only");
+                //await context.PostAsync("Ryan's node to kick in-");
                 context.Call(new PlanNode(), PlanFlowDone);
             }
             else if (luisOutput.Item2 == NodeLUISBegin.EIntent.Both)
             {
-                context.ConversationData.SetValue(BotConstants.FLOW_TYPE_KEY, BotConstants.BOTH_FLOW_TYPE);
+                context.ConversationData.SetValue("FLowType", "both");
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Both intent detected");
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
             }
             else
             {
+                context.Wait(Restarting);
                 context.Wait(ShowCharacters);
             }
         }
 
-        private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
+        public virtual async Task Restarting(IDialogContext context, IAwaitable<IMessageActivity> result)
+        {
+            await result;
+            await MainEntryPoint(context);
+        }
+            private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
         {
             await context.PostAsync("End of phone Flow - enter something");
             context.Wait(CharacterSelectedAsync);
+            //  context.Wait(MessageReceivedAsync);
         }
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)

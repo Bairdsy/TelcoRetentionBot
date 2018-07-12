@@ -361,7 +361,7 @@
             }
 
             await context.PostAsync(reply);
-            await context.PostAsync($"Here is your analysis.  You can scroll back up and still choose a plan from the list above once you are finished looking.");
+            await context.PostAsync($"Here is your analysis.  You can scroll back up and still choose a plan from the list above once you are finished looking.  After that you can scroll back down to continue.");
         }
 
 

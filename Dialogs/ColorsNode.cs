@@ -61,6 +61,7 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync($"Excellent selection - The {chosenModel} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in
+            await Task.Delay(3000);
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm going to call Ryan's node");
             try
             { 
