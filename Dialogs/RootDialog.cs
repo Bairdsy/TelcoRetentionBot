@@ -34,7 +34,7 @@
             context.Wait(this.ShowCharacters);  
         }   
 
-        private async Task MainEntryPoint(IDialogContext context/*,IAwaitable<IMessageActivity> awaitable*/)
+        private async Task MainEntryPoint(IDialogContext context )
         {
             DateTime time = DateTime.Now;
             int hour = time.Hour;
@@ -61,9 +61,9 @@
             await context.PostAsync("Welcome to the MC upgrade BOT demo. Currently the demo covers plan changes, phone upgrades or both of these together.");
             await Miscellany.InsertDelayAsync(context);
             await context.PostAsync("How can I help you today?");
-            context.Call(new NodeLUISBegin(), DoneInitiaLuis);
+            context.Call(new NodeLUISBegin(), DoneInitiaLuisAsync);
         }
-
+               
         public virtual async Task ShowCharacters(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var heroCard = new HeroCard
@@ -270,7 +270,7 @@
         }
 
 
-        private async Task DoneInitiaLuis(IDialogContext context, IAwaitable<object> result)             
+        private async Task DoneInitiaLuisAsync(IDialogContext context, IAwaitable<object> result)             
         { 
             var ret = await result;
             Tuple<string, NodeLUISBegin.EIntent> luisOutput = ret as Tuple<string, NodeLUISBegin.EIntent>;
@@ -278,18 +278,19 @@
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : NodeLuisBegin returned : " + ret.ToString());
             if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.HandSet)
             {
-                context.ConversationData.SetValue("FlowType", "equipment");
+                context.ConversationData.SetValue(BotConstants.FLOW_TYPE_KEY, BotConstants.EQUIPMENT_FLOW_TYPE);
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
             }
             else if (((Tuple<string, NodeLUISBegin.EIntent>)ret).Item2 == NodeLUISBegin.EIntent.Plan)
             {
-                context.ConversationData.SetValue("FlowType", "plan only");
-                //await context.PostAsync("Ryan's node to kick in-");
+                context.ConversationData.SetValue(BotConstants.FLOW_TYPE_KEY, BotConstants.PLAN_FLOW_TYPE);
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("Sure.  I can help you to choose a new plan.");
                 context.Call(new PlanNode(), PlanFlowDone);
             }
             else if (luisOutput.Item2 == NodeLUISBegin.EIntent.Both)
             {
-                context.ConversationData.SetValue("FLowType", "both");
+                context.ConversationData.SetValue(BotConstants.FLOW_TYPE_KEY, BotConstants.BOTH_FLOW_TYPE);
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Both intent detected");
                 context.Call(new NodePhoneFlow(((Tuple<string, NodeLUISBegin.EIntent>)ret).Item1), PhoneFlowDone);
             }
