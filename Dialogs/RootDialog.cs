@@ -58,9 +58,9 @@
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync(salutation + subsName);
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("Welcome to the MC upgrade BOT demo.");
+            await context.PostAsync("Welcome to the MC upgrade BOT demo. Currently the demo covers plan changes, phone upgrades or both of these together.");
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("Can I help you with a new phone, plan or both?");
+            await context.PostAsync("How can I help you today?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuis);
         }
 
@@ -295,11 +295,17 @@
             }
             else
             {
+                context.Wait(Restarting);
                 context.Wait(ShowCharacters);
             }
         }
 
-        private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
+        public virtual async Task Restarting(IDialogContext context, IAwaitable<IMessageActivity> result)
+        {
+            await result;
+            await MainEntryPoint(context);
+        }
+            private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
         {
             await context.PostAsync("End of phone Flow - enter something");
             context.Wait(CharacterSelectedAsync);
