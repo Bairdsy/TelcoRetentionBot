@@ -34,6 +34,7 @@ namespace MultiDialogsBot.Dialogs
         public override async Task StartAsync(IDialogContext context)
         {    
             List<string> brandsWanted, modelsWanted ;
+            string flowType;
             Activity reply, lastMsg = (Activity)context.Activity;
             SuggestedActions suggestedActions = new SuggestedActions
             {   
@@ -43,19 +44,33 @@ namespace MultiDialogsBot.Dialogs
                     new CardAction(){Title = "No, I haven't made up my mind", Type = ActionTypes.ImBack, Value = "No"}
                 }
             };
-            Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("I'd really like to see if I can help you here.");
+       /*     await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync("I'd really like to see if I can help you here.");*/
             try
             {
                 if (IndicatedModelsAndOrBrands(out brandsWanted,out modelsWanted))
                 {
-                    await ProcessSelectedBrandsAndModels(context,  brandsWanted, modelsWanted);
+                    await Miscellany.InsertDelayAsync(context);
+                    await context.PostAsync("Yes, I can help you with that.");
+                    await ProcessSelectedBrandsAndModels(context,  brandsWanted, modelsWanted,false);
                 }
                 else
                 {
+                    if (context.ConversationData.TryGetValue(BotConstants.FLOW_TYPE_KEY, out flowType))
+                    {
+                        await Miscellany.InsertDelayAsync(context);
+                        if (flowType == BotConstants.BOTH_FLOW_TYPE)
+                            await context.PostAsync("Sure. Let's start by choosing a new phone");
+                        else if (flowType == BotConstants.EQUIPMENT_FLOW_TYPE)
+                            await context.PostAsync("Sure. I can help you to choose a new phone.");
+                        else
+                            throw new Exception("Error...NodePhoneFlow::StartAsync() unknown flow key value : " + flowType);  
+                    }
+                    else
+                        throw new Exception("Error...phone flow entered without flow key being assigned a value");
                     reply = lastMsg.CreateReply("Have you decided already what you want or would you like some support in choosing what's the right phone for you?");
                     reply.SuggestedActions = suggestedActions;
-                    Miscellany.InsertDelayAsync(context);
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(reply);
                     context.Wait(MessageReceivedWithDecisionAsync);
                 }
@@ -89,29 +104,18 @@ namespace MultiDialogsBot.Dialogs
                 phraseFromSubs = response;  
                 if (debugMessages) await context.PostAsync("DEBUG : Response received " + response);
                 if (IndicatedModelsAndOrBrands(out wantedBrands, out wantedModels))
-                    await ProcessSelectedBrandsAndModels(context, wantedBrands, wantedModels);
+                    await ProcessSelectedBrandsAndModels(context, wantedBrands, wantedModels,false);
                 else
                 {
-                    Miscellany.InsertDelayAsync(context);
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync("Great to know. What model do you like the most?");
                     context.Call(new NodeLUISBegin(true), BrandAndModelReceivedAsync);
                 }
             }
             else
             {
-                List<CardAction> buttons;
-                 
                 if (debugMessages) await context.PostAsync("DEBUG : string representation : " + handSets.BuildStrRepFull());
                 await DisplayTopSalesCarouselAsync(context);
-                activity = ((Activity)(context.Activity)).CreateReply();
-                activity.Text = $"There are {totalPhones} phones to choose from or I can help you choose one";
-                buttons = new List<CardAction>()
-                {
-                    new CardAction(){Title = "I'll decide by myself",Type=ActionTypes.ImBack,Value = "I'll pick"},
-                    new CardAction(){Title = "Help me work it out, based on what's important for me",Type= ActionTypes.ImBack,Value = "Help me work it out"}
-                };
-                activity.SuggestedActions = new SuggestedActions(actions : buttons);
-                await context.PostAsync(activity);
                 firstTime = false;
                 context.Wait(PickOrRecommendOptionReceivedAsync);
             }
@@ -245,12 +249,12 @@ namespace MultiDialogsBot.Dialogs
                 string[] temp = result.Item1.Split(':');
 
                 fullSentence = temp[1];
-                Miscellany.InsertDelayAsync(context);
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync($"You typed \"{temp[0]}\", did you mean \"{Miscellany.QueryCompare(temp[0],fullSentence)}\"?");
             }
             else
                 fullSentence = result.Item1;
-            try
+            try  
             {
                 brandsSet = GetAllBrands();
             }   
@@ -269,10 +273,10 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync($"Exception message = {xception.Message}");
             }
 
-            await ProcessSelectedBrandsAndModels(context, brandsWanted, modelsWanted);
+            await ProcessSelectedBrandsAndModels(context, brandsWanted, modelsWanted,true);
         }
 
-        private async Task ProcessSelectedBrandsAndModels(IDialogContext context, List<string> wantedBrands,List<string> wantedModels)
+        private async Task ProcessSelectedBrandsAndModels(IDialogContext context, List<string> wantedBrands,List<string> wantedModels, bool modelEnteredOnEnd)
         {
             StringBuilder sb  ;
             int x;
@@ -307,8 +311,11 @@ namespace MultiDialogsBot.Dialogs
             {
                 if (x > 1)
                 {
-                    Miscellany.InsertDelayAsync(context);
-                    await context.PostAsync($"Great choice! There are {x} different versions for you to choose from");
+                    await Miscellany.InsertDelayAsync(context);
+                    if (modelEnteredOnEnd)
+                        await context.PostAsync($"Great choice!There are {x} different versions for you to choose from");
+                    else
+                        await context.PostAsync($"There are {x} different versions for you to choose from");
                 }
                 context.Call(new LessThan5Node(selectResult,false), FinalSelectionReceivedAsync);
             }  
@@ -319,7 +326,7 @@ namespace MultiDialogsBot.Dialogs
         }
 
         private async Task CallLuisPhoneNodeAsync(List<string> basket,IDialogContext context)
-        {
+        {  
             StringBuilder sb = new StringBuilder();  // Only works for debug
             IntentDecoder theDecoder;
             TopFeatures topFeatures;
@@ -330,12 +337,25 @@ namespace MultiDialogsBot.Dialogs
             topFeatures = new TopFeatures(theDecoder);
             if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
             if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
-            await context.PostAsync($"We have over {basket.Count} different models of phone to choose from.");
-            await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from");
-            await context.PostAsync(" If you like a particular brand just say which ones.");
-            await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+            if (GetModelCount() == basket.Count)
+            {
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync($"We have over {basket.Count} different models of phone to choose from.");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync(" If you like a particular brand just say which ones.");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("Or you can choose features (like weight, battery life, camera...) or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+            }
+            else
+            {
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync($"We have {basket.Count} phones which match your requirement.If you tell me what is important to you or how you use your phone then I can help you to pick the right one.");
+            }
             reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
             if (debugMessages) await context.PostAsync("DEBUG : Results " + sb.ToString());
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync(reply);
             context.Call(new NodeLUISPhoneDialog(topFeatures, handSets, null, null, basket), LuisResponseHandlerAsync);
             LuisCalled = true;
@@ -670,6 +690,7 @@ namespace MultiDialogsBot.Dialogs
             List<string> topSellers;
             Activity reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
+            List<CardAction> buttons;
 
             topSellers = GetTop5Sellers();
             x = topSellers.Count;
@@ -702,6 +723,12 @@ namespace MultiDialogsBot.Dialogs
                     heroCard.Buttons.Add(new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });
                 }
                 reply.Attachments.Add(heroCard.ToAttachment());
+                buttons = new List<CardAction>()
+                {
+                    new CardAction(){Title = "I'll decide by myself",Type=ActionTypes.ImBack,Value = "I'll pick"},
+                    new CardAction(){Title = "Help me work it out, based on what's important for me",Type= ActionTypes.ImBack,Value = "Help me work it out"}
+                };
+                reply.SuggestedActions = new SuggestedActions(actions : buttons);
             }
             reply.AttachmentLayout = "carousel";
             await context.PostAsync(reply);

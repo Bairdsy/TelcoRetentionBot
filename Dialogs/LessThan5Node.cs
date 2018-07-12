@@ -61,14 +61,14 @@ namespace MultiDialogsBot.Dialogs
 
             if (buttonPressed.StartsWith("I want "))
             {
-                modelPicked = selectedModel = buttonPressed.Substring(7);
+                modelPicked = selectedModel = buttonPressed.Substring(7);      
                 context.Done(modelPicked);
-            }
+            }    
             else if (buttonPressed.ToLower() == "start again")
             {
                 models2Exclude = modelList.ToArray();
                 unwantedModels = string.Concat(NONE_OF_THESE_MODELS, string.Join(NONE_OF_THESE_MODELS.ToString(), models2Exclude));
-                context.Done(unwantedModels);
+                context.Done(unwantedModels);  
             }
             else if (buttonPressed.StartsWith("Plan Prices for "))
             {
@@ -78,7 +78,7 @@ namespace MultiDialogsBot.Dialogs
             else  // Anything else 
             {
                 if (++numTimesRubbishEntered <= MAX_NUMBER_OF_TIMES_RUBBISH_ENTERED)
-                {
+                {  
                     await context.PostAsync("Sorry. I don't quite follow what you're saying. Click on \"Pick Me\" if there is a phone you like, or click on \"Phone Price per Plan\" to see the cost for that phone on the different plans available.");
                     await context.PostAsync("You can also click \"Expert reviews\" or \"Specifications\" for more details on any phone. Or if you want to go back to choose another brand or model type \"Start Again\"");
                     await DisplayMultiPhoneCarouselAnsyc(context, modelList);

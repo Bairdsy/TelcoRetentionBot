@@ -157,7 +157,7 @@ namespace MultiDialogsBot.Helper
                 { NodeLUISPhoneDialog.EIntents.DualSIM, x => !x.DualSIM}, 
                 { NodeLUISPhoneDialog.EIntents.ExpandableMemory, x => !x.ExpandableMemory },
                 { NodeLUISPhoneDialog.EIntents.FaceID, x => !x.FaceId },
-                { NodeLUISPhoneDialog.EIntents.FeaturePhone, x => !x.IsSmartphone },
+                { NodeLUISPhoneDialog.EIntents.FeaturePhone, x => x.IsSmartphone },
                 { NodeLUISPhoneDialog.EIntents.GPS, x => !x.GPS },
                 { NodeLUISPhoneDialog.EIntents.WiFi, x => !x.WiFi }, 
                 { NodeLUISPhoneDialog.EIntents.HDVoice, x => ! x.HDVoice },
@@ -232,7 +232,7 @@ namespace MultiDialogsBot.Helper
 
         public int DecodeIntent(NodeLUISPhoneDialog.EIntents intent2Decode,LuisResult result, System.Text.StringBuilder  stringDeDebug = null )
         {
-            int handSetsLeft;   
+            int handSetsLeft;
             Predicate<HandSetFeatures> predicate;
 
             intent = intent2Decode;
@@ -290,14 +290,14 @@ namespace MultiDialogsBot.Helper
                 handSets.EliminateFromBag(predicate);
                 return handSets.BagCount();
             }
-            throw new Exception("IntentDecoder : Error...Intent not recongized");
+            throw new Exception("IntentDecoder : Error...Intent not recongized");  
         }
         
         private double Prod(IEnumerable<double> vector)
         {
-            return MultiDialogsBot.Helper.Miscellany.Product(vector);
+            return MultiDialogsBot.Helper.Miscellany.Product(vector);  
         }
-
+           
         private void GetDateThreshold (LuisResult result)
         {
             DateTime dateTime;

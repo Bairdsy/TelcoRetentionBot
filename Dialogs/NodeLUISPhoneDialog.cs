@@ -723,12 +723,12 @@ namespace MultiDialogsBot.Dialogs
             return additionalInfoDetected;
         }
 
-        private EKeywords CheckForKeywords(LuisResult result)
+        private EKeywords CheckForKeywords(LuisResult result)   
         {
             foreach (var entity in result.Entities)
-                if (entity.Type == "ShowMeAll")
+                if (entity.Type == "ShowMeAll") 
                     return EKeywords.ShowMeAll;
-                else if (entity.Type == "StartAgain")
+                else if (entity.Type == "StartAgain")    
                     return EKeywords.StartAgain;
             return EKeywords.None;
         }
