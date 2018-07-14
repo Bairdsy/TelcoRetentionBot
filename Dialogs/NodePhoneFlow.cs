@@ -88,7 +88,6 @@ namespace MultiDialogsBot.Dialogs
             bool knowsWhatHeWants = !(response.ToLower().StartsWith("no") && ((response.Length == 2) || char.IsLetter(response[2])));
             List<string> wantedBrands,wantedModels;
             int totalPhones = 3;
-            Activity activity;
 
             try
             {

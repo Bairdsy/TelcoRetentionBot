@@ -30,7 +30,6 @@ namespace MultiDialogsBot.Dialogs
             Camera /* These last two are part of the other LUIS APP */
         };
 
-        bool checkSpelling;
         double topEntitySkore;
 
         static   NodeLuisSubsNeeds()

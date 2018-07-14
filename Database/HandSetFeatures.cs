@@ -67,7 +67,7 @@ namespace MultiDialogsBot.Database
 
         public bool WaterResist { get; private set; }
 
-        public int Weight {get;private set;}
+        public double Weight {get;private set;}
 
         public bool IsSmartphone
         {
@@ -107,8 +107,8 @@ namespace MultiDialogsBot.Database
             DateTime result;
             int batteryLifeInHours, counter = 0; ;
             double cameraResolutionMPixels;
-            int weight,xRes,yRes,megs,gigs,generic;
-            double price,res;
+            int xRes,yRes,megs,gigs,generic;
+            double weight, price,res;
 
             ImageURL = "https://image.freepik.com/free-icon/not-available-abbreviation-inside-a-circle_318-33662.jpg"; 
             keyValuePairs = new Dictionary<string, string>();
@@ -241,7 +241,7 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key.StartsWith("Weight"))
                 {
-                    if (int.TryParse(data, out weight))
+                    if (double.TryParse(data, out weight))
                     {
                         Weight = weight;
                     }                                    
@@ -309,11 +309,9 @@ namespace MultiDialogsBot.Database
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder($"Brand = {Brand} , Model = {Model}");
 
-
-
             if (this.keyValuePairs != null)
             {
-                foreach (var k in keyValuePairs.Keys)
+                foreach (var k in keyValuePairs.Keys)  
                     sb.Append($"{k} ==> {keyValuePairs[k]}" + "\r\n");
                 sb.Append("\r\nBattery life = " + BatteryLife +"\r\n");
             }
@@ -322,7 +320,7 @@ namespace MultiDialogsBot.Database
             sb.Append("Available in the following colours:");
             foreach (var color in Colors)
                 sb.Append(color + ";");
-            sb.Append(string.Concat("Dimensions : ", (BodySize[0] * BodySize[1] * BodySize[2]), "\r\nMemory : ",MemoryMB.ToString(),"\r\n Dual Camera = " + DualCamera.ToString() ));
+            sb.Append(string.Concat("Dimensions : ", (BodySize[0] * BodySize[1] * BodySize[2]), "\r\nMemory : ",MemoryMB.ToString(),"\r\n Dual Camera = " + DualCamera.ToString(),"\r\nWeight = " + Weight.ToString() ));
             return sb.ToString();
         }
     }

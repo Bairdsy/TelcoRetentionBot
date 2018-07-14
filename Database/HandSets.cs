@@ -20,24 +20,19 @@ namespace MultiDialogsBot.Database
         [Serializable]
         class Models : IEnumerable
         {
-            IEnumerator IEnumerable.GetEnumerator() { return models.Values.GetEnumerator();}
+            IEnumerator IEnumerable.GetEnumerator() { return models.Values.GetEnumerator(); }
 
             Dictionary<string, HandSetFeatures> models;
             Dictionary<string, HandSetFeatures> spaceLess;
 
             public string BrandLogoURL { get; set; }
 
-            public Models ()
+            public Models()
             {
                 models = new Dictionary<string, HandSetFeatures>();
                 spaceLess = new Dictionary<string, HandSetFeatures>();
             }
-            /*
-            public Models(string brandImageURL) : this()
-            {
-                BrandLogoURL = brandImageURL;
-            }
-            */
+
             public void Add(HandSetFeatures newModel)
             {
                 HandSetFeatures old;
@@ -51,7 +46,7 @@ namespace MultiDialogsBot.Database
                     newModel.CopyTo(old);
             }
 
-            public Dictionary<string,bool> GetAllModels()
+            public Dictionary<string, bool> GetAllModels()
             {
                 Dictionary<string, bool> returnVal = new Dictionary<string, bool>();
 
@@ -64,11 +59,11 @@ namespace MultiDialogsBot.Database
             public List<string> GetTop5MostSoldModels()
             {
                 List<string> returnVal = new List<string>();
-                int maxSales,counter = 0,modelsCount ;
-                HandSetFeatures  mostSold;
+                int maxSales, counter = 0, modelsCount;
+                HandSetFeatures mostSold;
                 string tail;
 
-                while((returnVal.Count != models.Count) && (counter < 5))
+                while ((returnVal.Count != models.Count) && (counter < 5))
                 {
                     maxSales = -1;
                     mostSold = null;
@@ -117,13 +112,13 @@ namespace MultiDialogsBot.Database
                     regex = new Regex(filter);
                     foreach (string model in models.Keys)
                     {
-                        if (  regex.IsMatch(model.ToLower()))                 
+                        if (regex.IsMatch(model.ToLower()))
                             returnVal.Add(model);
                     }
                 }
-                return  returnVal;
+                return returnVal;
             }
-             
+
             public HandSetFeatures GetEquipmentFeatures(string model)
             {
                 HandSetFeatures features;
@@ -131,12 +126,13 @@ namespace MultiDialogsBot.Database
                 if (models.TryGetValue(model, out features))
                     return features;
                 //return models[model];
-                if (models.TryGetValue(Miscellany.RemoveSpaces(model), out features))  
+                if (models.TryGetValue(Miscellany.RemoveSpaces(model), out features))
                     return features;
                 else
                     throw new Exception($"Error...could not find the {model} model in database");
             }
         }
+
 
         Dictionary<string, Models> brands = new Dictionary<string, Models>();
         Models masterDict = new Models();
@@ -174,7 +170,7 @@ namespace MultiDialogsBot.Database
         {
             return GetAllModels().Count;
         }
-        public Dictionary<string,bool> GetAllBrands()
+        public Dictionary<string, bool> GetAllBrands()
         {
             Dictionary<string, bool> returnVal = new Dictionary<string, bool>();
 
@@ -184,14 +180,14 @@ namespace MultiDialogsBot.Database
             return returnVal;
         }
 
-        public Dictionary<string,bool> GetAllModels()
+        public Dictionary<string, bool> GetAllModels()
         {
             return masterDict.GetAllModels();
         }
 
-        public Dictionary<string,bool> GetAllModelsForBrand(string brand)
+        public Dictionary<string, bool> GetAllModelsForBrand(string brand)
         {
-            Models models; // = brands[brand];
+            Models models;
 
             if (brands.TryGetValue(brand, out models))
             {
@@ -231,7 +227,7 @@ namespace MultiDialogsBot.Database
             return masterDict.SelectWithRegEx(filters);
         }
 
-        public string GetImageURL(string model,bool madCalmImage,bool chosen = false,int planCode = 1)
+        public string GetImageURL(string model, bool madCalmImage, bool chosen = false, int planCode = 1)
         {
             HandSetFeatures handSetFeatures;
             string aux;
@@ -285,7 +281,7 @@ namespace MultiDialogsBot.Database
          * (Branch 7 - Recommend a phone)              *
          *                                             *
          ***********************************************/
-         
+
         public void InitializeBag(List<string> identifiedMatches)
         {
             HandSetFeatures handSetFeatures;
@@ -302,8 +298,8 @@ namespace MultiDialogsBot.Database
         public void InitializeBag(string brand2Filter, DateTime? releaseDate)
         {
             List<Models> listOfSetsOfModels = new List<Models>();
-            DateTime release = releaseDate ?? new DateTime( 1980,1,1);
-            string brand2Exclude ;
+            DateTime release = releaseDate ?? new DateTime(1980, 1, 1);
+            string brand2Exclude;
 
             bag.Clear();
             if (brand2Filter == null)
@@ -317,7 +313,7 @@ namespace MultiDialogsBot.Database
                     if (brand != brand2Exclude)
                         listOfSetsOfModels.Add(brands[brand]);
             }
-            foreach (Models set in listOfSetsOfModels) 
+            foreach (Models set in listOfSetsOfModels)
                 foreach (HandSetFeatures handset in set)
                     if ((handset.ReleaseDate > release) && (handset.OS != null))
                         bag.Add(handset);
@@ -339,7 +335,7 @@ namespace MultiDialogsBot.Database
 
             if (total == phones2Keep)
                 return;
-            bag.RemoveRange(phones2Keep, total - phones2Keep );
+            bag.RemoveRange(phones2Keep, total - phones2Keep);
             return;
         }
 
@@ -348,7 +344,7 @@ namespace MultiDialogsBot.Database
             return masterDict.GetEquipmentFeatures(model);
         }
 
-        public void GetMaxAndMinLimits(accessor getter,out double min, out double max)
+        public void GetMaxAndMinLimits(accessor getter, out double min, out double max)
         {
             min = bag.Min(x => getter(x));
             max = bag.Max(x => getter(x));
@@ -360,12 +356,12 @@ namespace MultiDialogsBot.Database
         }
         public int KnockOutNumber(Predicate<HandSetFeatures> predicate)
         {
-            return bag.Count(x =>  predicate(x));
+            return bag.Count(x => predicate(x));
         }
 
         public List<string> GetBagColors()
         {
-            List<string> returnVal = new List<string>() ;
+            List<string> returnVal = new List<string>();
 
             foreach (var handset in bag)
                 returnVal = new List<string>(returnVal.Union<string>(handset.Colors));
@@ -396,20 +392,20 @@ namespace MultiDialogsBot.Database
             temp2 = temp.Distinct();
             return new List<string>(temp2);
         }
-           
-     //   public double GetPreponderanceOfFeaturePhones
-       
-        public double GetHighStandardThreshold(IComparer<HandSetFeatures> comparer,accessor getter)  
+
+
+
+        public double GetHighStandardThreshold(IComparer<HandSetFeatures> comparer, accessor getter)
         {
             double min, max, temp;
 
-            bag.Sort(comparer);   
+            bag.Sort(comparer);
             min = getter(bag[0]);
             max = getter(bag[bag.Count - 1]);
-            if (min > max )
+            if (min > max)
             {
                 temp = min;
-                min = max;  
+                min = max;
                 max = temp;
                 return (min + (max - min) / 100 * 70);
             }
@@ -446,9 +442,10 @@ namespace MultiDialogsBot.Database
                 stringBuilder.Append("\r\n-----\\//------\r\n");
             }
 
-            return  stringBuilder.ToString();
+            return stringBuilder.ToString();
         }
-        public int SortAndGetTop(IComparer<HandSetFeatures> comparer,accessor getter )
+
+        public int SortAndGetTop(IComparer<HandSetFeatures> comparer, accessor getter)
         {
             System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder("Contents");
             int counter = 0;
@@ -460,7 +457,8 @@ namespace MultiDialogsBot.Database
                 bag.Sort(comparer);
             }
             catch (Exception xception)
-            { throw new Exception("Error = " + xception.ToString() + stringBuilder.ToString());
+            {
+                throw new Exception("Error = " + xception.ToString() + stringBuilder.ToString());
             }
             for (int i = 0; i < bag.Count; ++i)
             {
@@ -470,7 +468,7 @@ namespace MultiDialogsBot.Database
                 if (counter >= BotConstants.MAX_CAROUSEL_CARDS)           // MAX+CAROUSEL_CARDS = minimum possible to show in caroussel but you've got to have at least 2 different
                 {
                     if (((i + 1) >= bag.Count) || (getter(bag[i + 1]) != temp))
-                    break;
+                        break;
                 }
             }
             return counter;
@@ -491,7 +489,7 @@ namespace MultiDialogsBot.Database
 
             logo = brands[brand].BrandLogoURL ?? "https://image.freepik.com/free-icon/not-available-abbreviation-inside-a-circle_318-33662.jpg";
             return logo;
-        } 
+        }
 
         public List<string> GetModelColors(string model)
         {
@@ -501,7 +499,7 @@ namespace MultiDialogsBot.Database
             return handSetFeatures.Colors;
         }
 
-        public void SetBrandLogo(string brand,string url)
+        public void SetBrandLogo(string brand, string url)
         {
             Models theBrandModels;
 
@@ -509,6 +507,33 @@ namespace MultiDialogsBot.Database
                 theBrandModels.BrandLogoURL = url;
             else
                 unavailableBrands.Add(brand.ToLower());
+        }
+
+        public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate)
+        {
+            return GetPreponderanceOfFeaturePhones(bag.Where(x => predicate(x))) > 0.8;
+        }
+
+        public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate,int topNumber,System.Text.StringBuilder sb = null)
+        {
+            List<HandSetFeatures> reducedBasket;
+
+            if (sb != null)
+                sb.Append($"topNumber = {topNumber}");
+            reducedBasket = new List<HandSetFeatures>(bag.GetRange(0, topNumber).Where(x => !predicate(x)));
+            if (sb != null) sb.Append($"\r\nreduced bag has {reducedBasket.Count} phones\r\n");
+            return GetPreponderanceOfFeaturePhones(reducedBasket) >= 0.7;
+        }
+
+        private double GetPreponderanceOfFeaturePhones(IEnumerable<HandSetFeatures> handSetVector)
+        {
+            int total = handSetVector.Count();
+            double featurePhoneNumber;
+
+            if (total == 0)
+                return 0;
+            featurePhoneNumber = handSetVector.Count(x => !x.IsSmartphone);
+            return featurePhoneNumber / total;
         }
     }
 }

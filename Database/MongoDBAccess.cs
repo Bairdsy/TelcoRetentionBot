@@ -15,7 +15,7 @@ namespace MultiDialogsBot.Database
     [Serializable]
     public class MongoDBAccess
     {
-        const int MAX_TIMES_SEEN = 3;
+        const int MAX_TIMES_SEEN = 2;
 
         static MongoDBAccess thisInstance = new MongoDBAccess();
         static IMongoClient mongoClient;

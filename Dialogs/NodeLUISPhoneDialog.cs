@@ -48,12 +48,21 @@ namespace MultiDialogsBot.Dialogs
             ScreenSize,
             SecondaryCamera,
             Small,
+            SmartPhone,
             WaterResist,
             Weight,
             WiFi,
             Newest,
             RAM
         }
+
+        public enum EFeaturePhonePosition
+        {
+            None = 0,
+            WantsFeaturePhones,
+            WantsSmartPhones,
+            DoesNotCare
+        };
 
         private enum EKeywords
         {
@@ -67,10 +76,14 @@ namespace MultiDialogsBot.Dialogs
         IntentDecoder decoder;
         HandSets handSetsBag;
         TopFeatures topButtons;
+        bool askingAboutFeaturePhones;
 
-        EIntents desiredFeature;
-        double desiredFeatureScore;
-        LuisResult res;
+        // The 'twos' are temporary storage
+        EIntents desiredFeature,desiredFeature2;
+        double desiredFeatureScore,desiredFeatureScore2;
+        LuisResult res,res2;
+
+
 
         ScoreFuncs needsScores;
 
@@ -101,6 +114,7 @@ namespace MultiDialogsBot.Dialogs
                 {EIntents.ScreenSize, "I understand that the most important thing for you on a phone is the screen size" },
                 {EIntents.SecondaryCamera, "I understand that the most important thing for you is the presence of a secondary camera"},
                 {EIntents.Small, "I understand that the most important thing for you are the dimensions of your new phone" },
+                {EIntents.SmartPhone, "I understand that you want a smartphone, not a feature phone" },
                 {EIntents.WaterResist, "I understand that the most important thing for you is that your phone should be water resistant" },
                 {EIntents.Weight , "I understand that the most important thing for you is the weight of your phone"},
                 {EIntents.WiFi, "I understand that the most important thing for you is the presence of WiFi" },
@@ -123,7 +137,9 @@ namespace MultiDialogsBot.Dialogs
        //     await context.PostAsync("Not understood");
             await ShowDebugInfoAsync(context, result);
             if (CommonDialog.debugMessages) await context.PostAsync("I could not understand that, I'm afraid");
-            desiredFeature = EIntents.None;
+            if (!askingAboutFeaturePhones)
+                desiredFeature = EIntents.None;
+            
             await ProcessNeedOrFeatureAsync(context, result);
         }
 
@@ -243,9 +259,12 @@ namespace MultiDialogsBot.Dialogs
         }
 
         [LuisIntent("FeaturePhone")]
-        public async Task FeaturePhone(IDialogContext context,LuisResult result)
+        public async Task FeaturePhone(IDialogContext context,LuisResult result) 
         {
+            EIntents old = desiredFeature;
+
             await ShowDebugInfoAsync(context, result);
+            decoder.FeatureOrSmartPhoneDecision = true;
             desiredFeature = EIntents.FeaturePhone;
             await ProcessNeedOrFeatureAsync(context, result);
         }
@@ -327,6 +346,16 @@ namespace MultiDialogsBot.Dialogs
             if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you are the dimensions of your new phone");
             await context.PostAsync("Your current phone is " + currentModel);
             desiredFeature = EIntents.Small;
+            await ProcessNeedOrFeatureAsync(context, result);
+        }
+
+        [LuisIntent("SmartPhone")]
+        public async Task SmartPhone(IDialogContext context,LuisResult result)
+        {
+            await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("I understand that the most important thing for you is to have a smartphone, not a feature phone");
+            desiredFeature = EIntents.SmartPhone;
+            decoder.FeatureOrSmartPhoneDecision = true;
             await ProcessNeedOrFeatureAsync(context, result);
         }
 
@@ -454,11 +483,8 @@ namespace MultiDialogsBot.Dialogs
         private async Task UpdateUserAsync(IDialogContext context,int handSetsLeft,int handSetsB4)
         {
             StringBuilder sb = new StringBuilder("-->");
-            List<EIntents> ranking = this.decoder.IntentsRanking(sb);
             var reply = ((Activity)context.Activity).CreateReply("What else is important for you on a mobile?");
           
-            foreach (var intent in ranking)
-                sb.Append(intent.ToString() + "\r\n");
             if (CommonDialog.debugMessages)
             {
                 await context.PostAsync("DEBUG : Ranking : \r\n");
@@ -625,6 +651,7 @@ namespace MultiDialogsBot.Dialogs
         {
             int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
             string featureText;
+            StringBuilder sb = new StringBuilder("Debug from the DecodeIntent() method");
 
             if (CommonDialog.debugMessages) await context.PostAsync("Beginning of DecodeAndProcessIntentAsync() method;");
             decoder.LastOneWasNeed = false;
@@ -633,9 +660,28 @@ namespace MultiDialogsBot.Dialogs
             else
                 decoder.FeatureOrNeedDesc = null;
             if (CommonDialog.debugMessages) await context.PostAsync("I'm going to call the decoder with " + desiredFeature.ToString());
-            handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
-            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
-            await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            handSetsLeft = decoder.DecodeIntent(desiredFeature, res,sb);
+            if (CommonDialog.debugMessages) await context.PostAsync("DEbugging info from DecodeIntent() : " + sb.ToString());
+            if (askingAboutFeaturePhones)
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync("I'm asking about feature phones");
+                RecoverContext();
+                decoder.FeatureOrSmartPhoneDecision = true;
+                askingAboutFeaturePhones = false;
+                handSetsLeft = decoder.DecodeIntent(desiredFeature, res);
+            }
+            else if (CommonDialog.debugMessages) await context.PostAsync("I'm not asking about feature phones");
+            if (handSetsLeft == -1) // Plenty of feature phones
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync("DecodeIntent() returned -1, which means there are plenty of feature phones on the carousel, user needs to be asked more questions");
+                SaveContext();
+                await AskAboutFeaturePhonesAsync(context);
+            }
+            else
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I have here {handSetsLeft} equipments left, bag contents = {handSetsBag.BuildStrRep()}, bag count = {handSetsBag.BagCount()}");
+                await UpdateUserAsync(context, handSetsLeft, handSetsNow);
+            }
         }
 
         private bool GetOSData(LuisResult result)
@@ -747,5 +793,41 @@ namespace MultiDialogsBot.Dialogs
             decoder.StrKeyWords = returnVal;
             return decoder.StrKeyWords.Count != 0;
         } 
+
+        private async Task AskAboutFeaturePhonesAsync(IDialogContext context)
+        {
+            Activity activity = (Activity)context.Activity;
+            var reply = activity.CreateReply("Are you looking for a classic phone or a smart phone?");
+            SuggestedActions buttons;
+
+            // turn on flag
+            askingAboutFeaturePhones = true;
+            buttons = new SuggestedActions()
+            {
+                Actions = new List<CardAction>()
+                {
+                    new CardAction(){Title = "Classic Phone", Type = ActionTypes.ImBack, Value = "I'm looking for a classic phone"},
+                    new CardAction(){Title = "SmartPhone", Type = ActionTypes.ImBack, Value = "I'm looking for a smart phone"},
+                    new CardAction(){Title = "It doesn't really matter to me",Type = ActionTypes.ImBack, Value = "It doesn't matter"}
+                }
+            };
+            reply.SuggestedActions = buttons;
+            await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync(reply);
+        }
+
+        private void SaveContext()
+        {
+            desiredFeature2 = desiredFeature;
+            desiredFeatureScore2 = desiredFeatureScore;
+            res2 = res;
+        }
+
+        private void RecoverContext()
+        {
+            desiredFeature = desiredFeature2;
+            desiredFeatureScore = desiredFeatureScore2;
+            res = res2;
+        }
     }
 }

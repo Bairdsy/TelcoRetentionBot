@@ -364,7 +364,7 @@ namespace MultiDialogsBot.Dialogs
                             {
                                 typingActivity = ((Activity)ans).CreateReply();
                                 typingActivity.Type = ActivityTypes.Typing;   
-                                connector.Conversations.SendToConversationAsync((Activity)typingActivity);
+                                await connector.Conversations.SendToConversationAsync((Activity)typingActivity);
                             }
                             else
                                 firstTime = false;

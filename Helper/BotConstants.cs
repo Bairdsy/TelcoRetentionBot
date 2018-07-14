@@ -19,5 +19,7 @@ namespace MultiDialogsBot.Helper
         public const string EQUIPMENT_FLOW_TYPE = "equipment";
         public const string PLAN_FLOW_TYPE = "plan only";
         public const string BOTH_FLOW_TYPE = "both";
+
+        public const double FEATURE_PHONE_THRESHOLD = 0.7;
     }
 }
