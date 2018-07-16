@@ -282,14 +282,14 @@ namespace MultiDialogsBot.Helper
                     if (handSets.KnockOutNumber(predicate) == handSets.BagCount())
                         return 0;
                     handSetsLeft = handSets.SortAndGetTop(this, getters[intent2Decode]);
-                    if (handSetsLeft == 0)
+                    if (handSetsLeft == 0)     
                         return 0;
                     if (stringDeDebug != null) stringDeDebug.Append("handSetsLeft = " + handSetsLeft);
                     if (!FeatureOrSmartPhoneDecision && handSets.TooManyFeaturePhones(predicate,handSetsLeft,stringDeDebug))
                         return -1;
                     handSets.removeAllButTop(handSetsLeft);
                     handSets.EliminateFromBag(predicate);
-                    return handSetsLeft;
+                    return handSets.BagCount();
                 }
             }
             /*** still here ? Boolean situation ****/

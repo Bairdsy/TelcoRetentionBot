@@ -479,7 +479,7 @@ namespace MultiDialogsBot.Dialogs
             }
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : End of ProcessNeedOrFeatureAsync()");
         }
-
+          
         private async Task UpdateUserAsync(IDialogContext context,int handSetsLeft,int handSetsB4)
         {
             StringBuilder sb = new StringBuilder("-->");
