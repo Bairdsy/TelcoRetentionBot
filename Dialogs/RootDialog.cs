@@ -306,7 +306,8 @@
             await result;
             await MainEntryPoint(context);
         }
-            private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
+
+        private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
         {
             await context.PostAsync("End of phone Flow - enter something");
             context.Wait(CharacterSelectedAsync);
