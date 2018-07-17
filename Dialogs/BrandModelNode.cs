@@ -96,17 +96,17 @@ namespace MultiDialogsBot.Dialogs
         {
             Activity messageActivity = (Activity)await awaitable;
             string brand = messageActivity.Text.StartsWith("I want ") ? messageActivity.Text.Substring(7) : messageActivity.Text;
-            Dictionary<string, bool> tempHash;  
+            Dictionary<string, bool> tempHash;     
             List<string> brandModelsList = new List<string>();
             bool moreThanOne, unavailable;
             IEnumerable<string> vector;
 
             if (debugMessages) await context.PostAsync("Beginning of BrandChoiceMadeAskModelAsync()");
             brandChosen = brand;
-            tempHash = GetBrandModels(brand);
+            tempHash = GetBrandModels(brand);   
             if (debugMessages) await context.PostAsync("Collecting models' hash");
             if (!(unavailable = IsBrandUnavailable(brand)) && (tempHash.Count() > 0))
-            {
+            {   
                 vector = xclude != null ? tempHash.Keys.Except(xclude) : tempHash.Keys;
                 foreach (string model in vector)
                     brandModelsList.Add(model);
@@ -124,7 +124,7 @@ namespace MultiDialogsBot.Dialogs
             {  
                 int x = availableModelsCount;
 
-                await context.PostAsync($"Unfortunately we don't have that brand in stock, but you can choose from over {x} plus models from Apple, Samsung, Nokia and other leading brands. Type the brands below from this list");
+                await context.PostAsync($"We currently do not have any {brand.ToUpper()} devices available, you can choose from up to {x}  models from leading manufacturers including Apple, Samsung, Nokia and HTC. Type the brands below from this list");
                 if (debugMessages) await context.PostAsync("DEBUG : Exiting BrandChoiceMadeAskModelAsync(), brand is not available on stock");
                 context.Wait(BrandChoiceMadeAskModelAsync);
             }

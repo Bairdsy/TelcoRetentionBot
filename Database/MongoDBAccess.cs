@@ -36,44 +36,6 @@ namespace MultiDialogsBot.Database
             }
         }
 
-
-        /*
-        public Dictionary<string,object> GetSubsNoImages(int anonSubsno)
-        {
-            Dictionary<string, object> ret = new Dictionary<string, object>();
-            var imagesCollection = madCalmDB.GetCollection<BsonDocument>("images");
-            var filter = Builders<BsonDocument>.Filter.Eq("Anon_Subsno", anonSubsno);
-            var cursor = imagesCollection.Find(filter).ToCursor();
-
-            foreach(var doc in cursor.ToEnumerable())
-            {
-                string imageName = doc.GetElement("name").Value.ToString();
-                string imageURL = doc.GetElement("Image").Value.ToString();
-                   
-                ret.Add(imageName, imageURL);
-            }
-            return ret;
-        }*/
-
-        
-
-        public Dictionary<string,bool> GetAllBrands()
-        {
-            Dictionary<string, bool> ret = new Dictionary<string, bool>();
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");    
-        
-            var cursor = handSetCollection.Find(new BsonDocument()).ToCursor();
-
-            foreach (var doc in cursor.ToEnumerable())
-            {
-                string brand = doc.GetElement("Brand").Value.ToString();           
-
-                if (!ret.Keys.Contains(brand))
-                    ret[brand] = false;
-            }
-            return ret;
-        }
-
         public HandSets GetCompleteHandSetData()
         {
             string brand, model;
@@ -84,7 +46,7 @@ namespace MultiDialogsBot.Database
             var brandsCollection = madCalmDB.GetCollection<BsonDocument>("brands");
 
             var brandCursor = brandsCollection.Find(new BsonDocument()).ToCursor();   
-            var orderBy = Builders<BsonDocument>.Sort.Ascending("Brand");
+            var orderBy = Builders<BsonDocument>.Sort.Ascending("Brand");   
             var orderBy2 = Builders<BsonDocument>.Sort.Ascending("Model");
             var featureCur = featuresCollection.Find(new BsonDocument()).Sort(orderBy).Sort(orderBy2).ToCursor();
             string currentBrand, currentModel;
@@ -163,7 +125,6 @@ namespace MultiDialogsBot.Database
             var filterBuilder = Builders<BsonDocument>.Filter;
             var projectionFilterBuilder = Builders<BsonDocument>.Projection;
             var filter = filterBuilder.Eq("Brand", manufacturer) & filterBuilder.Eq("Model", model);            // Maker b4 
-            /* var proj = projectionFilterBuilder.Include("Image").Exclude("_id");*/
             var proj = projectionFilterBuilder.Include("Image").Exclude("_id");
             var firstDoc = handSetCollection.Find(filter).Project(proj).First();
 
@@ -213,7 +174,7 @@ namespace MultiDialogsBot.Database
                 {
                     numberOfTimesSeen = int.Parse(doc.GetElement("count").Value.ToString());
                 }
-                catch (Exception xception)      
+                catch (Exception xception)        
                 {
                     throw new Exception("Error...Could not parse the mumeric value in the document, something is very wrong! Error Message : " +xception.Message);
                 }
@@ -224,7 +185,7 @@ namespace MultiDialogsBot.Database
                 {
                     {"intent" ,intent},
                     { "utterance",utterance2Add},
-                    { "count",1.ToString() }
+                    { "count",1.ToString() } 
                 };
 
                 utterancesCollection.InsertOne(new BsonDocument(keyValuePairs));
