@@ -63,6 +63,8 @@ namespace MultiDialogsBot.Dialogs
                             await context.PostAsync("Sure. Let's start by choosing a new phone");
                         else if (flowType == BotConstants.EQUIPMENT_FLOW_TYPE)
                             await context.PostAsync("Sure. I can help you to choose a new phone.");
+                        else if (flowType == BotConstants.PLAN_FLOW_TYPE)
+                            await context.PostAsync("Fantastic. Let's choose a new phone for you then.");
                         else
                             throw new Exception("Error...NodePhoneFlow::StartAsync() unknown flow key value : " + flowType);  
                     }

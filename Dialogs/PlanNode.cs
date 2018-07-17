@@ -11,6 +11,8 @@
     using MongoDB.Bson;
     using MongoDB.Driver;
 
+    using MultiDialogsBot.Helper;
+
     [Serializable]
     public class PlanNode : IDialog<object>
     {
@@ -200,7 +202,38 @@
                                     msg.Attachments.Add(Card.ToAttachment());
 
                                     await context.PostAsync(msg);
-                                    context.Done(2);
+                                    await Task.Delay(3000);
+
+                                    /*  If we havent chosen a phone yet we might want to  */
+                                    string flow_type;
+                                    context.ConversationData.TryGetValue(BotConstants.FLOW_TYPE_KEY, out flow_type);
+                                    if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: Flow type is {flow_type}");
+                                    if (flow_type.Contains("plan"))
+                                    {
+                                        if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: Name is {Name}");
+                                        if (Name.ToUpper().Contains("SIM"))
+                                        {
+                                            /* Any special handling when choosing a SIM Only plan here */
+                                            await context.PostAsync($"Your new SIM Only plan will continue to work with your existing phone.");
+                                            await Task.Delay(1500);
+                                            context.Done(2);
+                                        }
+                                        else
+                                        {
+                                            string PlanNameOnly = Name;
+                                            if (Name.Contains("+"))
+                                            {
+                                                PlanNameOnly = Name.Substring(0, Name.IndexOf('+') - 1);
+                                            }
+
+                                            if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: Inside logic for displaying ConfirmChoosePhone");
+                                            PromptDialog.Choice(context, this.ConfirmChoosePhone, new List<string>() { "Yes please.", "No thanks." }, $"The {PlanNameOnly} plan also entitles you to some fantastic deals on a new phone.  Would you like to upgrade your phone?", "Not a valid option", 2);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        context.Done(2);
+                                    }
                                 }
                             }
                         }
@@ -240,6 +273,56 @@
 
                 context.Done(0);
             }
+        }
+
+
+
+        private async Task ConfirmChoosePhone(IDialogContext context, IAwaitable<string> result)
+        {
+            var message = await result;
+
+            switch (message)
+            {
+                case "Yes":
+                case "yes":
+                case "YES":
+                case "Yes Please":
+                case "Yes please":
+                case "yes please":
+                case "Yes Please.":
+                case "Yes please.":
+                case "yes please.":
+                    //  call the phone node here
+                    try
+                    {
+                        string thing = message;
+                        context.Call(new NodePhoneFlow(thing), PhoneFlowDone);
+                    }
+                    catch (Exception xception)
+                    {
+                        await context.PostAsync("Error...xception message = " + xception.ToString());
+                    }
+
+                    break;
+                case "No":
+                case "no":
+                case "NO":
+                case "No thanks":
+                case "No Thanks":
+                case "no thanks":
+                case "No thanks.":
+                case "No Thanks.":
+                case "no thanks.":
+                    await context.PostAsync($"Okay.  You can continue to use your current phone with your new plan.");
+                    await Task.Delay(1500);
+                    context.Done(2);
+                    break;
+            }
+        }
+
+        private async Task PhoneFlowDone(IDialogContext context, IAwaitable<object> result)
+        {
+            context.Done(2);
         }
 
         public virtual async Task ConfirmPlan(IDialogContext context, IAwaitable<IMessageActivity> result)
