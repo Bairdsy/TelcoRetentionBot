@@ -385,7 +385,7 @@ namespace MultiDialogsBot.Dialogs
             desiredFeature = EIntents.WiFi;
             await ProcessNeedOrFeatureAsync(context, result);
         }
-        /************* Daqui para baixo nao foi testado ******************/
+
         [LuisIntent("Color")]
         public async Task Color(IDialogContext context,LuisResult result)
         {
@@ -642,7 +642,9 @@ namespace MultiDialogsBot.Dialogs
             string ans = await awaitable;
             
 
-            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He picked = " + ans);    
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He picked = " + ans);
+            if (ans == "Classic Phone")  
+                ans = "NA";
             decoder.StrKeyWords = new List<string>() { ans.ToLower() };
             await DecodeAndProcessIntentAsync(context);
         }

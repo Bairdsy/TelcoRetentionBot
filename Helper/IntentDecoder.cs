@@ -257,15 +257,21 @@ namespace MultiDialogsBot.Helper
                         throw new Exception("Error...Either color, brand or OS selected and no string was supplied");
                     if (handSets.KnockOutNumber(predicate) == handSets.BagCount())
                         return 0;
-                    if (!FeatureOrSmartPhoneDecision && handSets.TooManyFeaturePhones(predicate))
+                    if (stringDeDebug != null) stringDeDebug.Append("debug : "+ "StrKeyWords Count = " + StrKeyWords.Count + "\r\nFirst = " + StrKeyWords[0]);
+                    if ((intent2Decode == NodeLUISPhoneDialog.EIntents.OS)
+                        && (StrKeyWords.Count == 1)
+                        && (StrKeyWords[0] == "na")
+                        )
+                        FeatureOrSmartPhoneDecision = true;
+                    if (!FeatureOrSmartPhoneDecision && handSets.TooManyFeaturePhones(predicate, sb : stringDeDebug))
                         return -1;
                     handSets.EliminateFromBag(predicate);
                     return handSets.BagCount();
-                }
+                }  
                 else if ((Threshold != -1) || (DateThreshold != new DateTime(1980, 1, 1)))
                 {
                     if (stringDeDebug != null)
-                        stringDeDebug.Append($" The threshold extracted is : {Threshold}");
+                        stringDeDebug.Append($" The threshold extracted is : {Threshold}");  
                     if (handSets.KnockOutNumber(predicate) == handSets.BagCount())
                         return 0;
                     if (!FeatureOrSmartPhoneDecision && handSets.TooManyFeaturePhones(predicate))

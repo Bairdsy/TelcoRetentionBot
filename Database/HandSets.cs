@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+using System.Text;
 using System.Text.RegularExpressions;
+
 
 using MultiDialogsBot.Helper;
 
@@ -376,7 +378,7 @@ namespace MultiDialogsBot.Database
 
             temp = new List<string>();
             foreach (var feature in bag)
-                temp.Add(feature.OS);
+                temp.Add(feature.OS == "NA" ? "Classic Phone" : feature.OS);
             temp2 = temp.Distinct<string>();
             return new List<string>(temp2);
         }
@@ -509,12 +511,15 @@ namespace MultiDialogsBot.Database
                 unavailableBrands.Add(brand.ToLower());
         }
 
-        public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate)
+        public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate, StringBuilder sb = null)
         {
-            return GetPreponderanceOfFeaturePhones(bag.Where(x => predicate(x))) > 0.8;
+            List<HandSetFeatures> reducedBasket;
+
+             
+            return GetPreponderanceOfFeaturePhones(bag.Where(x => !predicate(x))) >= BotConstants.FEATURE_PHONE_THRESHOLD;
         }
 
-        public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate,int topNumber,System.Text.StringBuilder sb = null)
+        public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate,int topNumber, StringBuilder sb = null)
         {
             List<HandSetFeatures> reducedBasket;
 
@@ -522,7 +527,7 @@ namespace MultiDialogsBot.Database
                 sb.Append($"topNumber = {topNumber}");
             reducedBasket = new List<HandSetFeatures>(bag.GetRange(0, topNumber).Where(x => !predicate(x)));
             if (sb != null) sb.Append($"\r\nreduced bag has {reducedBasket.Count} phones\r\n");
-            return GetPreponderanceOfFeaturePhones(reducedBasket) >= 0.7;
+            return GetPreponderanceOfFeaturePhones(reducedBasket) >= BotConstants.FEATURE_PHONE_THRESHOLD;
         }
 
         private double GetPreponderanceOfFeaturePhones(IEnumerable<HandSetFeatures> handSetVector)

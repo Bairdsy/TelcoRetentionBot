@@ -553,11 +553,18 @@ namespace MultiDialogsBot.Dialogs
                                                                       "Remember that you can always ask for all phones and work through the different options on your own,just enter \"Start Again\"");
                     reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync($"We have over { count} different models of phone to choose from. ");
                     if (isUnsure)
+                    {
+                        await Miscellany.InsertDelayAsync(context);
                         await context.PostAsync("As you are unsure what is your best model then let me know what is important to you and I'll select a few for you to choose from. If you like a particular brand just say which ones.");
+                    }
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync("Or you can choose features (like weight, battery life, camera...) ");
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync("or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(reply);   
                     context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
                 }
@@ -730,6 +737,7 @@ namespace MultiDialogsBot.Dialogs
                 reply.SuggestedActions = new SuggestedActions(actions : buttons);
             }
             reply.AttachmentLayout = "carousel";
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync(reply);
         }
     }

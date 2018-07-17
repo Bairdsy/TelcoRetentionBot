@@ -138,9 +138,12 @@ namespace MultiDialogsBot.Helper
 
                        freq = tuple.Item3;
                        tuple = new Tuple<string, string, int>(tuple.Item1,tuple.Item2, ++freq);
-                       ranking[index] = tuple;*/
-            freq = numberOfHits[englishDescriptions[feature]];
-            MongoDBAccess.Instance.SetFeatureFrequency(englishDescriptions[feature], freq);
+                       ranking[index] = tuple;*/  
+            englishDesc = englishDescriptions[feature];
+            freq = numberOfHits[englishDesc];
+
+            numberOfHits[englishDesc] = ++freq;
+            MongoDBAccess.Instance.SetFeatureFrequency(englishDescriptions[feature], freq );
             ranking.Sort((x, y) => -Math.Sign(x.Item3 - y.Item3));
         }
     }
