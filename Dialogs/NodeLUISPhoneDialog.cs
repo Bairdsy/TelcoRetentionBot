@@ -599,7 +599,7 @@ namespace MultiDialogsBot.Dialogs
                 }
                 catch (ArgumentException)
                 {
-                    await context.PostAsync("Argument xception");
+                    await context.PostAsync("Argument xception");  
                 } 
                 catch (Exception xception)
                 {
@@ -617,7 +617,7 @@ namespace MultiDialogsBot.Dialogs
 
             context.ConversationData.TryGetValue("HandsetModelKey", out currentModel);
             currentModel = "iphone 7 plus  256gb";
-            phoneFeatures = handSetsBag.GetModelFeatures(currentModel);
+            phoneFeatures = handSetsBag.GetModelFeatures(currentModel); 
 
             if (ans == "THE SAME")
             {
