@@ -100,7 +100,7 @@ namespace MultiDialogsBot.Dialogs
             List<string> brandModelsList = new List<string>();
             bool moreThanOne, unavailable;
             IEnumerable<string> vector;
-
+              
             if (debugMessages) await context.PostAsync("Beginning of BrandChoiceMadeAskModelAsync()");
             brandChosen = brand;
             tempHash = GetBrandModels(brand);   
@@ -109,7 +109,7 @@ namespace MultiDialogsBot.Dialogs
             {   
                 vector = xclude != null ? tempHash.Keys.Except(xclude) : tempHash.Keys;
                 foreach (string model in vector)
-                    brandModelsList.Add(model);
+                    brandModelsList.Add(model);   
                 brandModels = brandModelsList;
                 moreThanOne = (brandModels.Count != 1);
                 brand = Miscellany.Capitalize(brand);

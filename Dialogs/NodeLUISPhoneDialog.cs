@@ -505,7 +505,7 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync(reply);
             }
             else
-            {
+            { 
                 if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : Number of phones on bag : {handSetsBag.BagCount()}");
                 context.Done(decoder);
             }
@@ -605,9 +605,9 @@ namespace MultiDialogsBot.Dialogs
                 {
                     await context.PostAsync($"Error...Exception Message = {xception.Message}");
                 }
-            }
+            }    
         }
-
+         
         private async Task ProcessSizeChoice(IDialogContext context,IAwaitable<string> awaitable)
         {
             string ans = await awaitable;
@@ -622,6 +622,7 @@ namespace MultiDialogsBot.Dialogs
             if (ans == "THE SAME")
             {
                 needsScores.CurrentPhone = currentModel;
+                decoder.ExcludeThis(EIntents.Small);
                 handSetsLeft = needsScores.GetTopFive(NodeLuisSubsNeeds.ENeeds.PhoneSize);
                 await UpdateUserAsync(context, handSetsLeft, handSetsNow);
             } 

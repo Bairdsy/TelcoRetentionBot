@@ -697,12 +697,13 @@ namespace MultiDialogsBot.Dialogs
             string reviewsUrl;
             List<string> topSellers;
             Activity reply = ((Activity)context.Activity).CreateReply();
+            Activity reply2 = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
             List<CardAction> buttons;
 
             topSellers = GetTop5Sellers();
             x = topSellers.Count;
-            reply.Text = $"Here are our latest TOP {x} sellers to choose from or let's work some other options based on what's important for you";
+            reply.Text = ""; // $"Here are our latest TOP {x} sellers to choose from or let's work some other options based on what's important for you";
             foreach(var model in topSellers)
             {
                 try
@@ -720,7 +721,7 @@ namespace MultiDialogsBot.Dialogs
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
                     };
-                }
+                }  
                 catch (Exception xception)
                 {
                     if (CommonDialog.debugMessages) await context.PostAsync("Error...xception message = " + xception.ToString());
@@ -731,16 +732,22 @@ namespace MultiDialogsBot.Dialogs
                     heroCard.Buttons.Add(new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });
                 }
                 reply.Attachments.Add(heroCard.ToAttachment());
-                buttons = new List<CardAction>()
+            }
+            reply.AttachmentLayout = "carousel";
+            await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync("Here are our latest TOP 5 sellers to choose from, select if you see anything you like");
+            await Miscellany.InsertDelayAsync(context);
+            await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync(reply);
+            buttons = new List<CardAction>()
                 {
                     new CardAction(){Title = "I'll decide by myself",Type=ActionTypes.ImBack,Value = "I'll pick"},
                     new CardAction(){Title = "Help me work it out, based on what's important for me",Type= ActionTypes.ImBack,Value = "Help me work it out"}
                 };
-                reply.SuggestedActions = new SuggestedActions(actions : buttons);
-            }
-            reply.AttachmentLayout = "carousel";
+            reply2.SuggestedActions = new SuggestedActions(actions: buttons);
+            reply2.Text = "If you dont find anything you like, Let’s work some other options";
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync(reply);
+            await context.PostAsync(reply2);
         }
     }
 

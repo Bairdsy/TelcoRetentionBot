@@ -127,7 +127,6 @@ namespace MultiDialogsBot.Database
 
                 if (models.TryGetValue(model, out features))
                     return features;
-                //return models[model];
                 if (models.TryGetValue(Miscellany.RemoveSpaces(model), out features))
                     return features;
                 else
@@ -513,9 +512,6 @@ namespace MultiDialogsBot.Database
 
         public bool TooManyFeaturePhones(Predicate<HandSetFeatures> predicate, StringBuilder sb = null)
         {
-            List<HandSetFeatures> reducedBasket;
-
-             
             return GetPreponderanceOfFeaturePhones(bag.Where(x => !predicate(x))) >= BotConstants.FEATURE_PHONE_THRESHOLD;
         }
 

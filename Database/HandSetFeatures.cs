@@ -105,7 +105,7 @@ namespace MultiDialogsBot.Database
         {
             string key,data;
             DateTime result;
-            int batteryLifeInHours, counter = 0; ;
+            int batteryLifeInHours, counter = 0;
             double cameraResolutionMPixels;
             int xRes,yRes,megs,gigs,generic;
             double weight, price,res;
@@ -224,15 +224,20 @@ namespace MultiDialogsBot.Database
                 }
                 else if (key.StartsWith("Dimensions"))    // We expect it in the form a x b x c
                 {
-                    string[] tokens = data.ToLower().Split('x');
+                    string[] tokens = data.ToLower().Split('x'), tokens2;
 
                     if (tokens.Length >= 3)
                     {
                         for (int i = 0; i < 3; ++i)
+                        {
+                            tokens2 = tokens[i].Split('.');
+                            if (tokens2.Length >= 3)
+                                tokens[i] = tokens2[0] + "." + tokens2[1];
                             if (double.TryParse(tokens[i], out res))
                                 BodySize[i] = res;
                             else
                                 BodySize[i] = 1000;
+                        }
                     }
                 }
                 else if (key.Equals("Water resistance"))

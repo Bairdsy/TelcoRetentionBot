@@ -242,7 +242,7 @@ namespace MultiDialogsBot.Helper
             Predicate<HandSetFeatures> predicate;
 
             intent = intent2Decode;
-            if (result != null)
+            if (intent2Decode != NodeLUISPhoneDialog.EIntents.Small)  // Small data is affected from outside, let's not override it here
             {
                 Threshold = -1;
                 DateThreshold = new DateTime(1980, 1, 1); 
