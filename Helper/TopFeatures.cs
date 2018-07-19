@@ -32,22 +32,9 @@ namespace MultiDialogsBot.Helper
         public TopFeatures(IntentDecoder decoder)
         {
             englishDescriptions = new Dictionary<NodeLUISPhoneDialog.EIntents, string>()
-            {    /*    
-                { NodeLUISPhoneDialog.EIntents.BandWidth,"BandWidth"},
-                { NodeLUISPhoneDialog.EIntents.FMRadio, "FM Radio"},
-                { NodeLUISPhoneDialog.EIntents.DualCamera, "DualCamera" },
-                { NodeLUISPhoneDialog.EIntents.DualSIM, "DualSIM"},
-                { NodeLUISPhoneDialog.EIntents.ExpandableMemory, "ExpandableMemory" },
-                { NodeLUISPhoneDialog.EIntents.FaceID, "FaceId" },
-                { NodeLUISPhoneDialog.EIntents.GPS,"GPS" },
-                { NodeLUISPhoneDialog.EIntents.WiFi, "WiFi" },
-                { NodeLUISPhoneDialog.EIntents.HDVoice, "HDVoice" },
-                { NodeLUISPhoneDialog.EIntents.SecondaryCamera,"SecondaryCamera" },
-                { NodeLUISPhoneDialog.EIntents.WaterResist,"WaterResist" },*/
+            {      
                 { NodeLUISPhoneDialog.EIntents.BatteryLife,"BatteryLife"},  
                 { NodeLUISPhoneDialog.EIntents.Camera,"Camera" },
-                { NodeLUISPhoneDialog.EIntents.HighResDisplay,"DisplayResolution" },
-                /*{ NodeLUISPhoneDialog.EIntents.LargeStorage,"StorageMB"  },*/
                 { NodeLUISPhoneDialog.EIntents.ScreenSize, "Screen" },
                 { NodeLUISPhoneDialog.EIntents.Cheap, "Price" },
                 { NodeLUISPhoneDialog.EIntents.Small, "Size of Phone" }, 

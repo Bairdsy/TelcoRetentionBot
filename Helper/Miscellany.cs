@@ -113,8 +113,8 @@ namespace MultiDialogsBot.Helper
             connectorClient = new ConnectorClient(new Uri(msg.ServiceUrl));
             typingActivity = ((Activity)msg).CreateReply();
             typingActivity.Type = ActivityTypes.Typing;
-            connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
-            Thread.Sleep(2200);
+            await connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
+            Thread.Sleep(2200);  // 2200 b4
         }
     }
 }

@@ -23,7 +23,7 @@ namespace MultiDialogsBot.Dialogs
     public class NodeLUISPhoneDialog : LuisDialog<object>
     {
         readonly Dictionary<EIntents, string> smallDesc;
-        readonly Dictionary<EIntents, string> acknowledgeMessages;
+        readonly Dictionary<EIntents, string[]> acknowledgeMessages;
 
         public enum EIntents
         {
@@ -94,40 +94,39 @@ namespace MultiDialogsBot.Dialogs
                 {EIntents.BatteryLife,"Battery life" },
                 {EIntents.Small, "Physical Size" }
             };
-            acknowledgeMessages = new Dictionary<EIntents, string>()
+            acknowledgeMessages = new Dictionary<EIntents, string[]>()
             {
-                {EIntents.BandWidth,"I understand that you want a phone with access to internet and with wide bandwidth" },
-                { EIntents.BatteryLife,"I understand you want a big battery life" },
-                {EIntents.Brand, "I understand that the most important thing for you is brand" },
-                {EIntents.Camera, "I understand that the most important thing for you is the presence of a camera" },
-                // {EIntents.Cheap,  "I understand that the most important thing for you is the price."},
-                {EIntents.DualCamera, "I understand that you want a phone with Dual Camera" },
-                {EIntents.DualSIM,"I undertand that you would like a phone with DualSIM" },
-                {EIntents.ExpandableMemory, "I understand that an expandable memory is the most important thing for you"},
-                {EIntents.FMRadio, "I understand that the most important thing for you is the presence of an FM Radio Antenna" },
-                {EIntents.FaceID, "I understand that the most important thing for you is the presence of Face ID recognition"  },
-                {EIntents.GPS, "I understand that the most important thing for you is the presence of GPS" },
-                {EIntents.HDVoice, "I understand that the most important thing for you is the presence of High Definition voice" },   
-                {EIntents.HighResDisplay, "I understand that the most important thing for you is a High resolution display" },
-                {EIntents.LargeStorage, "I understand that the most important thing for you is a phone with a large storage capability" },
-                {EIntents.OS, "I understand that the most important thing for you in a phone is the operating System" },
-                {EIntents.ScreenSize, "I understand that the most important thing for you on a phone is the screen size" },
-                {EIntents.SecondaryCamera, "I understand that the most important thing for you is the presence of a secondary camera"},
-                {EIntents.Small, "I understand that the most important thing for you are the dimensions of your new phone" },
-                {EIntents.SmartPhone, "I understand that you want a smartphone, not a feature phone" },
-                {EIntents.WaterResist, "I understand that the most important thing for you is that your phone should be water resistant" },
-                {EIntents.Weight , "I understand that the most important thing for you is the weight of your phone"},
-                {EIntents.WiFi, "I understand that the most important thing for you is the presence of WiFi" },
-                {EIntents.Color,"I understand that the most important thing for you is the color"  },
-                {EIntents.Newest, "I understand that you want a recent model" },
-                {EIntents.FeaturePhone, "I understand that you want a simple, classic, feature phone" }
+                {EIntents.BandWidth,new String[]{"I've picked out the phones that have access to internet and wide bandwidth" } },
+                { EIntents.BatteryLife,new String[]{"I've picked out the phones that have a big battery life","I've picked out all the phones that have a battery life longer than {0} hours" } },
+                {EIntents.Brand, new String[]{"I understand that for you the brand is important so I've picked out all the phones from {0}" } },
+                {EIntents.Camera, new String[]{"I've picked out the phones with the best cameras." } },
+                {EIntents.DualCamera, new String[]{"I've picked out the phones with a Dual Camera." } },
+                {EIntents.DualSIM,new String[]{"I've picked out the phones with DualSIM." } },
+                {EIntents.ExpandableMemory,new String[]{ "I've picked out the phones with expandable memory."} },
+                {EIntents.FMRadio,new String[]{ "I've picked out the phones with FM Radio Antenna." } },
+                {EIntents.FaceID, new String[]{"I've picked out the phones with Face ID recognition." } },
+                {EIntents.GPS,new String[]{ "I've picked out the phones with GPS." } },
+                {EIntents.HDVoice, new String[]{"I've picked out the phones with High Definition voice." } },
+                {EIntents.HighResDisplay,new String[]{ "I've picked out the phones with High resolution display.", "I've picked out all the phones with display resolution higher than {0} pixels" }},
+                {EIntents.LargeStorage,new String[]{ "I've picked out the phones with the largest storage capability.","I've picked out all the phones that have a storage capacity higher than {0} MB"}},
+                {EIntents.OS,new String[]{ "I understand that operating System is important for you and you would like to have a phone with {0}" } },
+                {EIntents.ScreenSize, new String[]{"I've picked out the phones with the largest screen size.","I've picked out all the phones that have a screen size larger than {0} inches" } },
+                {EIntents.SecondaryCamera,new String[]{ "I've picked out the phones with a secondary camera." } },
+                {EIntents.Small,new String[]{ "I've picked out the phones with the smallest dimensions.", "I've picked out the biggest phones","I've picked out all the phones smaller than {0}","I've picked out all the phones bigger than {0}" } },
+                {EIntents.SmartPhone,new String[]{ "I understand that you want a smartphone, not a feature phone." } },   
+                {EIntents.WaterResist,new String[]{ "I've picked out the phones that are water resistant." } },
+                {EIntents.Weight ,new String[]{ "I've picked out the lightest phones.","I've picked out all the phones weighting less than {0}." } },
+                {EIntents.WiFi,new String[]{ "I've picked out the phones with WiFi." } },
+                {EIntents.Color,new String[]{"I understand that for you the color is important so I picked the phones with your preferred colors : {0}" } },
+                {EIntents.Newest, new String[]{"I've picked out the most recent models.","I've picked out all the models that have a release date more recent than {0}" } },
+                {EIntents.FeaturePhone, new String[]{"I understand that you want a simple, classic, feature phone" } }
             };
 
             handSetsBag = handSets;
-            brandDesired = brand;
-            ReleaseDateCurrentModel = currentModelReleaseDate;
+            brandDesired = brand; 
+            ReleaseDateCurrentModel = currentModelReleaseDate; 
             decoder = mostDemanded.AssociatedDecoder; 
-            topButtons = mostDemanded;
+            topButtons = mostDemanded; 
             needsScores = new ScoreFuncs(handSets);
         }
 
@@ -483,7 +482,9 @@ namespace MultiDialogsBot.Dialogs
         private async Task UpdateUserAsync(IDialogContext context,int handSetsLeft,int handSetsB4)
         {
             StringBuilder sb = new StringBuilder("-->");
-            var reply = ((Activity)context.Activity).CreateReply("What else is important for you on a mobile?");
+            string acknowledgeMsg = GetRightStringMsg(),aux;
+            bool removedSome = true;
+            var reply = ((Activity)context.Activity).CreateReply("What else is important to refine it further?");
           
             if (CommonDialog.debugMessages)
             {
@@ -491,21 +492,36 @@ namespace MultiDialogsBot.Dialogs
                 await context.PostAsync(sb.ToString() + "\r\n");
             }
             if (handSetsLeft == handSetsB4)
+            {
                 await context.PostAsync("Unfortunately, that doesn't help in narrowing the list down");
+                removedSome = false;
+            }  
             else if (handSetsLeft == 0)
-            {   
+            {
                 await context.PostAsync("I'm afraid that's a very high standard, I don't have any equipment that fulfills it.");
+                removedSome = false;
                 handSetsLeft = handSetsB4;
             }
             if  (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS)
             {
-                await context.PostAsync($"We have now {handSetsLeft} models that might be suitable for your needs. I could help short list further if you tell me what else is important for you");
+                if (removedSome && (acknowledgeMsg  != null))
+                {
+                    await Miscellany.InsertDelayAsync(context);
+                    await context.PostAsync(acknowledgeMsg);
+                }
+                aux = removedSome ? "We have now" : "We still have";
+                await context.PostAsync($"{aux} {handSetsLeft} models that might be suitable for your needs. I could help short list further if you tell me what else is important for you");
                 sb = new StringBuilder("");
                 reply.SuggestedActions = topButtons.GetTop4Buttons(sb);
                 await context.PostAsync(reply);
             }
             else
-            { 
+            {
+                if   (acknowledgeMsg != null)
+                {
+                    await Miscellany.InsertDelayAsync(context);
+                    await context.PostAsync(acknowledgeMsg);
+                }
                 if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : Number of phones on bag : {handSetsBag.BagCount()}");
                 context.Done(decoder);
             }
@@ -516,7 +532,7 @@ namespace MultiDialogsBot.Dialogs
             Tuple<NodeLuisSubsNeeds.ENeeds, double> result = (Tuple<NodeLuisSubsNeeds.ENeeds,double>) await awaitable;
             StringBuilder sb = new StringBuilder();
             double needsScore = result.Item2;
-            string temp;
+            string[] temp;
             NodeLuisSubsNeeds.ENeeds needsIntent = result.Item1;
             int handSetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
 
@@ -540,10 +556,10 @@ namespace MultiDialogsBot.Dialogs
                         await context.PostAsync("I'm sorry, I'm afraid I didn't understand that, could you please rephrase?");
                         return;
                     }
-                    else if (acknowledgeMessages.TryGetValue(desiredFeature, out temp))
+              /*      else if (acknowledgeMessages.TryGetValue(desiredFeature, out temp))
                     {
-                        await context.PostAsync(temp);
-                    }
+                        await context.PostAsync(temp[0]);
+                    }*/
                     if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm goin to set frequency");
                     topButtons.SetNewFreq(desiredFeature, sb);
                     if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : New Frequency set, getting into the switch to switch to correct one (no pun intented)");
@@ -594,8 +610,6 @@ namespace MultiDialogsBot.Dialogs
                             await DecodeAndProcessIntentAsync(context);
                             break;
                     }
-                    if (CommonDialog.debugMessages) await context.PostAsync("I'm going to update the frequency for the feature = " + desiredFeature.ToString());
-                    if (CommonDialog.debugMessages) await context.PostAsync("SetNewFreq() returned = " + sb.ToString());
                 }
                 catch (ArgumentException)
                 {
@@ -653,7 +667,7 @@ namespace MultiDialogsBot.Dialogs
         private async Task DecodeAndProcessIntentAsync(IDialogContext context)
         {
             int handSetsLeft, handSetsNow = decoder.CurrentNumberofHandsetsLeft();
-            string featureText;
+            string featureText; 
             StringBuilder sb = new StringBuilder("Debug from the DecodeIntent() method");
 
             if (CommonDialog.debugMessages) await context.PostAsync("Beginning of DecodeAndProcessIntentAsync() method;");
@@ -831,6 +845,64 @@ namespace MultiDialogsBot.Dialogs
             desiredFeature = desiredFeature2;
             desiredFeatureScore = desiredFeatureScore2;
             res = res2;
+        }
+
+        private string GetRightStringMsg()
+        {
+            string[] alternatives;
+            StringBuilder aux;
+            int len;
+            IntentDecoder.FilterSettings filterSettings;
+
+            if (acknowledgeMessages.TryGetValue(desiredFeature, out alternatives))
+            {
+                filterSettings = decoder.GetRequirements();
+                switch (desiredFeature)
+                {
+                    case EIntents.Brand:
+                        len = filterSettings.Enumerated.Count;
+                        aux = len > 1 ? new StringBuilder("brands ") : new StringBuilder("brand ");
+                        aux.Append(filterSettings.Enumerated[0]);
+                        if (len > 1)
+                        {
+                            for (int n = 1; n < (len - 1); ++n)
+                                aux.Append($", {filterSettings.Enumerated[n]}");
+                            aux.Append($" and {filterSettings.Enumerated[len - 1]}.");
+                        }
+                        return string.Format(alternatives[0], aux.ToString());
+                    case EIntents.OS:
+                    case EIntents.Color:
+                        len = filterSettings.Enumerated.Count;
+                        aux = new StringBuilder(filterSettings.Enumerated[0]);   
+                        if (len > 1)
+                        {
+                            for (int n = 1; n < (len - 1); ++n)
+                                aux.Append($", {filterSettings.Enumerated[n]}");
+                            aux.Append(EIntents.OS == desiredFeature ? " or" : " and");
+                            aux.Append($" {filterSettings.Enumerated[len - 1]}.");
+                        }
+                        return string.Format(alternatives[0], aux.ToString());
+                    case EIntents.Small:
+                        if (!filterSettings.FiltersSet || ((filterSettings.Threshold == -1) && filterSettings.Desc))
+                            return alternatives[1];
+                        else if (filterSettings.Threshold == -1)
+                            return alternatives[0];
+                        else
+                            return string.Format(filterSettings.Desc ? alternatives[3] : alternatives[2], $"{filterSettings.Threshold} mm3.");
+                    case EIntents.Newest:
+                        if (filterSettings.FiltersSet)
+                            return string.Format(alternatives[1], filterSettings.DateThreshold);
+                        else
+                            return alternatives[0];
+                    default:
+                        if (filterSettings.FiltersSet)
+                            return string.Format(alternatives[1], (int)filterSettings.Threshold);
+                        else
+                            return alternatives[0];
+                }
+            }
+            else
+                return null;
         }
     }
 }

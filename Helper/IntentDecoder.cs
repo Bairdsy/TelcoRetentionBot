@@ -26,6 +26,27 @@ namespace MultiDialogsBot.Helper
         delegate int sgn(Tuple<HandSetFeatures,HandSetFeatures> x);
         delegate int NumberOfDifferent();
 
+        public class FilterSettings
+        {
+            public FilterSettings()
+            {
+                IsDate = FiltersSet = Desc = false;
+                Threshold = 0;
+                Enumerated = null;
+                DateThreshold = new DateTime(1980, 1, 1);
+            }
+
+            public bool FiltersSet { get; set; }
+            public bool IsDate { get; set; }
+            public DateTime DateThreshold { get; set; }
+            public double Threshold { get; set; }
+            public List<string> Enumerated;
+            public bool Desc
+            {
+                get; set;
+            }
+        }
+
         struct KnockOutIntent : IComparable
         {
             public NodeLUISPhoneDialog.EIntents intent;
@@ -244,8 +265,10 @@ namespace MultiDialogsBot.Helper
             intent = intent2Decode;
             if (intent2Decode != NodeLUISPhoneDialog.EIntents.Small)  // Small data is affected from outside, let's not override it here
             {
+                ResetSettings();
+                /*
                 Threshold = -1;
-                DateThreshold = new DateTime(1980, 1, 1); 
+                DateThreshold = new DateTime(1980, 1, 1);*/ 
                 ExtractEntityInfo(intent2Decode, result);
             }
             intents2Exclude.Add(intent2Decode);
@@ -286,15 +309,25 @@ namespace MultiDialogsBot.Helper
                     else
                         Threshold = handSets.GetHighStandardThreshold(this, getters[intent2Decode]);
                     if (handSets.KnockOutNumber(predicate) == handSets.BagCount())
+                    {
+                        ResetSettings();
                         return 0;
+                    }
                     handSetsLeft = handSets.SortAndGetTop(this, getters[intent2Decode]);
-                    if (handSetsLeft == 0)     
+                    if (handSetsLeft == 0)
+                    {
+                        ResetSettings();
                         return 0;
+                    }
                     if (stringDeDebug != null) stringDeDebug.Append("handSetsLeft = " + handSetsLeft);
-                    if (!FeatureOrSmartPhoneDecision && handSets.TooManyFeaturePhones(predicate,handSetsLeft,stringDeDebug))
+                    if (!FeatureOrSmartPhoneDecision && handSets.TooManyFeaturePhones(predicate, handSetsLeft, stringDeDebug))
+                    {
+                        ResetSettings();
                         return -1;
+                    }
                     handSets.removeAllButTop(handSetsLeft);
                     handSets.EliminateFromBag(predicate);
+                    ResetSettings();
                     return handSets.BagCount();
                 }
             }
@@ -467,7 +500,7 @@ namespace MultiDialogsBot.Helper
             foreach (var cEntity in result.CompositeEntities)
                 if (cEntity.ParentType == "MemoryComposite")
                     foreach (var child in cEntity.Children)
-                        if (child.Type == "builtin.dimension")
+                        if (child.Type == "builtin.dimension") 
                         {
                             entityContents = child.Value.ToLower();
                             if ((-1 == (gbIndex = entityContents.IndexOf("gb"))) && (-1 == (mbIndex = entityContents.IndexOf("mb")))) return;
@@ -545,6 +578,36 @@ namespace MultiDialogsBot.Helper
             desc = descOrder;
         }
 
+        public FilterSettings GetRequirements()
+        {
+            FilterSettings returnVal = new FilterSettings();
+
+            if (intent == NodeLUISPhoneDialog.EIntents.Newest)
+            {
+                if (DateThreshold == new DateTime(1980, 1, 1))
+                    return returnVal;
+                returnVal.IsDate = returnVal.FiltersSet = true;
+                returnVal.DateThreshold = DateThreshold;
+                return returnVal;
+            }
+            if ((intent == NodeLUISPhoneDialog.EIntents.OS) || (intent == NodeLUISPhoneDialog.EIntents.Brand) || (intent == NodeLUISPhoneDialog.EIntents.Color))
+            {
+                returnVal.FiltersSet = true;
+                returnVal.Enumerated = StrKeyWords;
+                return returnVal;
+            }
+            if (intent == NodeLUISPhoneDialog.EIntents.Small)
+            {
+                returnVal.FiltersSet = !(returnVal.Desc = desc);
+            }
+            if (Threshold != -1)
+            {
+                returnVal.FiltersSet = true;
+                returnVal.Threshold = Threshold;
+            }
+            return returnVal;
+        }
+
         private List<List<string>> GetAllCombinations(List<string> colors)
         {
             List<string> temp;
@@ -567,6 +630,12 @@ namespace MultiDialogsBot.Helper
                 returnValue = new List<List<string>>(returnValue.Concat(aux));
             }
             return returnValue;
+        }
+
+        private void ResetSettings()
+        {
+            Threshold = -1;
+            DateThreshold = new DateTime(1980, 1, 1);
         }
     }
 }
