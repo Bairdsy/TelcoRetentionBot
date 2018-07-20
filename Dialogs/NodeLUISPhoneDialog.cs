@@ -132,8 +132,7 @@ namespace MultiDialogsBot.Dialogs
 
         [LuisIntent("None")]
         public async Task None(IDialogContext context,LuisResult result)  
-        {
-       //     await context.PostAsync("Not understood");
+        {  
             await ShowDebugInfoAsync(context, result);
             if (CommonDialog.debugMessages) await context.PostAsync("I could not understand that, I'm afraid");
             if (!askingAboutFeaturePhones)

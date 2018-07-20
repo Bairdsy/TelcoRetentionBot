@@ -40,7 +40,6 @@ namespace MultiDialogsBot.Helper
                 else
                     temp = tokens[x];
                 returnValue.Append((x == 0 ? string.Empty : " ") + temp.TrimStart(' ').First().ToString().ToUpper() + temp.Substring(1));    
-                                          //  str2Capitalize.TrimStart(' ').First().ToString().ToUpper() + str2Capitalize.Substring(1); b4
             }
             return returnValue.ToString();
         }
