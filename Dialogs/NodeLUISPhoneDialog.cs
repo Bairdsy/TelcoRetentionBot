@@ -505,7 +505,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 if (removedSome && (acknowledgeMsg  != null))
                 {
-                    await Miscellany.InsertDelayAsync(context);
+                    await Miscellany.InsertDelayAsync(context);  
                     await context.PostAsync(acknowledgeMsg);
                 }
                 aux = removedSome ? "We have now" : "We still have";
