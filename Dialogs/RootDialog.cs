@@ -41,6 +41,8 @@
             string salutation,subsName;
             TimeZone tz = TimeZone.CurrentTimeZone;
 
+            context.ConversationData.TryGetValue("SubsName", out subsName);
+            await context.PostAsync($"Welcome to the MC upgrade BOT demo where you are now the customer named {subsName} and can interact with the bot as that customer.");
 
             //context.ConversationData.SetValue("HandsetModelKey", "iphone 7 plus- 256gb");
             if (CommonDialog.debugMessages)
@@ -55,22 +57,22 @@
                 salutation = "Good afternoon, ";
             else
                 salutation = "Good evening, ";
-            context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync(salutation + subsName);
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("Welcome to the MC upgrade BOT demo. Currently the demo covers plan changes, phone upgrades or both of these together.");
+            await context.PostAsync("As you are about to end your contract we are delighted to announce you are eligible for a handset upgrade or you may want to keep your phone and choose a new plan from one of our great deals.");
             await Miscellany.InsertDelayAsync(context);
             await context.PostAsync("How can I help you today?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuisAsync);
         }
-               
+
+
         public virtual async Task ShowCharacters(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var heroCard = new HeroCard
             {
                 Title = "Hi There!",
                 Subtitle = "Im MC - the MadCalm demo bot.",
-                Text = "Im here to show you how great a chat bot can be for helping customers to change their plan or get a new phone.  First of all though, we need to choose a customer to use for the rest of the demo, so please make a selection from the list below.",
+                Text = "I'm here to show you how great a chat bot can be for helping customers to change their plan or get a new phone.",
                 Images = new List<CardImage> { new CardImage("http://madcalm.com/wp-content/uploads/2018/06/MADCALM-HELLO.png") },
                 Buttons = new List<CardAction> { }
             };
@@ -79,8 +81,10 @@
             message.Attachments.Add(heroCard.ToAttachment());
 
             await context.PostAsync(message);
-            await Task.Delay(5000);
+            await Task.Delay(4000);
 
+            await context.PostAsync("Because this is a demo we need you to pretend you are a customer.  Soon you will see 6 different customers that you can choose from.  You will become this person for the demo.");
+            await Task.Delay(4000);
 
             var reply = ((Activity)context.Activity).CreateReply();
 

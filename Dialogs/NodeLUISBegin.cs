@@ -42,9 +42,9 @@ namespace MultiDialogsBot.Dialogs
 
         static Dictionary<string,Tuple<string,EIntent>> humanFriendlyIntent = new Dictionary<string, Tuple<string,EIntent>>()
         {
-            { "Upgrade Both" , new Tuple<string,EIntent>("want to upgrade both",EIntent.Both)},
-            {"Upgrade Equipment",new Tuple<string,EIntent>("want to upgrade equipment only",EIntent.HandSet) },
-            { "Upgrade plan", new Tuple<string,EIntent>("want to upgrade plan",EIntent.Plan)},
+            { "Upgrade Both" , new Tuple<string,EIntent>("are looking to get a new phone and plan",EIntent.Both)},
+            {"Upgrade Equipment",new Tuple<string,EIntent>("are looking to get a new phone",EIntent.HandSet) },
+            { "Upgrade plan", new Tuple<string,EIntent>("want to change your plan",EIntent.Plan)},
             
 
         };  
@@ -400,7 +400,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string friendly1 = humanFriendlyIntent[mostLikelyIntent].Item1;
             string friendly2  ;         
-            string textForUser = string.Concat("I am not sure I followed that\r\n",
+            string textForUser = string.Concat("I'm not sure I followed that\r\n",
                                    "I think you meant you ", friendly1);
             Activity reply, lastMessage = (Activity) context.Activity;
             Attachment imageAttachment = new Attachment()
@@ -429,7 +429,7 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
-                textForUser += ", but, again, I'm not sure..  could you please agree?";    
+                textForUser += ", is that right?";    
                 suggestedActions.Actions[0].Value = mostLikelyIntent;
             }
             reply = lastMessage.CreateReply(textForUser);
