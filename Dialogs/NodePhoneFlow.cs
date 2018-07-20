@@ -87,12 +87,12 @@ namespace MultiDialogsBot.Dialogs
         {
             IMessageActivity messageActivity = await awaitable;
             string response = messageActivity.Text.TrimStart(' ');
-            bool knowsWhatHeWants = !(response.ToLower().StartsWith("no") && ((response.Length == 2) || char.IsLetter(response[2])));
+            bool knowsWhatHeWants = !(response.ToLower().StartsWith("no") && ((response.Length == 2) || !char.IsLetter(response[2])));
             List<string> wantedBrands,wantedModels;
             int totalPhones = 3;
 
             try
-            {
+            {  
                 totalPhones = GetModelCount();
             }
             catch (Exception xception)
