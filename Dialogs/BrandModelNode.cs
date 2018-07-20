@@ -10,6 +10,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
 using MultiDialogsBot.Helper;
+using MultiDialogsBot.Database;
 
 namespace MultiDialogsBot.Dialogs
 {
@@ -192,11 +193,12 @@ namespace MultiDialogsBot.Dialogs
             await context.PostAsync("0 OK, 0:1");
             context.Wait(MessageReceivedAsync);
         }
-
+           
         private void  ComposeModelCarousel(string brand,List<string> modelsVector,Activity reply,IDialogContext context)
         {   
             HeroCard heroCard;
-            string reviewsUrl;
+            string reviewsUrl;  
+            List<Tuple<HeroCard,HandSetFeatures>> heroCards = new List<Tuple<HeroCard,HandSetFeatures>>();
 
             foreach (var model in modelsVector)   
             {
@@ -216,8 +218,12 @@ namespace MultiDialogsBot.Dialogs
                 };
                 if (reviewsUrl != null)
                     heroCard.Buttons.Add(new CardAction() { Title = "Reviews", Type = ActionTypes.OpenUrl, Value = GetModelReviewsUrl(model) });
-                reply.Attachments.Add(heroCard.ToAttachment());
+                heroCards.Add(new Tuple<HeroCard,HandSetFeatures>(heroCard,handSets.GetModelFeatures(model)));
             }
+            Miscellany.SortCarousel(heroCards);
+            for (int x = 0; x < heroCards.Count; ++x)
+                reply.Attachments.Add(heroCards[x].Item1.ToAttachment());
+            
             reply.AttachmentLayout = "carousel";
         }
 

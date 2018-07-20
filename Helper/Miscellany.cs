@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
 
+using MultiDialogsBot.Database;
 
 namespace MultiDialogsBot.Helper
 {
@@ -103,17 +104,42 @@ namespace MultiDialogsBot.Helper
             return string.Join(" ", returnValue);
         }
 
+        public static void SortCarousel(List<Tuple<HeroCard,HandSetFeatures>> unsortedCarousel)
+        {
+            Comparison<Tuple<HeroCard,HandSetFeatures>> comparer;
+
+            comparer = new Comparison<Tuple<HeroCard,HandSetFeatures>>(Comparer);
+            unsortedCarousel.Sort(comparer);
+        }
+
         public static async Task InsertDelayAsync(IDialogContext context )
         {
             ConnectorClient connectorClient;
             ITypingActivity typingActivity;
             IMessageActivity msg = (Activity)context.Activity;
-
+               
             connectorClient = new ConnectorClient(new Uri(msg.ServiceUrl));
             typingActivity = ((Activity)msg).CreateReply();
             typingActivity.Type = ActivityTypes.Typing;
-            await connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
+            connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
             Thread.Sleep(2200);  // 2200 b4
+        }
+
+        private static int Comparer(Tuple<HeroCard,HandSetFeatures> hs1,Tuple<HeroCard,HandSetFeatures> hs2)
+        {
+            int brandCmpResult = hs1.Item2.Brand.CompareTo(hs2.Item2.Brand),dateCmpResult;
+
+            if (brandCmpResult == 0)
+            {
+                dateCmpResult = hs2.Item2.ReleaseDate.CompareTo(hs1.Item2.ReleaseDate);
+
+                if (dateCmpResult == 0)
+                    return hs2.Item2.Model.CompareTo(hs1.Item2.Model);
+                else
+                    return dateCmpResult;
+            }
+            else
+                return brandCmpResult;
         }
     }
 }

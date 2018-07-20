@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
-
-using MultiDialogsBot.Helper;
 using MultiDialogsBot.Database;
+using MultiDialogsBot.Helper;
+
 
 namespace MultiDialogsBot.Dialogs
 {
@@ -155,6 +155,7 @@ namespace MultiDialogsBot.Dialogs
             var reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
             int x = modelList.Count;
+            List<Tuple<HeroCard,HandSetFeatures>> heroCards = new List<Tuple<HeroCard,HandSetFeatures>>();
 
              if (firstTime)
             {
@@ -184,14 +185,17 @@ namespace MultiDialogsBot.Dialogs
                         new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },   
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
-                };          
+                };
+                
                 if ((reviewsUrl = GetModelReviewsUrl(model)) != null)
                 {
                     heroCard.Buttons.Add(new CardAction() { Title = "Expert Reviews", Type = ActionTypes.OpenUrl, Value = reviewsUrl });
                 }
-                
-                reply.Attachments.Add(heroCard.ToAttachment());
+                heroCards.Add(new Tuple<HeroCard,HandSetFeatures>(heroCard,handSets.GetModelFeatures(model)));
             }
+            Miscellany.SortCarousel(heroCards);
+            for (int n = 0; n < heroCards.Count; ++n)
+                reply.Attachments.Add(heroCards[n].Item1.ToAttachment());
             await context.PostAsync(reply);
             context.Wait(CarouselSelectionButtonReceivedAsync);
         }
@@ -280,7 +284,7 @@ namespace MultiDialogsBot.Dialogs
                 context.Wait(MessageReceivedAsync);
         }
 
-        private bool MoreThanOneBrand()
+ /*       private bool MoreThanOneBrand()
         {
             string brand = GetModelBrand(this.modelList[0]);
 
@@ -288,7 +292,7 @@ namespace MultiDialogsBot.Dialogs
                 if (brand != GetModelBrand(modelList[i]))
                     return true;
             return false;
-        }
+        }*/
 
 
     }

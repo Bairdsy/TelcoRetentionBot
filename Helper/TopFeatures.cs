@@ -106,9 +106,8 @@ namespace MultiDialogsBot.Helper
 
         public void SetNewFreq(NodeLUISPhoneDialog.EIntents feature, StringBuilder debug)
         {   
-            string englishDesc;
-            Tuple<string, string, int> tuple;    
-            int freq,index;   
+            string englishDesc; 
+            int freq;   
 
             for (int i = 0; i < ranking.Count; ++i)       
             { 
@@ -118,14 +117,6 @@ namespace MultiDialogsBot.Helper
             }
             if (!englishDescriptions.TryGetValue(feature,out englishDesc))
                 return;
-            /*
-                       tuple = ranking.Where(x => x.Item1.ToLower() == englishDesc.ToLower()).Single(); 
-
-                       index = ranking.IndexOf(tuple);
-
-                       freq = tuple.Item3;  
-                       tuple = new Tuple<string, string, int>(tuple.Item1,tuple.Item2, ++freq);
-                       ranking[index] = tuple;*/  
             englishDesc = englishDescriptions[feature];
             freq = numberOfHits[englishDesc];
 
