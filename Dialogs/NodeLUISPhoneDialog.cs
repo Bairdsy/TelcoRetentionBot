@@ -185,13 +185,15 @@ namespace MultiDialogsBot.Dialogs
 
             if (context.ConversationData.TryGetValue("ChosenPlanName", out chosenPlan))
             {
-                await context.PostAsync("I understand that the most important thing for you is the price.");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("I understand that for you price is important.");
                 desiredFeature = EIntents.Cheap;
                 await ProcessNeedOrFeatureAsync(context, result);
             }
             else
             {
-                await context.PostAsync("I understand that the most important thing for you is the price, but this will depend on what plan you take it with.  Lets work the plan out first then and come back to the phone.");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("I understand that price is an important thing for you, but this will depend on what plan you take it with.  Lets work the plan out first then and come back to the phone.");
                 desiredFeature = EIntents.Cheap;
                 res = result;
                 context.Call(new PlanNode(), ProcessAfterPlanAsync);
@@ -450,6 +452,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of ProcessNeedOrFeatureAsync() method");
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Text received = " + text);
+            context.ConversationData.RemoveValue(BotConstants.SELECTED_BRANDS_KEY);
             if (EKeywords.ShowMeAll == keywords)
             {
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : found one keyword, it is " + "Show Me All");
@@ -520,6 +523,10 @@ namespace MultiDialogsBot.Dialogs
                 {
                     await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(acknowledgeMsg);
+                }
+                if (desiredFeature == EIntents.Brand)
+                {
+                    context.ConversationData.SetValue(BotConstants.SELECTED_BRANDS_KEY, decoder.StrKeyWords);
                 }
                 if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : Number of phones on bag : {handSetsBag.BagCount()}");
                 context.Done(decoder);
@@ -858,13 +865,14 @@ namespace MultiDialogsBot.Dialogs
                     case EIntents.Brand:
                         len = filterSettings.Enumerated.Count;
                         aux = len > 1 ? new StringBuilder("brands ") : new StringBuilder("brand ");
-                        aux.Append(filterSettings.Enumerated[0]);
-                        if (len > 1)
-                        {
-                            for (int n = 1; n < (len - 1); ++n)
-                                aux.Append($", {filterSettings.Enumerated[n]}");
-                            aux.Append($" and {filterSettings.Enumerated[len - 1]}.");
-                        }
+                        /*   aux.Append(filterSettings.Enumerated[0]);
+                           if (len > 1)
+                           {
+                               for (int n = 1; n < (len - 1); ++n)
+                                   aux.Append($", {filterSettings.Enumerated[n]}");
+                               aux.Append($" and {filterSettings.Enumerated[len - 1]}.");
+                           }*/
+                        aux.Append(Miscellany.BuildBrandString(filterSettings.Enumerated));
                         return string.Format(alternatives[0], aux.ToString());
                     case EIntents.OS:  
                     case EIntents.Color:

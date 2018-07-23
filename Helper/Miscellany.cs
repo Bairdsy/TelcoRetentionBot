@@ -126,14 +126,17 @@ namespace MultiDialogsBot.Helper
         }
 
         public static string BuildBrandString(List<string> brands)
-        {
+        {  
             int len = brands.Count;
             StringBuilder sb = new StringBuilder();
 
             sb.Append($"{brands[0]}");
-            for (int x = 0; x < (len - 1); ++x)
-                sb.Append($",{brands[x]}");
-            sb.Append($" and {brands[len - 1]}");
+            if (len > 1)
+            {
+                for (int x = 1; x < (len - 1); ++x)
+                    sb.Append($",{brands[x]}");
+                sb.Append($" and {brands[len - 1]}");
+            }    
             return sb.ToString();
         }
 

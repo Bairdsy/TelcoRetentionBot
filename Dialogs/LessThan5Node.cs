@@ -168,6 +168,7 @@ namespace MultiDialogsBot.Dialogs
                 {
                     if (context.ConversationData.TryGetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, out brands))
                     {
+ 
                         await context.PostAsync($"Great, here are the {Miscellany.BuildBrandString(brands)} models that currently I have to choose from");
                     }
                     else
@@ -292,15 +293,16 @@ namespace MultiDialogsBot.Dialogs
                 context.Wait(MessageReceivedAsync);
         }
 
- /*       private bool MoreThanOneBrand()
+        private bool AllBrandsModelsIncluded(List<string> brands,int listLen)
         {
-            string brand = GetModelBrand(this.modelList[0]);
+            int counter = 0;
 
-            for (int i = 1; i < modelList.Count; ++i)
-                if (brand != GetModelBrand(modelList[i]))
-                    return true;
-            return false;
-        }*/
+            foreach (var brand in brands)
+                counter += GetBrandModels(brand).Count;
+            if (counter < listLen)
+                throw new Exception("Error...more models in carousel than the available in the brands subs chose");
+            return listLen == counter;
+        }
 
 
     }
