@@ -251,16 +251,10 @@
                         //context.Call(new Node10(), this.ResumeAfterOptionDialog);
                         //break;
                         default:
-                            await context.PostAsync($"I'm sorry.  I don't understand that response.  If you have finished looking at your analysis please scroll back up and choose a plan from the list.");
+                            await context.PostAsync($"I'm sorry.  I don't understand that response.  Please select a plan by clicking on \"Pick Me!\" below it's picture.");
+                            await Task.Delay(3000);
                             failCount++;
-                            if (failCount < 3)
-                            {
-                                context.Wait(this.ChosenPlan);
-                            }
-                            else
-                            {
-                                await this.ShowPlanCarouselAsync(context);
-                            }
+                            await this.ShowPlanCarouselAsync(context);
                             break;
                     }
                 }
