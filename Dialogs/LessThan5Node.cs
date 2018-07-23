@@ -155,6 +155,7 @@ namespace MultiDialogsBot.Dialogs
             var reply = ((Activity)context.Activity).CreateReply();
             HeroCard heroCard;
             int x = modelList.Count;
+            List<string> brands;
             List<Tuple<HeroCard,HandSetFeatures>> heroCards = new List<Tuple<HeroCard,HandSetFeatures>>();
 
              if (firstTime)
@@ -165,7 +166,14 @@ namespace MultiDialogsBot.Dialogs
                 }
                 else
                 {
-                    await context.PostAsync($"Great, here are the TOP {x} models {(featureIntent != null ? "for " + featureIntent : "")} to choose from.");
+                    if (context.ConversationData.TryGetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, out brands))
+                    {
+                        await context.PostAsync($"Great, here are the {Miscellany.BuildBrandString(brands)} models that currently I have to choose from");
+                    }
+                    else
+                    {
+                        await context.PostAsync($"Great, here are the TOP {x} models {(featureIntent != null ? "for " + featureIntent : "")} to choose from.");
+                    }
                     await context.PostAsync("Or let's work out some other options if you are not happy with these ones, please type \"Start again\"");
                 }
                 firstTime = false;

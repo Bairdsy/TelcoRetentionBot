@@ -111,18 +111,30 @@ namespace MultiDialogsBot.Helper
             comparer = new Comparison<Tuple<HeroCard,HandSetFeatures>>(Comparer);
             unsortedCarousel.Sort(comparer);
         }
-
+           
         public static async Task InsertDelayAsync(IDialogContext context )
         {
-            ConnectorClient connectorClient;
+            ConnectorClient connectorClient; 
             ITypingActivity typingActivity;
-            IMessageActivity msg = (Activity)context.Activity;
+            Activity msg = (Activity)context.Activity;
                
             connectorClient = new ConnectorClient(new Uri(msg.ServiceUrl));
-            typingActivity = ((Activity)msg).CreateReply();
+            typingActivity = (msg).CreateReply();
             typingActivity.Type = ActivityTypes.Typing;
             connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
             Thread.Sleep(2200);  // 2200 b4
+        }
+
+        public static string BuildBrandString(List<string> brands)
+        {
+            int len = brands.Count;
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append($"{brands[0]}");
+            for (int x = 0; x < (len - 1); ++x)
+                sb.Append($",{brands[x]}");
+            sb.Append($" and {brands[len - 1]}");
+            return sb.ToString();
         }
 
         private static int Comparer(Tuple<HeroCard,HandSetFeatures> hs1,Tuple<HeroCard,HandSetFeatures> hs2)

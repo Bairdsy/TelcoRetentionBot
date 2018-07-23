@@ -531,7 +531,6 @@ namespace MultiDialogsBot.Dialogs
             Tuple<NodeLuisSubsNeeds.ENeeds, double> result = (Tuple<NodeLuisSubsNeeds.ENeeds,double>) await awaitable;
             StringBuilder sb = new StringBuilder();
             double needsScore = result.Item2;
-            string[] temp;
             NodeLuisSubsNeeds.ENeeds needsIntent = result.Item1;
             int handSetsLeft,handSetsNow = decoder.CurrentNumberofHandsetsLeft();
 

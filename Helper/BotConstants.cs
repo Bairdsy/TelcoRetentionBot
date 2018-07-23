@@ -20,6 +20,8 @@ namespace MultiDialogsBot.Helper
         public const string PLAN_FLOW_TYPE = "plan only";
         public const string BOTH_FLOW_TYPE = "both";
 
+        public const string SELECTED_BRANDS_KEY = "LuisBrand";
+
         public const double FEATURE_PHONE_THRESHOLD = 0.7;
     }
 }
