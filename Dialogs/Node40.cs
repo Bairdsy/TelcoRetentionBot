@@ -11,7 +11,16 @@
     {
         public async Task StartAsync(IDialogContext context)
         {
-            PromptDialog.Choice(context, this.OptionSelected, new List<string>() { "Confirm", "Reject", "I need help" }, $"You are agreeing to a 24 month contract term.   This Agreement will commence when Vodafone accepts your application and connects you to the Vodafone network.", "Not a valid option", 3);
+            string term = "24";
+            string offer_plan;
+            if (context.ConversationData.TryGetValue("ChosenPlanName", out offer_plan))
+            {
+                if (offer_plan.ToUpper().Contains("SIM"))
+                {
+                    term = "12";
+                }
+            }
+            PromptDialog.Choice(context, this.OptionSelected, new List<string>() { "Confirm", "Reject" }, $"You are agreeing to a {term} month contract term.   This Agreement will commence when BeYou accepts your application and connects you to the BeYou network.", "Not a valid option", 3);
         }
 
         private async Task OptionSelected(IDialogContext context, IAwaitable<string> result)
@@ -26,11 +35,17 @@
                         break;
                         
                     case "Reject":
-                        context.Call(new Node38(), this.ResumeAfterOptionDialog);
-                        break;
+                        var Card = new HeroCard
+                        {
+                            Title = "That's OK.",
+                            Text = "If you have changed your mind then I will save this order so you can access it later, or just start again next time you want to chat.",
+                            Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/MADCALM-PROCESSING.png") },
+                        };
+                        var msg = context.MakeMessage();
+                        msg.Attachments.Add(Card.ToAttachment());
 
-                    case "I need help":
-                        context.Call(new Node5(), this.ResumeAfterOptionDialog);
+                        await context.PostAsync(msg);
+                        context.Done(2);
                         break;
 
                 }
@@ -43,20 +58,10 @@
                 context.Done(0);
             }
         }
+
         private async Task ResumeAfterOptionDialog(IDialogContext context, IAwaitable<object> result)
         {
-            try
-            {
-                var message = await result;
-            }
-            catch (Exception ex)
-            {
-                await context.PostAsync($"Failed with message: {ex.Message}");
-            }
-            finally
-            {
-                context.Done(2);
-            }
+            context.Done(2);
         }
     }
 }

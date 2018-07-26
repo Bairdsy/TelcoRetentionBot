@@ -14,11 +14,18 @@
             string offer_plan;
             string offer_rental;
 
-            context.ConversationData.TryGetValue("FBP_OfferPlan", out offer_plan);
-            context.ConversationData.TryGetValue("FBP_OfferRent", out offer_rental);
+            await context.PostAsync($"Fantastic!  I need you to hit CONFIRM on each of the following items to finalise your transaction.");
 
-            await context.PostAsync($"Fantastic!  I need you to hit CONFIRM on each of the following items to finalise the upgrade.");
-            PromptDialog.Choice(context, this.OptionSelected, new List<string>() { "Confirm", "Reject", "I need help" }, $"You are agreeing to the {offer_plan} package plan with a monthly access fee of {offer_rental} taking effect on your next Vodafone bill day.  ", "Not a valid option", 3);
+            if (context.ConversationData.TryGetValue("ChosenPlanName", out offer_plan))
+            {
+                context.ConversationData.TryGetValue("ChosenPlanRental", out offer_rental);
+                PromptDialog.Choice(context, this.OptionSelected, new List<string>() { "Confirm", "Reject" }, $"You are agreeing to the {offer_plan} package plan taking effect on your next BeYou bill day.  ", "Not a valid option", 3);
+            }
+            else
+            {
+                context.Call(new Node40(), this.ResumeAfterOptionDialog);
+            }
+
         }
         
         private async Task OptionSelected(IDialogContext context, IAwaitable<string> result)
@@ -33,7 +40,17 @@
                         break;
                         
                     case "Reject":
-                        context.Call(new Node38(), this.ResumeAfterOptionDialog);
+                        var Card = new HeroCard
+                        {
+                            Title = "That's OK.",
+                            Text = "If you have changed your mind then I will save this order so you can access it later, or just start again next time you want to chat.",
+                            Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/MADCALM-PROCESSING.png") },
+                        };
+                        var msg = context.MakeMessage();
+                        msg.Attachments.Add(Card.ToAttachment());
+
+                        await context.PostAsync(msg);
+                        context.Done(2);
                         break;
 
                     case "I need help":
@@ -52,18 +69,7 @@
         }
         private async Task ResumeAfterOptionDialog(IDialogContext context, IAwaitable<object> result)
         {
-            try
-            {
-                var message = await result;
-            }
-            catch (Exception ex)
-            {
-                await context.PostAsync($"Failed with message: {ex.Message}");
-            }
-            finally
-            {
                 context.Done(2);
-            }
         }
     }
 }

@@ -313,15 +313,21 @@
 
         private async Task PhoneFlowDone(IDialogContext context,IAwaitable<object> result)
         {
-            await context.PostAsync("End of phone Flow - enter something");
+            if (CommonDialog.debugMessages) await context.PostAsync("End of phone Flow - enter something");
             context.Wait(CharacterSelectedAsync);
             //  context.Wait(MessageReceivedAsync);
         }
 
         private async Task PlanFlowDone(IDialogContext context, IAwaitable<object> result)
         {
-            await context.PostAsync("O.K.  Now I need to take you through the terms and conditions to finalise your order.");
-            //     context.Wait(MessageReceivedAsync);
+            context.Call(new TermsNode(), DemoDone);
+        }
+
+        private async Task DemoDone(IDialogContext context, IAwaitable<object> result)
+        {
+            await Task.Delay(4000);
+            await context.PostAsync("The demo will now restart.");
+            await Task.Delay(4000);
             context.Wait(CharacterSelectedAsync);
         }
 

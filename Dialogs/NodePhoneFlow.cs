@@ -457,6 +457,7 @@ namespace MultiDialogsBot.Dialogs
             else if (option.StartsWith("I want "))
             {
                 selectedModel = option.Substring(7);
+                context.ConversationData.SetValue("SelectedPhone", selectedModel);
                 context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);  
             }
             else if (option.StartsWith("Plan Prices for "))
