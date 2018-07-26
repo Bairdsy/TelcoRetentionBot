@@ -261,6 +261,8 @@
     <Compile Include="Dialogs\RootDialog - Copy.cs" />
     <Compile Include="Dialogs\RootDialog.cs" />
     <Compile Include="Dialogs\SupportDialog.cs" />
+    <Compile Include="Dialogs\Terms1.cs" />
+    <Compile Include="Dialogs\TermsNode.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

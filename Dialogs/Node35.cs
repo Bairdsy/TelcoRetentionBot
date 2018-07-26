@@ -30,10 +30,6 @@
                         context.Call(new Node38(), this.ResumeAfterOptionDialog);
                         break;
 
-                    case "I need help":
-                        context.Call(new Node5(), this.ResumeAfterOptionDialog);
-                        break;
-
                 }
 
             }

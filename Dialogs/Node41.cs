@@ -11,13 +11,7 @@
     {
         public async Task StartAsync(IDialogContext context)
         {
-            string offer_plan;
-            string offer_rental;
-
-            context.ConversationData.TryGetValue("FBP_OfferPlan", out offer_plan);
-            context.ConversationData.TryGetValue("FBP_OfferRent", out offer_rental);
-
-            PromptDialog.Choice(context, this.OptionSelected, new List<string>() { "Confirm", "Reject", "I need help" }, $"At the end of the term, your Agreement will continue to run on a month to month basis, unless you, the Customer, provide notice of your desire to terminate this agreement. ", "Not a valid option", 3);
+            PromptDialog.Choice(context, this.OptionSelected, new List<string>() { "Confirm", "Reject" }, $"At the end of the term, your Agreement will continue to run on a month to month basis, unless you, the Customer, provide notice of your desire to terminate this agreement. ", "Not a valid option", 3);
         }
 
         private async Task OptionSelected(IDialogContext context, IAwaitable<string> result)
@@ -28,11 +22,21 @@
                 switch (optionSelected)
                 {
                     case "Confirm":
-                        context.Call(new Node42(), this.ResumeAfterOptionDialog);
+                        context.Call(new Node39(), this.ResumeAfterOptionDialog);
                         break;
                         
                     case "Reject":
-                        context.Call(new Node38(), this.ResumeAfterOptionDialog);
+                        var Card = new HeroCard
+                        {
+                            Title = "That's OK.",
+                            Text = "If you have changed your mind then I will save this order so you can access it later, or just start again next time you want to chat.",
+                            Images = new List<CardImage> { new CardImage("http://www.madcalm.com/wp-content/uploads/2018/06/MADCALM-PROCESSING.png") },
+                        };
+                        var msg = context.MakeMessage();
+                        msg.Attachments.Add(Card.ToAttachment());
+
+                        await context.PostAsync(msg);
+                        context.Done(2);
                         break;
 
                     case "I need help":
@@ -49,20 +53,10 @@
                 context.Done(0);
             }
         }
+
         private async Task ResumeAfterOptionDialog(IDialogContext context, IAwaitable<object> result)
         {
-            try
-            {
-                var message = await result;
-            }
-            catch (Exception ex)
-            {
-                await context.PostAsync($"Failed with message: {ex.Message}");
-            }
-            finally
-            {
-                context.Done(2);
-            }
+            context.Done(2);
         }
     }
 }

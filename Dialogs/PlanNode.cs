@@ -26,50 +26,61 @@
             failCount = 0;
             if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: entering node2");
 
-            if (context.ConversationData.TryGetValue("SubsNumber", out subsno))
-            {
-                //await context.PostAsync($"DEBUG: Subs Number is {subsno}");
-                int subsnum = Int32.Parse(subsno);
-
-                _client = new MongoClient("mongodb://telcoretentiondb:HsQmjXjc0FBMrWYbJr8eUsGdWoTuaYXvdO2PRj13sxoPYijxxcxG5oSDfhFtVFWAFeWxFbuyf1NbxnFREFssAw==@telcoretentiondb.documents.azure.com:10255/?ssl=true&replicaSet=globaldb");
-                _database = _client.GetDatabase("madcalm");
-
-
-                await context.PostAsync($"I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
-                await Task.Delay(3000);
-                await this.ShowSummaryCardAsync(context);
-                await Task.Delay(3000);
-
-                string generic_msg;
-                var CardList = new List<HeroCard>();
-
-                var collection = _database.GetCollection<BsonDocument>("offer_messages");
-                var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsnum);
-                var sort = Builders<BsonDocument>.Sort.Ascending("Inbound Eligibility").Ascending("Value Rank");
-                
-                using (var cursor = await collection.FindAsync(filter, new FindOptions<BsonDocument, BsonDocument>()
-                {
-                    Sort = sort
-                }))
-                {
-                    while (await cursor.MoveNextAsync())
-                    {
-                        var batch = cursor.Current;
-                        foreach (var document in batch)
-                        {
-                            generic_msg = (string)document.GetElement("Generic Usage Message").Value;
-                            await context.PostAsync($"**{generic_msg}**");
-                            await Task.Delay(5000);
-                            break;
-                        }
-                    }
-                }
-                await this.ShowPlanCarouselAsync(context);
-
+            string selectedPlan;
+            if (context.ConversationData.TryGetValue("ChosenPlanName", out selectedPlan) && selectedPlan.ToUpper().Contains("BEYOU"))
+            { 
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG: back in plan node but plan already selected");
+                context.Done(0);
             }
             else
             {
-                await context.PostAsync($"Hmmm.  Seems I couldnt get the subscriber number.");
+
+
+                if (context.ConversationData.TryGetValue("SubsNumber", out subsno))
+                {
+                    //await context.PostAsync($"DEBUG: Subs Number is {subsno}");
+                    int subsnum = Int32.Parse(subsno);
+
+                    _client = new MongoClient("mongodb://telcoretentiondb:HsQmjXjc0FBMrWYbJr8eUsGdWoTuaYXvdO2PRj13sxoPYijxxcxG5oSDfhFtVFWAFeWxFbuyf1NbxnFREFssAw==@telcoretentiondb.documents.azure.com:10255/?ssl=true&replicaSet=globaldb");
+                    _database = _client.GetDatabase("madcalm");
+
+
+                    await context.PostAsync($"I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
+                    await Task.Delay(3000);
+                    await this.ShowSummaryCardAsync(context);
+                    await Task.Delay(3000);
+
+                    string generic_msg;
+                    var CardList = new List<HeroCard>();
+
+                    var collection = _database.GetCollection<BsonDocument>("offer_messages");
+                    var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsnum);
+                    var sort = Builders<BsonDocument>.Sort.Ascending("Inbound Eligibility").Ascending("Value Rank");
+
+                    using (var cursor = await collection.FindAsync(filter, new FindOptions<BsonDocument, BsonDocument>()
+                    {
+                        Sort = sort
+                    }))
+                    {
+                        while (await cursor.MoveNextAsync())
+                        {
+                            var batch = cursor.Current;
+                            foreach (var document in batch)
+                            {
+                                generic_msg = (string)document.GetElement("Generic Usage Message").Value;
+                                await context.PostAsync($"**{generic_msg}**");
+                                await Task.Delay(5000);
+                                break;
+                            }
+                        }
+                    }
+                    await this.ShowPlanCarouselAsync(context);
+
+                }
+                else
+                {
+                    await context.PostAsync($"Hmmm.  Seems I couldnt get the subscriber number.");
+                }
             }
         }
 
@@ -171,6 +182,7 @@
                                 context.ConversationData.SetValue("ChosenPlanImage", "http://www.madcalm.com/wp-content/uploads/2018/07/" + Image + ".png");
                                 context.ConversationData.SetValue("ChosenPlanHighlight", Highlight);
                                 context.ConversationData.SetValue("ChosenPlanWarning", Warning);
+                                context.ConversationData.SetValue("ChosenPlanCode", resCode);
 
 
                                 StringComparison checkForWarn = StringComparison.InvariantCulture;
