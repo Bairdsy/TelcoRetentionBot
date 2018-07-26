@@ -455,7 +455,7 @@ namespace MultiDialogsBot.Dialogs
 
         private async Task ConfirmationReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
         {
-            string ans = ((Activity)(await awaitable)).Text;   
+            string ans = ((Activity)(await awaitable)).Text;     
 
             if (Miscellany.IsANo(ans))
             {
