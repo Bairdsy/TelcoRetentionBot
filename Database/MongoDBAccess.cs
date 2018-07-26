@@ -42,7 +42,7 @@ namespace MultiDialogsBot.Database
             HandSets returnVal = new HandSets();
             HandSetFeatures currentNode = null;
 
-            var featuresCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");
+            var featuresCollection = madCalmDB.GetCollection<BsonDocument>("features_new3");
             var brandsCollection = madCalmDB.GetCollection<BsonDocument>("brands");
 
             var brandCursor = brandsCollection.Find(new BsonDocument()).ToCursor();   
@@ -70,10 +70,10 @@ namespace MultiDialogsBot.Database
                     returnVal.Add(currentNode);
                 }
                 else
-                    currentNode.Colors.Add(doc.GetElement("Color").Value.ToString());
+                    currentNode.Colors.Add(doc.GetElement("Color").Value.ToString());  
             }
              
-
+                
             foreach (var doc in brandCursor.ToEnumerable())
                 returnVal.SetBrandLogo(doc.GetElement("brand").Value.ToString().ToLower(), doc.GetElement("imageURL").Value.ToString());
 
@@ -82,13 +82,13 @@ namespace MultiDialogsBot.Database
 
         public string GetBrandOfModel(string model)
         {
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");    
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new3");    
             var filter = Builders<BsonDocument>.Filter.Eq("Model", model);
             var firstDoc = handSetCollection.Find(filter).First();
-
+                 
             if (firstDoc.Count() == 0)
                 return null;
-            else
+            else     
                 return firstDoc.GetElement("Brand").Value.ToString();     
         }
 
@@ -97,7 +97,7 @@ namespace MultiDialogsBot.Database
         public Dictionary<string,bool> GetModels(string brand)   // null = to obtain all
         {
             Dictionary<string, bool> ret = new Dictionary<string, bool>();
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");                   // handsets b4
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new3");                   // handsets b4
             FilterDefinition<BsonDocument> filter;
             IAsyncCursor<BsonDocument> cursor;
 
@@ -121,7 +121,7 @@ namespace MultiDialogsBot.Database
 
         public string GetHandSetImageURL(string manufacturer,string model)
         {
-            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new2");                       // handsets b4
+            var handSetCollection = madCalmDB.GetCollection<BsonDocument>("features_new3");                       // handsets b4
             var filterBuilder = Builders<BsonDocument>.Filter;
             var projectionFilterBuilder = Builders<BsonDocument>.Projection;
             var filter = filterBuilder.Eq("Brand", manufacturer) & filterBuilder.Eq("Model", model);            // Maker b4 

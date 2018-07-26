@@ -402,7 +402,7 @@ namespace MultiDialogsBot.Dialogs
             correctedQuery = Miscellany.QueryCompare(result.Query, result.AlteredQuery);
             return $"You typed \"{result.Query}\", did you mean \"{correctedQuery}\"?";
         } 
-        private void CheckSpelling(IDialogContext context, LuisResult result)
+        private void CheckSpelling(IDialogContext context, LuisResult result)    
         {
             if (CommonDialog.debugMessages) context.PostAsync("Beginning of CheckSpelling() method");
             if (result.AlteredQuery == null)

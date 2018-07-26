@@ -139,7 +139,7 @@ namespace MultiDialogsBot.Dialogs
             StringBuilder builder = new StringBuilder();
             int index,startIndex = 0,wordIndex,maxWordIndex = -1;
 
-            do
+            do   
             {
                 for (wordIndex = 0; wordIndex < words.Length; ++wordIndex)
                 {
