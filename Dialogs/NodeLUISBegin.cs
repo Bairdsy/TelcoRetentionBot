@@ -401,7 +401,7 @@ namespace MultiDialogsBot.Dialogs
                 return null;
             correctedQuery = Miscellany.QueryCompare(result.Query, result.AlteredQuery);
             return $"You typed \"{result.Query}\", did you mean \"{correctedQuery}\"?";
-        }
+        } 
         private void CheckSpelling(IDialogContext context, LuisResult result)
         {
             if (CommonDialog.debugMessages) context.PostAsync("Beginning of CheckSpelling() method");
@@ -411,7 +411,7 @@ namespace MultiDialogsBot.Dialogs
                 context.Done(Tuple.Create<string, EIntent>($"{result.Query}:{result.AlteredQuery}", EIntent.HandSet));
         }
 
-        private async Task AskToConfirmAsync(IDialogContext context,string msg)
+        private async Task AskToConfirmAsync(IDialogContext context,string msg)  
         {
             Activity activity = (Activity)context.Activity;
             var reply = activity.CreateReply(msg);
