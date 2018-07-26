@@ -188,7 +188,7 @@ namespace MultiDialogsBot.Dialogs
                 await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("I understand that for you price is important.");
                 desiredFeature = EIntents.Cheap;
-                await ProcessNeedOrFeatureAsync(context, result);
+                await ProcessNeedOrFeatureAsync(context, result);   
             }
             else
             {

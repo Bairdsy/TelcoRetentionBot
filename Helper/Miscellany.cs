@@ -156,5 +156,13 @@ namespace MultiDialogsBot.Helper
             else
                 return brandCmpResult;
         }
+
+        public static bool IsANo(string ans)
+        {
+            if (ans.ToLower() == "n")
+                return true;
+
+            return (ans.ToLower().StartsWith("no") && ((ans.Length == 2) || !char.IsLetter(ans[2])));
+        }
     }
 }

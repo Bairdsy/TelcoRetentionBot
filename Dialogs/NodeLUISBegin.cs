@@ -55,6 +55,10 @@ namespace MultiDialogsBot.Dialogs
         string nonUnderstoodUtterance,initialPhrase;
         bool justCheck4Errors;
 
+        EIntent intent;
+        string subsIntention;
+        LuisResult luisResultCopy;
+
         public NodeLUISBegin(bool checkSpelling = false)
         {
             justCheck4Errors = checkSpelling;
@@ -63,9 +67,6 @@ namespace MultiDialogsBot.Dialogs
         [LuisIntent("Upgrade Both")]
         public async Task UpgradeBoth(IDialogContext context,LuisResult result)
         {
-            string intention = "Upgrade Both"; 
-            string secondIntention = null;
-            bool closeToSecond = CloseToSecond(result);
             string typosWarning = TyposInformation(result);
 
             if (justCheck4Errors)
@@ -73,43 +74,24 @@ namespace MultiDialogsBot.Dialogs
                 CheckSpelling(context, result);
                 return;
             }
-
-            EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
-
-
+            subsIntention = "Upgrade Both";
+            luisResultCopy = result;
             if (typosWarning != null)
             {
-                await context.PostAsync(typosWarning);
                 initialPhrase = result.AlteredQuery.ToLower();
+                await AskToConfirmAsync(context, typosWarning);
             }
             else
+            {
                 initialPhrase = result.Query.ToLower();
-            await this.PostDebugInfoAsync(context, result, intention);
-
-            if (degreeOfCertain == EDegreeOfCertain.High)
-            {
-                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : I understand that you {humanFriendlyIntent[intention].Item1}");
-                context.Done(Tuple.Create(initialPhrase,humanFriendlyIntent[intention].Item2));
-            }
-            else if (degreeOfCertain == EDegreeOfCertain.Medium)
-            {
-                nonUnderstoodUtterance = initialPhrase;
-                if (closeToSecond)
-                    secondIntention = ObtainSecondMostLikelyIntent(result);
-                await DoubleCheck(context, intention,secondIntention);
-            }
-            else
-            {
-                await AskToRephraseAsync(context, result);
+                await this.PostDebugInfoAsync(context, result, subsIntention);
+                await ProcessLuisResultsAsync(context, result);
             }
         }
 
         [LuisIntent("Upgrade Equipment")]
         public async Task UpgradeEquipment(IDialogContext context, LuisResult result)
         {
-            string intention = "Upgrade Equipment";  
-            string secondIntention = null;      
-            bool closeToSecond = CloseToSecond(result);
             string typosWarning = null;
 
             if (justCheck4Errors)
@@ -117,7 +99,8 @@ namespace MultiDialogsBot.Dialogs
                 CheckSpelling(context, result);
                 return;
             }
-
+            subsIntention = "Upgrade Equipment";
+            luisResultCopy = result;
             try
             {
                  typosWarning = TyposInformation(result);
@@ -126,74 +109,43 @@ namespace MultiDialogsBot.Dialogs
             {
                 await context.PostAsync("DEBUG : Exception message = " + xception.Message + " <==");
             }
-            EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
-
             if (typosWarning != null)
             {
-                await context.PostAsync(typosWarning);
-                initialPhrase = result.AlteredQuery.ToLower();        
+                initialPhrase = result.AlteredQuery.ToLower();
+                await AskToConfirmAsync(context, typosWarning);
             }
             else
+            {
                 initialPhrase = result.Query.ToLower();
-
-            await this.PostDebugInfoAsync(context, result, intention);
-
-            if (degreeOfCertain == EDegreeOfCertain.High)
-                context.Done(Tuple.Create(initialPhrase,   humanFriendlyIntent[intention].Item2));
-            else if (degreeOfCertain == EDegreeOfCertain.Medium)
-            {
-                nonUnderstoodUtterance = initialPhrase;
-                if (closeToSecond)
-                    secondIntention = ObtainSecondMostLikelyIntent(result);
-                await DoubleCheck(context, intention, secondIntention);
-            }
-            else   
-            {
-                await AskToRephraseAsync(context, result);
+                await this.PostDebugInfoAsync(context, result, subsIntention);
+                await ProcessLuisResultsAsync(context, result);
             }
         }
 
         [LuisIntent("Upgrade plan")]
         public async Task UpgradePlan(IDialogContext context,LuisResult result)
         {
-            string intention = "Upgrade plan";
-            string secondIntention = null;
             string typosWarning = TyposInformation(result); 
             bool typos = typosWarning != null;
-            bool closeToSecond = CloseToSecond(result);
 
+            
             if (justCheck4Errors)
             {
                 CheckSpelling(context, result);
                 return;
             }
-
-            EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
-
+            subsIntention = "Upgrade plan";
+            luisResultCopy = result;
             if (typos)
             {
-                await context.PostAsync(typosWarning);
                 initialPhrase = result.AlteredQuery.ToLower();
+                await AskToConfirmAsync(context, typosWarning);
             }
             else
+            {
                 initialPhrase = result.Query.ToLower();
-            await this.PostDebugInfoAsync(context, result, intention);
-
-            if (degreeOfCertain == EDegreeOfCertain.High)
-            {
-                if (CommonDialog.debugMessages) await context.PostAsync($"I understand that you {humanFriendlyIntent[intention].Item1}");
-                context.Done(Tuple.Create(initialPhrase,humanFriendlyIntent[intention].Item2));
-            }
-            else if (degreeOfCertain == EDegreeOfCertain.Medium)
-            {
-                nonUnderstoodUtterance = initialPhrase;
-                if (closeToSecond)
-                    secondIntention = ObtainSecondMostLikelyIntent(result);
-                await DoubleCheck(context, intention,secondIntention);
-            }
-            else
-            {
-                await AskToRephraseAsync(context, result);
+                await this.PostDebugInfoAsync(context, result, subsIntention);
+                await ProcessLuisResultsAsync(context, result);
             }
         }
 
@@ -395,7 +347,6 @@ namespace MultiDialogsBot.Dialogs
             }
         }
 
-
         private async Task DoubleCheck(IDialogContext context,string mostLikelyIntent,string secondMostLikely)
         {
             string friendly1 = humanFriendlyIntent[mostLikelyIntent].Item1;
@@ -405,7 +356,7 @@ namespace MultiDialogsBot.Dialogs
             Activity reply, lastMessage = (Activity) context.Activity;
             Attachment imageAttachment = new Attachment()
             {
-                ContentUrl = "http://madcalm.com/wp-content/uploads/2018/06/MADCALM-CONFUSED.png", // "https://image.freepik.com/free-vector/businessman-with-doubts_23-2147618177.jpg",
+                ContentUrl = "http://madcalm.com/wp-content/uploads/2018/06/MADCALM-CONFUSED.png", 
                 ContentType = "image/png",
                 Name = "Bender_Rodriguez.png"  
             };                    
@@ -417,6 +368,7 @@ namespace MultiDialogsBot.Dialogs
                     new CardAction(){ Title = "No", Type=ActionTypes.ImBack, Value="No" , /*Image = "https://emojipedia-us.s3.amazonaws.com/thumbs/120/apple/129/thumbs-down-sign_1f44e.png"*/}
                 }
             };
+
             if (secondMostLikely != null)
             {   
                 friendly2 = humanFriendlyIntent[secondMostLikely].Item1;
@@ -443,7 +395,6 @@ namespace MultiDialogsBot.Dialogs
 
         private string TyposInformation(LuisResult result) 
         {
-            //   System.Text.StringBuilder sb = new System.Text.StringBuilder();
             string correctedQuery; 
               
             if (result.AlteredQuery == null)
@@ -458,6 +409,63 @@ namespace MultiDialogsBot.Dialogs
                 context.Done(Tuple.Create<string, EIntent>(result.Query, EIntent.None));
             else
                 context.Done(Tuple.Create<string, EIntent>($"{result.Query}:{result.AlteredQuery}", EIntent.HandSet));
+        }
+
+        private async Task AskToConfirmAsync(IDialogContext context,string msg)
+        {
+            Activity activity = (Activity)context.Activity;
+            var reply = activity.CreateReply(msg);
+            SuggestedActions buttons = new SuggestedActions()
+            {
+                Actions = new List<CardAction>()
+                {
+                    new CardAction(){Title = "Yes",Type = ActionTypes.ImBack,Value = "Yes"},
+                    new CardAction(){Title= "No",Type = ActionTypes.ImBack,Value = "No"}
+                }
+            };
+
+            reply.SuggestedActions = buttons;
+
+            await context.PostAsync( reply);
+            context.Wait(ConfirmationReceivedAsync);
+        }
+
+        private async Task ProcessLuisResultsAsync(IDialogContext context,LuisResult result)
+        {
+            bool closeToSec;
+            string secondIntention = null;
+            EDegreeOfCertain degreeOfCertain = GetDegreeOfCertain(result);
+
+            closeToSec = CloseToSecond(result);
+            if (degreeOfCertain == EDegreeOfCertain.High)
+            {
+                if (CommonDialog.debugMessages) await context.PostAsync($"I understand that you {humanFriendlyIntent[subsIntention].Item1}");
+                context.Done(Tuple.Create(initialPhrase, humanFriendlyIntent[subsIntention].Item2));
+            }
+            else if (degreeOfCertain == EDegreeOfCertain.Medium)
+            {
+                nonUnderstoodUtterance = initialPhrase;
+                if (closeToSec)
+                    secondIntention = ObtainSecondMostLikelyIntent(result);
+                await DoubleCheck(context, subsIntention, secondIntention);
+            }
+            else
+                await AskToRephraseAsync(context, result);
+        }
+
+        private async Task ConfirmationReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
+        {
+            string ans = ((Activity)(await awaitable)).Text;   
+
+            if (Miscellany.IsANo(ans))
+            {
+                await context.PostAsync("Fine, could you please rephrase what you'd like to do, please?");
+                context.Wait(MessageReceived);
+            }
+            else
+            {
+                await ProcessLuisResultsAsync(context, this.luisResultCopy);
+            }
         }
     }
 }
