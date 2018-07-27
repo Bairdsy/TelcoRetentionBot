@@ -166,11 +166,11 @@ namespace MultiDialogsBot.Helper
             return candidatePhoneSize * m + b;
         }
 
-        private double MovieWatcherScore(HandSetFeatures phone)  
+        private double MovieWatcherScore(HandSetFeatures phone)     
         {
             double ramScore, screenSizeScore,storageScore,batteryLifeScore;    
             double max, min;
-            
+             
 
             /*** RAM ****/
             basket.GetMaxAndMinLimits(x => x.RamSize, out min, out max);
@@ -184,7 +184,7 @@ namespace MultiDialogsBot.Helper
             basket.GetMaxAndMinLimits(x => x.MemoryMB, out min, out max);
             storageScore = LogisticFunc(phone.MemoryMB, max - min);
 
-            /*** Battery Life ***/
+            /*** Battery Life ***/  
             basket.GetMaxAndMinLimits(x => x.BatteryLife, out min, out max);
             batteryLifeScore = LogisticFunc(phone.BatteryLife, max - min);
 

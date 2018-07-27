@@ -18,13 +18,13 @@ namespace MultiDialogsBot.Dialogs
           
         public ColorsNode(string model)  
         {
-            chosenModel = model;
-        }
+            chosenModel = model;  
+        }     
               
-        public override async Task StartAsync(IDialogContext context) 
+        public override async Task StartAsync(IDialogContext context)    
         {
-            List<string> colors,capitalColors;
-            string modelCapitalized = Miscellany.Capitalize(chosenModel);
+            List<string> colors,capitalColors;  
+            string modelCapitalized = Miscellany.Capitalize(chosenModel);  
 
             if (debugMessages) await context.PostAsync($"DEBUG : StartAsync() method in ColorsNode object, I received {chosenModel} model to present");
 

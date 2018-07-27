@@ -506,6 +506,7 @@ namespace MultiDialogsBot.Dialogs
             }
             if  (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS)
             {
+                if (CommonDialog.debugMessages) await context.PostAsync($"There are {handSetsLeft} on bag");
                 if (removedSome && (acknowledgeMsg  != null))
                 {
                     await Miscellany.InsertDelayAsync(context);  
@@ -519,12 +520,13 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
+                if (CommonDialog.debugMessages) await context.PostAsync("We have just 5 left or fewer");
                 if   (acknowledgeMsg != null)
                 {
                     await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(acknowledgeMsg);
                 }
-                if (desiredFeature == EIntents.Brand)
+                if ((!decoder.LastOneWasNeed) && (desiredFeature == EIntents.Brand))
                 {
                     context.ConversationData.SetValue(BotConstants.SELECTED_BRANDS_KEY, decoder.StrKeyWords);
                 }
@@ -865,13 +867,6 @@ namespace MultiDialogsBot.Dialogs
                     case EIntents.Brand:
                         len = filterSettings.Enumerated.Count;
                         aux = len > 1 ? new StringBuilder("brands ") : new StringBuilder("brand ");
-                        /*   aux.Append(filterSettings.Enumerated[0]);
-                           if (len > 1)
-                           {
-                               for (int n = 1; n < (len - 1); ++n)
-                                   aux.Append($", {filterSettings.Enumerated[n]}");
-                               aux.Append($" and {filterSettings.Enumerated[len - 1]}.");
-                           }*/
                         aux.Append(Miscellany.BuildBrandString(filterSettings.Enumerated));
                         return string.Format(alternatives[0], aux.ToString());
                     case EIntents.OS:  
