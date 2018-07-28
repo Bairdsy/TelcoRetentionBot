@@ -55,7 +55,6 @@ namespace MultiDialogsBot.Dialogs
         string nonUnderstoodUtterance,initialPhrase;
         bool justCheck4Errors;
 
-        EIntent intent;
         string subsIntention;
         LuisResult luisResultCopy;
 

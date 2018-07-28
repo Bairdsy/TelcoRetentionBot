@@ -44,8 +44,6 @@ namespace MultiDialogsBot.Dialogs
                     new CardAction(){Title = "No, I haven't made up my mind", Type = ActionTypes.ImBack, Value = "No"}
                 }
             };
-       /*     await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync("I'd really like to see if I can help you here.");*/
             try
             {
                 if (IndicatedModelsAndOrBrands(out brandsWanted,out modelsWanted))

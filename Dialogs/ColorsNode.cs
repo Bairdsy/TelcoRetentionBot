@@ -58,7 +58,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string phoneMatchMsg = "The phone match message will be inserted here";
 
-            await context.PostAsync($"Excellent selection - The {chosenModel} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
+            await context.PostAsync($"Excellent selection - The {Miscellany.Capitalize(chosenModel)} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in
             await Task.Delay(3000);

@@ -495,11 +495,13 @@ namespace MultiDialogsBot.Dialogs
             }
             if (handSetsLeft == handSetsB4)
             {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Unfortunately, that doesn't help in narrowing the list down");
                 removedSome = false;
             }  
             else if (handSetsLeft == 0)  
             {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("I'm afraid that's a very high standard, I don't have any equipment that fulfills it.");  
                 removedSome = false;
                 handSetsLeft = handSetsB4;
@@ -513,9 +515,11 @@ namespace MultiDialogsBot.Dialogs
                     await context.PostAsync(acknowledgeMsg);
                 }
                 aux = removedSome ? "We have now" : "We still have";
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync($"{aux} {handSetsLeft} models that might be suitable for your needs. I could help short list further if you tell me what else is important for you");
                 sb = new StringBuilder("");
                 reply.SuggestedActions = topButtons.GetTop4Buttons(sb);
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync(reply);
             }
             else
@@ -593,7 +597,7 @@ namespace MultiDialogsBot.Dialogs
                             }
                             else
                                 await DecodeAndProcessIntentAsync(context);
-                            break;
+                            break; 
                         case EIntents.Color:
                             if (!GetPreferredColors(res))
                             {
@@ -605,7 +609,17 @@ namespace MultiDialogsBot.Dialogs
                         case EIntents.Brand:
                             if (!GetSpecificBrands(res))
                             {
-                                PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagBrands(), "Could you please indicate your favourite brand?", "Not understood, please try again", 3);
+                                List<string> brands = handSetsBag.GetBagBrands();
+
+                                
+                                await Miscellany.InsertDelayAsync(context);
+                                PromptDialog.Choice(
+                                    context, 
+                                    ProcessEnumeratedChoice, 
+                                    brands.Select(x => Miscellany.Capitalize(x)), 
+                                    "Could you please indicate your favourite brand?", 
+                                    "Not understood, please try again", 
+                                    3);
                             }
                             else   
                                 await DecodeAndProcessIntentAsync(context);
