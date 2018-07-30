@@ -61,7 +61,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (buttonPressed.StartsWith("I want "))
             {
-                modelPicked = selectedModel = buttonPressed.Substring(7);      
+                modelPicked = selectedModel = buttonPressed.Substring(7).ToLower();      
                 context.Done(modelPicked);
             }    
             else if (buttonPressed.ToLower() == "start again")
@@ -113,7 +113,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (buttonPressed.StartsWith("I want "))
             {
-                selectedModel = model = buttonPressed.Substring(7);
+                selectedModel = model = buttonPressed.Substring(7).ToLower();
                 context.Done(model);
             }
             else if (buttonPressed.StartsWith("Plan Prices for "))
@@ -190,8 +190,8 @@ namespace MultiDialogsBot.Dialogs
                     Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model,true,context), "img/jpeg") },
                     Buttons = new List<CardAction>()
                     {
-                        new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
-                        new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },   
+                        new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + Miscellany.Capitalize(model)},
+                        new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + Miscellany.Capitalize(model) },   
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
                 };
@@ -235,9 +235,9 @@ namespace MultiDialogsBot.Dialogs
                 Images = new List<CardImage> { new CardImage(equipmentURL, "img/jpeg") },
                 Buttons = new List<CardAction>()
                 {
-                    new CardAction(){Title = weAreOnBranch7 ? "Yes - great choice" : "Yes - that's the phone I like", Type=ActionTypes.ImBack, Value = "I want " + model},
+                    new CardAction(){Title = weAreOnBranch7 ? "Yes - great choice" : "Yes - that's the phone I like", Type=ActionTypes.ImBack, Value = "I want " + Miscellany.Capitalize(model)},
                     new CardAction(){Title = weAreOnBranch7 ? "No. That's not quite right" : "No. I am after a different model",Type = ActionTypes.ImBack,Value = "No. I am after a different model"},
-                    new CardAction(){Title = "Phone Price per Plan",Type=ActionTypes.ImBack,Value = "Plan Prices for " + model},
+                    new CardAction(){Title = "Phone Price per Plan",Type=ActionTypes.ImBack,Value = "Plan Prices for " + Miscellany.Capitalize(model)},
                     new CardAction(){Title = "Specifications",Type=ActionTypes.OpenUrl, Value= GetModelSpecsUrl( model) }
                 }
             };

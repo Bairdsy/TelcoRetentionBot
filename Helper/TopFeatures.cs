@@ -93,7 +93,7 @@ namespace MultiDialogsBot.Helper
                 }
                 else
                     debug.Append("Yes");
-
+                  
                 debug.Append("\r\n");
                 debug.Append($"name: {ranking[i].Item1}, description : {ranking[i].Item2}");
             }

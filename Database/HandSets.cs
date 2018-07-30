@@ -109,7 +109,7 @@ namespace MultiDialogsBot.Database
                 Regex regex;
                 List<string> returnVal = new List<string>();
 
-                foreach (string filter in regex_filters)
+                foreach (string filter in regex_filters) 
                 {
                     regex = new Regex(filter);
                     foreach (string model in models.Keys)
@@ -121,16 +121,23 @@ namespace MultiDialogsBot.Database
                 return returnVal;
             }
 
-            public HandSetFeatures GetEquipmentFeatures(string model)
+            public HandSetFeatures GetEquipmentFeatures(string model)  
             {
                 HandSetFeatures features;
 
                 if (models.TryGetValue(model, out features))
                     return features;
-                if (models.TryGetValue(Miscellany.RemoveSpaces(model), out features))
+                if (spaceLess.TryGetValue(Miscellany.RemoveSpaces(model), out features))
                     return features;
                 else
-                    throw new Exception($"Error...could not find the {model} model in database");
+                {
+                    StringBuilder sb = new StringBuilder();
+                    foreach (var m in models.Keys)
+                        sb.Append(m.ToString() + m.Length + "\r\n");
+                    foreach (var m2 in spaceLess.Keys)
+                        sb.Append(m2.ToString() + m2.Length + "\r\n");
+                    throw new Exception($"Error...could not find the {model} model in database, it has {model.Length} letters, database keys = " + sb);
+                }
             }
         }
 

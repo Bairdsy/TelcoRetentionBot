@@ -53,7 +53,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (contents.StartsWith("I want a ")   )
             {
-                model = contents.Substring(9);
+                model = contents.Substring(9).ToLower();
                 if (!GetAllModels().Contains(model))
                 {
                     model = null;
@@ -61,9 +61,9 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (contents.StartsWith("Show me Plan Prices for "))
             {
-                await PlanPricesButtonHandlerAsync(context, contents.Substring(24));
+                await PlanPricesButtonHandlerAsync(context, contents.Substring(24).ToLower());
                 return;
-            }
+            }  
 
             if ((model = IdentifyModel(contents)) != null)
             {
@@ -182,7 +182,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 await context.PostAsync("xception message = " + xception.Message);  
             }
-
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync(reply);
             context.Wait(BrandChoiceMadeAskModelAsync);
         }
@@ -211,8 +211,8 @@ namespace MultiDialogsBot.Dialogs
                     Images = new List<CardImage>() {new CardImage(GetEquipmentImageURL(model,true,context), "img/jpeg") },
                     Buttons = new List<CardAction>
                     {
-                        new CardAction() { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want a " + model },
-                        new CardAction() { Title = "Plan Prices", Type = ActionTypes.ImBack, Value = "Show me Plan Prices for " + model},
+                        new CardAction() { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want a " + Miscellany.Capitalize(model) },
+                        new CardAction() { Title = "Plan Prices", Type = ActionTypes.ImBack, Value = "Show me Plan Prices for " + Miscellany.Capitalize(model)},
                         new CardAction() { Title = "Specifications", Type = ActionTypes.OpenUrl, Value = GetModelSpecsUrl(model)},
                     },
                 };

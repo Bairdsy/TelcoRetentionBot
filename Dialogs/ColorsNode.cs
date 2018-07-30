@@ -23,12 +23,21 @@ namespace MultiDialogsBot.Dialogs
               
         public override async Task StartAsync(IDialogContext context)    
         {
-            List<string> colors,capitalColors;  
+            List<string> colors = null,capitalColors;  
             string modelCapitalized = Miscellany.Capitalize(chosenModel);  
 
             if (debugMessages) await context.PostAsync($"DEBUG : StartAsync() method in ColorsNode object, I received {chosenModel} model to present");
+            try
+            {
+                colors = GetColors(chosenModel);
+            }  
+            catch (Exception xception)
+            {
+                await context.PostAsync($"Error...xception message = {xception.Message}, full xception = {xception.ToString()}");
+                throw;
+            }
+            if (debugMessages) await context.PostAsync($"I got {colors.Count} colors");
 
-            colors = GetColors(chosenModel);
             capitalColors = new List<string>();
             foreach (var color in colors)
                 capitalColors.Add(Miscellany.Capitalize(color));
@@ -58,6 +67,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string phoneMatchMsg = "The phone match message will be inserted here";
 
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync($"Excellent selection - The {Miscellany.Capitalize(chosenModel)} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in

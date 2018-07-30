@@ -454,7 +454,9 @@ namespace MultiDialogsBot.Dialogs
             }
             else if (option.StartsWith("I want "))
             {
-                selectedModel = option.Substring(7);
+                if (debugMessages) await context.PostAsync("text received = " + option);
+                selectedModel = option.Substring(7).ToLower();
+                if (debugMessages) await context.PostAsync("selected model = " + selectedModel);
                 context.ConversationData.SetValue("SelectedPhone", selectedModel);
                 context.Call(new ColorsNode(selectedModel), MessageReceivedAsync);  
             }
@@ -462,7 +464,7 @@ namespace MultiDialogsBot.Dialogs
             {
                 List<CardAction> buttons; 
 
-                selectedModel = option.Substring(16);
+                selectedModel = option.Substring(16).ToLower();
                 await PlanPricesButtonHandlerAsync(context, selectedModel);
                 activity = ((Activity)(context.Activity)).CreateReply();
                 activity.Text = $"There are {totalPhones} phones to choose from or I can help you choose one";
@@ -700,9 +702,9 @@ namespace MultiDialogsBot.Dialogs
             HeroCard heroCard;
             List<CardAction> buttons;
 
-            topSellers = GetTop5Sellers();
+            topSellers = GetTop5Sellers(); 
             x = topSellers.Count;
-            reply.Text = ""; // $"Here are our latest TOP {x} sellers to choose from or let's work some other options based on what's important for you";
+            reply.Text = ""; 
             foreach(var model in topSellers)
             {
                 try
@@ -715,12 +717,12 @@ namespace MultiDialogsBot.Dialogs
                         Images = new List<CardImage>() { new CardImage(GetEquipmentImageURL(model, true,context), "img/jpeg") },
                         Buttons = new List<CardAction>()
                     {
-                        new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + model},
-                        new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + model },
+                        new CardAction(){Title = "Pick Me!",Type = ActionTypes.ImBack, Value ="I want " + Miscellany.Capitalize(model) /*model*/},
+                        new CardAction(){Title = "Plan Prices", Type = ActionTypes.ImBack,Value = "Plan Prices for " + Miscellany.Capitalize(model) /*model*/ },
                         new CardAction (){Title = "Specifications",Type=ActionTypes.OpenUrl,Value = GetModelSpecsUrl( model) }
                     }
                     };
-                }  
+                }     
                 catch (Exception xception)
                 {
                     if (CommonDialog.debugMessages) await context.PostAsync("Error...xception message = " + xception.ToString());

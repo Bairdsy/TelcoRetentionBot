@@ -45,7 +45,7 @@ namespace MultiDialogsBot.Database
             var featuresCollection = madCalmDB.GetCollection<BsonDocument>("features_new3");
             var brandsCollection = madCalmDB.GetCollection<BsonDocument>("brands");
 
-            var brandCursor = brandsCollection.Find(new BsonDocument()).ToCursor();   
+            var brandCursor = brandsCollection.Find(new BsonDocument()).ToCursor();
             var orderBy = Builders<BsonDocument>.Sort.Ascending("Brand");   
             var orderBy2 = Builders<BsonDocument>.Sort.Ascending("Model");
             var featureCur = featuresCollection.Find(new BsonDocument()).Sort(orderBy).Sort(orderBy2).ToCursor();
