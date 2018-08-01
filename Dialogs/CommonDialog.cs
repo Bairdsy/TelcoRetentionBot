@@ -39,7 +39,7 @@ namespace  MultiDialogsBot.Dialogs
                 { "BeYou SIM",EPlans.BeYouSIM },
                 { "BeYou 40",EPlans.BeYou40 },
                 { "BeYou 60",EPlans.BeYou60 },
-                { "BeYou 80",EPlans.BeYou80 },
+                { "BeYou 80",EPlans.BeYou80 },   
             };
         }
 
@@ -50,7 +50,7 @@ namespace  MultiDialogsBot.Dialogs
             HandSetFeatures handSetFeatures;
 
             if (handSets == null)
-                InitializeDataStruct();  
+                InitializeDataStruct();
             handSetFeatures = handSets.GetModelFeatures(modelPicked);
 
             var heroCard = new HeroCard()

@@ -26,6 +26,7 @@ namespace MultiDialogsBot.Dialogs
             MovieWatcher ,
             ShowOff,
             GamesAddict,
+            BookReader,
             PhoneSize,
             Camera /* These last two are part of the other LUIS APP */
         };
@@ -39,7 +40,8 @@ namespace MultiDialogsBot.Dialogs
                 { ENeeds.PictureLover,"As you are a photo lover, you can upload your photos to the Cloud, like Google Photos or iCloud."},
                 { ENeeds.MovieWatcher,"As you enjoy using your phone as TV, " },
                 { ENeeds.ShowOff, "As you love to have the latest," },
-                { ENeeds.GamesAddict,"As you are fond of playing with your phone," }
+                { ENeeds.GamesAddict,"As you are fond of playing with your phone," },
+                { ENeeds.BookReader, "As you enjoy reading books on your phone" }
             };
         }
 
@@ -60,6 +62,14 @@ namespace MultiDialogsBot.Dialogs
             if (CommonDialog.debugMessages)  await context.PostAsync("Not understood");
             context.Done(new Tuple<ENeeds, double>(ENeeds.PictureLover, 0));
         }
+
+     /*   [LuisIntent("BookReader")]
+        public async Task BookReader(IDialogContext context,LuisResult result)
+        {
+            await ShowDebugInfoAsync(context, result);
+            if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : BookReader intent detected");
+            context.Done(new)
+        }*/
 
         [LuisIntent("PictureLover")]
         public async Task PictureLover(IDialogContext context,LuisResult result)

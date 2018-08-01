@@ -76,6 +76,18 @@ namespace MultiDialogsBot.Helper
 
         private double CameraScore(HandSetFeatures phone)
         {
+            double m,b;
+            if (phone.Camera >= 12)
+                return 1;
+            if (phone.Camera < 10.5)
+                return 0;
+            m = 1 / 1.5;
+            b = -10.5 * m;
+            return m * phone.Camera + b;  
+        }
+
+        private double CameraScoreFormer(HandSetFeatures phone)
+        {
             double max, min;
             double secondaryCameraScore,
                 cameraScore,

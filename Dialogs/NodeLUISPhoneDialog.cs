@@ -490,6 +490,7 @@ namespace MultiDialogsBot.Dialogs
           
             if (CommonDialog.debugMessages)
             {
+                await context.PostAsync($"DEBUG : Threshold = {decoder.Threshold}, desired intent = {desiredFeature}");
                 await context.PostAsync("DEBUG : Ranking : \r\n");
                 await context.PostAsync(sb.ToString() + "\r\n");
             }
@@ -508,10 +509,10 @@ namespace MultiDialogsBot.Dialogs
             }
             if  (handSetsLeft > BotConstants.MAX_CAROUSEL_CARDS)
             {
-                if (CommonDialog.debugMessages) await context.PostAsync($"There are {handSetsLeft} on bag");
+                if (CommonDialog.debugMessages) await context.PostAsync($"DEBUG : There are {handSetsLeft} on bag");
                 if (removedSome && (acknowledgeMsg  != null))
                 {
-                    await Miscellany.InsertDelayAsync(context);  
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(acknowledgeMsg);
                 }
                 aux = removedSome ? "We have now" : "We still have";
@@ -581,13 +582,17 @@ namespace MultiDialogsBot.Dialogs
                         case EIntents.Camera:
                             if (!GetCameraCompositeEntityData(res))  // The desired megapixels aren't present, so in this particular case we'll send it to fuzzy engine
                             {
+                                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Camera intent : No data detected");
                                 decoder.ExcludeThis(EIntents.Camera);
                                 decoder.SetSizeRequirements(-1, true);
                                 handSetsLeft = needsScores.GetTopFive(NodeLuisSubsNeeds.ENeeds.Camera);
                                 await UpdateUserAsync(context, handSetsLeft, handSetsNow);
                             }
                             else
+                            {
+                                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Camera intent : Data detected");
                                 await DecodeAndProcessIntentAsync(context);
+                            }
                             break;
                         case EIntents.OS:
                             if (!GetOSData(res))
@@ -875,7 +880,7 @@ namespace MultiDialogsBot.Dialogs
 
             if (acknowledgeMessages.TryGetValue(desiredFeature, out alternatives))
             {
-                filterSettings = decoder.GetRequirements();
+                filterSettings = decoder.GetRequirements(desiredFeature);
                 switch (desiredFeature)
                 {
                     case EIntents.Brand:

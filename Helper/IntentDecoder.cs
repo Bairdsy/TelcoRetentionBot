@@ -88,7 +88,7 @@ namespace MultiDialogsBot.Helper
         List<NodeLUISPhoneDialog.EIntents> intents2Exclude;
         HandSets handSets;
         NodeLUISPhoneDialog.EIntents intent;  
-        double Threshold { get;  set; }
+        public double Threshold { get;  set; }
         
         bool desc;   // Order by DESC/ASC
         public List<string> StrKeyWords { get; set; }
@@ -578,7 +578,7 @@ namespace MultiDialogsBot.Helper
             desc = descOrder;
         }
 
-        public FilterSettings GetRequirements()
+        public FilterSettings GetRequirements(NodeLUISPhoneDialog.EIntents intent)
         {
             FilterSettings returnVal = new FilterSettings();
 
@@ -590,6 +590,7 @@ namespace MultiDialogsBot.Helper
                 returnVal.DateThreshold = DateThreshold;
                 return returnVal;
             }
+            
             if ((intent == NodeLUISPhoneDialog.EIntents.OS) || (intent == NodeLUISPhoneDialog.EIntents.Brand) || (intent == NodeLUISPhoneDialog.EIntents.Color))
             {
                 returnVal.FiltersSet = true;
