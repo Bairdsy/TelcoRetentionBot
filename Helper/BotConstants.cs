@@ -21,6 +21,7 @@ namespace MultiDialogsBot.Helper
         public const string BOTH_FLOW_TYPE = "both";
 
         public const string SELECTED_BRANDS_KEY = "LuisBrand";
+        public const string SHOW_ME_ALL = "Show Me All";
 
         public const double FEATURE_PHONE_THRESHOLD = 0.7;
     }

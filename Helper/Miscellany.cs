@@ -112,7 +112,7 @@ namespace MultiDialogsBot.Helper
             unsortedCarousel.Sort(comparer);
         }
            
-        public static async Task InsertDelayAsync(IDialogContext context )
+        public static async Task InsertDelayAsync(IDialogContext context, bool noDelay = false )
         {
             ConnectorClient connectorClient; 
             ITypingActivity typingActivity;
@@ -122,7 +122,8 @@ namespace MultiDialogsBot.Helper
             typingActivity = (msg).CreateReply();
             typingActivity.Type = ActivityTypes.Typing;
             connectorClient.Conversations.SendToConversationAsync((Activity)typingActivity);
-            Thread.Sleep(2200);  // 2200 b4
+            if (!noDelay)
+                Thread.Sleep(2200);  // 2200 b4
         }
 
         public static string BuildBrandString(List<string> brands)

@@ -682,8 +682,8 @@ namespace MultiDialogsBot.Dialogs
             
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He picked = " + ans);
-            if (ans == "Classic Phone")  
-                ans = "NA";
+          /*  if (ans == "Classic Phone")  
+                ans = "NA";*/
             decoder.StrKeyWords = new List<string>() { ans.ToLower() };
             await DecodeAndProcessIntentAsync(context);
         }

@@ -162,14 +162,19 @@ namespace MultiDialogsBot.Dialogs
             {
                 if (!answerWasFeature)
                 {
-                    await context.PostAsync($"Great, {needIntent} , Here are our TOP {x} models to choose from. Or let's look at some other options, please type \"Start again\"");
+                    if (context.ConversationData.TryGetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, out brands) && (brands.Count == 1) && (brands[0] == BotConstants.SHOW_ME_ALL))
+                        await context.PostAsync($"Great, here are our {x} models to choose from. Click \"Plan Prices\" if you want to see the Phone Price on the different plans");
+                    else
+                        await context.PostAsync($"Great, {needIntent} , Here are our TOP {x} models to choose from. Or let's look at some other options, please type \"Start again\"");
                 }
                 else
                 {
                     if (context.ConversationData.TryGetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, out brands))
                     {
- 
-                        await context.PostAsync($"Great, here are the {Miscellany.BuildBrandString(brands)} models that currently I have to choose from");
+                        if ((brands.Count == 1) && (brands[0] == BotConstants.SHOW_ME_ALL))
+                            await context.PostAsync($"Great, here are our {x} models to choose from. Click \"Plan Prices\" if you want to see the Phone Price on the different plans");
+                        else
+                            await context.PostAsync($"Great, here are the {Miscellany.BuildBrandString(brands)} models that currently I have to choose from");
                     }
                     else
                     {

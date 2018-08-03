@@ -79,10 +79,10 @@ namespace MultiDialogsBot.Helper
             double m,b;
             if (phone.Camera >= 12)
                 return 1;
-            if (phone.Camera < 10.5)
-                return 0;
-            m = 1 / 1.5;
-            b = -10.5 * m;
+            if (phone.Camera < 10)
+                return 0;  
+            m = 0.5;
+            b = -10 * m;
             return m * phone.Camera + b;  
         }
 

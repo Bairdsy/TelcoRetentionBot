@@ -546,15 +546,15 @@ namespace MultiDialogsBot.Dialogs
             {
                 topFeatures = new TopFeatures(theDecoder);    
                 handSets.InitializeBag(brand, lowerThreshold);
-                count = handSets.BagCount();
+                count = handSets.BagCount();  
                 if (count > BotConstants.MAX_CAROUSEL_CARDS)
                 {
                     if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag is beginning with {handSets.BagCount()}");
                     if (debugMessages) await context.PostAsync("DEBUG : String Representation = " + handSets.BuildStrRep());
                     Activity message = (Activity)context.Activity;
-                    Activity reply = message.CreateReply(isUnsure ?   "You can also at any stage ask for all phones and work through the different options on your own, just type \"Start Again\"" :
+                    Activity reply = message.CreateReply(isUnsure ? "If you like a particular brand just say which one and I can display all the models available from that supplier in a carousel below" :
                                                                       "Remember that you can always ask for all phones and work through the different options on your own,just enter \"Start Again\"");
-                    reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);
+                    reply.SuggestedActions = topFeatures.GetTop4Buttons(sb);  
                     if (debugMessages) await context.PostAsync("DEBUG : " + sb.ToString());
                     await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync($"We have over { count} different models of phone to choose from. ");
@@ -566,7 +566,7 @@ namespace MultiDialogsBot.Dialogs
                     await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync("Or you can choose features (like weight, battery life, camera...) ");
                     await Miscellany.InsertDelayAsync(context);
-                    await context.PostAsync("or just tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
+                    await context.PostAsync("I can also recommend some models if you tell me how you mostly use your phone (e.g. I like to play games on my iPhone, I regularly read books on my phone)");
                     await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync(reply);   
                     context.Call(new NodeLUISPhoneDialog(topFeatures,handSets, brand, lowerThreshold, null), LuisResponseHandlerAsync);
@@ -611,6 +611,7 @@ namespace MultiDialogsBot.Dialogs
                     decoder.FeatureOrNeedDesc = null;
                     /* In this case, there is no need to write "Great Choice! ... */
                     showGreatChoiceBanner = false;
+                    context.ConversationData.SetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, new List<string>() { BotConstants.SHOW_ME_ALL });
                 }
                 context.Call(new LessThan5Node(modelsInBag, showGreatChoiceBanner  , decoder.LastOneWasNeed, decoder.FeatureOrNeedDesc), FinalSelectionReceivedAsync);
             }

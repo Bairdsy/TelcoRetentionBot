@@ -41,22 +41,18 @@
                     //await context.PostAsync($"DEBUG: Subs Number is {subsno}");
                     int subsnum = Int32.Parse(subsno);
 
+                    await Miscellany.InsertDelayAsync(context,false);
                     _client = new MongoClient("mongodb://telcoretentiondb:HsQmjXjc0FBMrWYbJr8eUsGdWoTuaYXvdO2PRj13sxoPYijxxcxG5oSDfhFtVFWAFeWxFbuyf1NbxnFREFssAw==@telcoretentiondb.documents.azure.com:10255/?ssl=true&replicaSet=globaldb");
                     _database = _client.GetDatabase("madcalm");
 
 
-                    await context.PostAsync($"I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
-                    await Task.Delay(3000);
-                    await this.ShowSummaryCardAsync(context);
-                    await Task.Delay(3000);
-
-                    string generic_msg;
-                    var CardList = new List<HeroCard>();
-
-                    var collection = _database.GetCollection<BsonDocument>("offer_messages");
+                    //    await context.PostAsync($"I have analysed the way you use your phone and am matching that to the offers we have available to find the very best fit for you.");
+                    var collection = _database.GetCollection<BsonDocument>("offer_messages"); 
                     var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsnum);
                     var sort = Builders<BsonDocument>.Sort.Ascending("Inbound Eligibility").Ascending("Value Rank");
+                    string generic_msg;
 
+                       
                     using (var cursor = await collection.FindAsync(filter, new FindOptions<BsonDocument, BsonDocument>()
                     {
                         Sort = sort
@@ -74,6 +70,16 @@
                             }
                         }
                     }
+                    await Miscellany.InsertDelayAsync(context);
+                    await context.PostAsync("I have analysed the way you use your phone");
+                    await Task.Delay(5000);  // 3000 b4
+                    await this.ShowSummaryCardAsync(context);
+                    await Task.Delay(3000);
+                    await Miscellany.InsertDelayAsync(context);
+                    await context.PostAsync("Based on your current use, i am matching that to the offers we have available to find the very best fit for you.");
+                    var CardList = new List<HeroCard>();
+
+               
                     await this.ShowPlanCarouselAsync(context);
 
                 }
@@ -88,6 +94,7 @@
         protected async Task ShowPlanCarouselAsync(IDialogContext context)
         {
             int subsno;
+            bool containsSIMO = false;
 
             var reply = context.MakeMessage();
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
@@ -95,7 +102,7 @@
 
             var CardList = new List<HeroCard>();
             context.ConversationData.TryGetValue("SubsNumber", out subsno);
-
+            
             var collection = _database.GetCollection<BsonDocument>("offer_messages");
             var filter = Builders<BsonDocument>.Filter.Eq("Anon Subsno", subsno);
             var sort = Builders<BsonDocument>.Sort.Ascending("Inbound Eligibility").Ascending("Value Rank");
@@ -108,7 +115,7 @@
             {
                 while (await cursor.MoveNextAsync())
                 {
-                    var batch = cursor.Current;
+                    var batch = cursor.Current;  
                     foreach (var document in batch)
                     {
                         string Name = (string)document.GetElement("Offer Name").Value;
@@ -116,14 +123,15 @@
                         string Highlight = (string)document.GetElement("Plan Highlight").Value;
                         string Warning = (string)document.GetElement("Plan Warning").Value;
                         string Message = (string)document.GetElement("Plan Choice Message").Value;
+                        
                         string Code = (string)document.GetElement("Result Type Code").Value;
 
                         //await context.PostAsync($"DEBUG: Document [{Name}][{Image}][{Code}]");
-
+                        if (Name.Contains("SIM"))
+                            containsSIMO = true;
                         if (count == 0)
                         {
                             Name = "*Recommended for you* - " + Name;
-                            await context.PostAsync($"I've ranked all of your options from best to worst in the list below.");
                         }
                         var Card = new HeroCard
                         {
@@ -136,6 +144,9 @@
                         CardList.Add(Card);
                         count++;
                     }
+                    await Miscellany.InsertDelayAsync(context);
+                    string suffixStr = containsSIMO ? "{Also SIMO Plans are included*}" : String.Empty;
+                    await context.PostAsync($"I've ranked all of your options, starting with your Recommended Plan, {suffixStr}");
                 }
             }
             
