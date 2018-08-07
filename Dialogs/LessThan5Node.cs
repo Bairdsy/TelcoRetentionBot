@@ -153,7 +153,7 @@ namespace MultiDialogsBot.Dialogs
         {
             string reviewsUrl;
             var reply = ((Activity)context.Activity).CreateReply();
-            HeroCard heroCard;
+            HeroCard heroCard;  
             int x = modelList.Count;
             List<string> brands;
             List<Tuple<HeroCard,HandSetFeatures>> heroCards = new List<Tuple<HeroCard,HandSetFeatures>>();

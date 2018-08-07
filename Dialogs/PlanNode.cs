@@ -144,8 +144,8 @@
                         CardList.Add(Card);
                         count++;
                     }
-                    await Miscellany.InsertDelayAsync(context);
-                    string suffixStr = containsSIMO ? "{Also SIMO Plans are included*}" : String.Empty;
+                    await Miscellany.InsertDelayAsync(context);  
+                    string suffixStr = containsSIMO ? "Also SIMO Plans are included" : String.Empty;
                     await context.PostAsync($"I've ranked all of your options, starting with your Recommended Plan, {suffixStr}");
                 }
             }
