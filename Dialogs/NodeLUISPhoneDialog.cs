@@ -551,7 +551,8 @@ namespace MultiDialogsBot.Dialogs
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : Beginning of the method ProcessLuisNeedResult()");
             if (needsScore > desiredFeatureScore)  // WE have a need 
             {
-                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString()); 
+                if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : It's a need, namely " + needsIntent.ToString());
+                context.ConversationData.SetValue<NodeLuisSubsNeeds.ENeeds>(BotConstants.LAST_NEED_KEY, needsIntent);
                 decoder.LastOneWasNeed = true;
                 decoder.FeatureOrNeedDesc = NodeLuisSubsNeeds.GetNeedIntentDesc(result.Item1);
                 if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm going to obtain the top");
@@ -571,6 +572,7 @@ namespace MultiDialogsBot.Dialogs
                     if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : I'm goin to set frequency");
                     topButtons.SetNewFreq(desiredFeature, sb);
                     if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : New Frequency set, getting into the switch to switch to correct one (no pun intented)");
+                    context.ConversationData.SetValue(BotConstants.LAST_FEATURE_KEY, desiredFeature);
                     switch (desiredFeature)
                     {
                         case EIntents.Small:

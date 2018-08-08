@@ -255,12 +255,12 @@ namespace MultiDialogsBot.Dialogs
             context.Wait(SelectionButtonReceivedAsync);
         }          
 
-        private async Task CongratulateSubsAsync(IDialogContext context,string model)
+       /* private async Task CongratulateSubsAsync(IDialogContext context,string model)
         {   
             string phoneMatchMsg = "The phone match message will be inserted here";
 
             await context.PostAsync($"Excellent selection - The {Miscellany.Capitalize(model)} is great for you because {phoneMatchMsg}. The next step is to work out what plan is the best for you");
-        }
+        }*/
 
         private async Task WrongRecoverOptionReceivedAsync(IDialogContext context,IAwaitable<string> awaitable)
         {

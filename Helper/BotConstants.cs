@@ -23,6 +23,10 @@ namespace MultiDialogsBot.Helper
         public const string SELECTED_BRANDS_KEY = "LuisBrand";
         public const string SHOW_ME_ALL = "Show Me All";
 
+        public const string LAST_FEATURE_KEY = "LastFeature";
+        public const string LAST_NEED_KEY = "LastNeed";
+        
+
         public const double FEATURE_PHONE_THRESHOLD = 0.7;
     }
 }

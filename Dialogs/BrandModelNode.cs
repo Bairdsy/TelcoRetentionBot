@@ -140,10 +140,15 @@ namespace MultiDialogsBot.Dialogs
         private void ComposeBrandsCarousel(Activity reply)
         {
             HeroCard card;
+            int len;
             List<string> brandModels;
-              
-            foreach (string brand in brands.Keys)
+            List<string> listOfBrands = new List<string>(brands.Keys);
+
+            listOfBrands.Sort();
+            len = listOfBrands.Count;
+            for (int n = 0;n < len;++n)
             {
+                var brand = listOfBrands[n];
                 brandModels = new List<string>(GetBrandModels(brand).Keys);
                 if ((xclude != null) && // Avoid passing null to Except()
                     (brandModels.Except(xclude).Count() == 0))

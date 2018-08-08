@@ -204,6 +204,7 @@ namespace MultiDialogsBot.Dialogs
         {
             if (numberOfTries >= MAX_TRIES)
             {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("I'm sorry, I'm afraid I can't understand what you want to do. Would you like to talk to a human?");
                 numberOfTries = 1; // reset it
                 context.Done(0);
@@ -211,15 +212,23 @@ namespace MultiDialogsBot.Dialogs
             }
             if (numberOfTries++ == 1)
             {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Sorry, I couldn't understand what you would like to do. ");
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Would it be possible to rephrase?");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("I'm here to help you upgrade a phone, plan or both. Which one do you want to choose?");
                 context.Wait(this.MessageReceived);
             }
             else
             {
                 numberOfTries++;
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("I still didn't get it");
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Can you please rephrase it?");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("I'm here to help you upgrade a phone, plan or both. Which one do you want to choose?");
                 context.Wait(this.MessageReceived);
             }
         }
@@ -340,7 +349,10 @@ namespace MultiDialogsBot.Dialogs
             }
             else
             {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("OK, I didn't get that, could you please rephrase it for me?");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("I'm here to help you upgrade a phone, plan or both. Which one do you want to choose?");
                 ++numberOfTries;
                 context.Wait(this.MessageReceived);
             }
@@ -458,7 +470,10 @@ namespace MultiDialogsBot.Dialogs
 
             if (Miscellany.IsANo(ans))
             {
+                await Miscellany.InsertDelayAsync(context);
                 await context.PostAsync("Fine, could you please rephrase what you'd like to do, please?");
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("I'm here to help you upgrade a phone, plan or both. Which one do you want to choose?");
                 context.Wait(MessageReceived);
             }
             else

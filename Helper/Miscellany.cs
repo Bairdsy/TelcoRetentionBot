@@ -11,6 +11,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
 
 using MultiDialogsBot.Database;
+using MultiDialogsBot.Dialogs;
 
 namespace MultiDialogsBot.Helper
 {
@@ -164,6 +165,68 @@ namespace MultiDialogsBot.Helper
                 return true;
 
             return (ans.ToLower().StartsWith("no") && ((ans.Length == 2) || !char.IsLetter(ans[2])));
+        }
+
+        public static string GetCorrectCongratsMessage(IDialogContext context,HandSetFeatures chosenModel)
+        {
+            NodeLUISPhoneDialog.EIntents feature;
+            NodeLuisSubsNeeds.ENeeds need ;
+            string ramSize,scrResolution, prefix = "Excellent selection - ", suffix;
+            
+
+            suffix = chosenModel.DualCamera == 0 ? String.Empty : " and has dual cammera";
+            if (!context.ConversationData.TryGetValue<NodeLUISPhoneDialog.EIntents>(BotConstants.LAST_FEATURE_KEY, out feature))
+            {
+                if (!context.ConversationData.TryGetValue<NodeLuisSubsNeeds.ENeeds>(BotConstants.LAST_NEED_KEY, out need))
+                    return $"Now let's work what is the best plan for your {Capitalize(chosenModel.Model)}";
+                else
+                {
+                    if (chosenModel.RamSize >= 1024)
+                        ramSize = ((int)chosenModel.RamSize / 1024) + " GB";
+                    else
+                        ramSize = (int)chosenModel.RamSize + " MB";
+                    scrResolution = string.Format("{0} x {1}", chosenModel.DisplayResolution[0], chosenModel.DisplayResolution[1]);
+                    switch (need)
+                    {
+                        case NodeLuisSubsNeeds.ENeeds.PictureLover:
+                            return prefix + $"The {Capitalize(chosenModel.Model)} has {chosenModel.Camera} MegaPixels {suffix}, the best feature to take pictures.";
+                        case NodeLuisSubsNeeds.ENeeds.MovieWatcher:
+                            return prefix + $"The {Capitalize(chosenModel.Model)} is highly regarded because of its screen and battery performance to watch your favourite shows";
+                        case NodeLuisSubsNeeds.ENeeds.GamesAddict:
+                            return prefix + $"The {Capitalize(chosenModel.Model)} has {ramSize} and a dislplay resolution of {scrResolution}";
+                        default:
+                            return $"Now let's work what is the best plan for your {Capitalize(chosenModel.Model)}";
+                    }
+                }
+            }
+            else
+            {
+                switch (feature)
+                {
+                    case NodeLUISPhoneDialog.EIntents.FeaturePhone:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} is a great simple phone";
+                    case NodeLUISPhoneDialog.EIntents.Cheap:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} is one of the best offers that we have right now";
+                    case NodeLUISPhoneDialog.EIntents.OS:
+                        return prefix + $"The {Capitalize(chosenModel.OS)} operating system is a very reliable choice";
+                    case NodeLUISPhoneDialog.EIntents.Camera:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} has {chosenModel.Camera} MegaPixels {suffix}.";
+                    case NodeLUISPhoneDialog.EIntents.BatteryLife:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} has a long battery life ({chosenModel.BatteryLife} hours).";
+                    case NodeLUISPhoneDialog.EIntents.Small:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} is popular for its size";
+                    case NodeLUISPhoneDialog.EIntents.ScreenSize:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} is highly regarded by its screen performance";
+                    case NodeLUISPhoneDialog.EIntents.Newest:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} is a very new model";
+                    case NodeLUISPhoneDialog.EIntents.Weight:
+                        return prefix + $"The {Capitalize(chosenModel.Model)} is a very popular phone due to its light weight";
+                    case NodeLUISPhoneDialog.EIntents.Brand:
+                        return prefix + $"The {Capitalize(chosenModel.Brand)} is a very reliable choice";
+                    default:
+                        return $"Now let's work what is the best plan for your {Capitalize(chosenModel.Model)}";
+                }
+            }
         }
     }
 }

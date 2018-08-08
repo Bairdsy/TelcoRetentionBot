@@ -72,7 +72,7 @@
             {
                 Title = "Hi There!",
                 Subtitle = "Im MC - the MadCalm demo bot.",
-                Text = "I'm here to show you how great a chat bot can be for helping customers to change their plan or get a new phone.",
+                Text = "I'm here **ONLY** to show you how great a chat bot can be for helping customers to change their plan or get a new phone.",
                 Images = new List<CardImage> { new CardImage("http://madcalm.com/wp-content/uploads/2018/06/MADCALM-HELLO.png") },
                 Buttons = new List<CardAction> { }
             };

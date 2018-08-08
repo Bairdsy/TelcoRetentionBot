@@ -56,19 +56,26 @@ namespace MultiDialogsBot.Dialogs
          
       
 
-        public async Task MessageReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
+   /*/     public async Task MessageReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
         {
             if (debugMessages) await context.PostAsync("DEBUG : ColorsNode object - End of dialog");
             await context.PostAsync("0 OK, 0:1");
             context.Done(0);
-        } 
+        } */
 
         private async Task CongratulateSubsAsync(IDialogContext context )
         {
             string phoneMatchMsg = "The phone match message will be inserted here";
+            string congratulationsMsg = Miscellany.GetCorrectCongratsMessage(context, handSets.GetModelFeatures(chosenModel));
 
             await Miscellany.InsertDelayAsync(context);
-            await context.PostAsync($"Excellent selection - The {Miscellany.Capitalize(chosenModel)} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
+            // await context.PostAsync($"Excellent selection - The {Miscellany.Capitalize(chosenModel)} is perfect for you because **{phoneMatchMsg}** . The next step is to work out what plan is the best for you");
+            await context.PostAsync(congratulationsMsg);
+            if (congratulationsMsg.StartsWith("Exce"))
+            {
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync("The next step is to work out what plan is the best for you");
+            }
             context.ConversationData.SetValue("SelectedPhone", chosenModel);
             //Ryans flow kicks in
             await Task.Delay(3000);

@@ -114,6 +114,8 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 if (debugMessages) await context.PostAsync("DEBUG : string representation : " + handSets.BuildStrRepFull());
+                context.ConversationData.RemoveValue(BotConstants.LAST_FEATURE_KEY);
+                context.ConversationData.RemoveValue(BotConstants.LAST_NEED_KEY);
                 await DisplayTopSalesCarouselAsync(context);
                 firstTime = false;
                 context.Wait(PickOrRecommendOptionReceivedAsync);
