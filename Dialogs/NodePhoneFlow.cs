@@ -99,7 +99,9 @@ namespace MultiDialogsBot.Dialogs
             }   
 
             if (knowsWhatHeWants)
-            {   
+            {
+                context.ConversationData.RemoveValue(BotConstants.LAST_FEATURE_KEY);
+                context.ConversationData.RemoveValue(BotConstants.LAST_NEED_KEY);
                 phraseFromSubs = response;  
                 if (debugMessages) await context.PostAsync("DEBUG : Response received " + response);
                 if (IndicatedModelsAndOrBrands(out wantedBrands, out wantedModels))
@@ -291,17 +293,23 @@ namespace MultiDialogsBot.Dialogs
             foreach (string model in wantedModels)
                 sb.Append("-->" + model + "\r\n");
             if (debugMessages) await context.PostAsync("DEBUG : models identified  : " + sb.ToString()); 
+
             selectResult = SelectWithFilter(wantedModels);
+
             sb = new StringBuilder("DEBUG : Models selected by filter: ");
             foreach (string model in selectResult)
                 sb.Append("-->" + model + "\r\n");
             if (debugMessages) await context.PostAsync("DEBUG : models selected with regex : " + sb.ToString());
+
             AddUncoveredBrands(wantedBrands, selectResult);
+
             sb = new StringBuilder("DEBUG : Models selected including uncovered brands: ");
             foreach (string model in selectResult)
                 sb.Append("-->" + model + "\r\n"); 
             if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + sb.ToString());
+
             handSets.InitializeBag(selectResult);
+
             if (debugMessages) await context.PostAsync("DEBUG : contents of bag : " + handSets.BuildStrRep());
             if (selectResult.Count == 0)
             {

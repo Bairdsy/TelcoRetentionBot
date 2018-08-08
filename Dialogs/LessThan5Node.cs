@@ -163,14 +163,23 @@ namespace MultiDialogsBot.Dialogs
                 if (!answerWasFeature)
                 {
                     if (context.ConversationData.TryGetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, out brands) && (brands.Count == 1) && (brands[0] == BotConstants.SHOW_ME_ALL))
+                    {
+                        await Miscellany.InsertDelayAsync(context);
                         await context.PostAsync($"Great, here are our {x} models to choose from. Click \"Plan Prices\" if you want to see the Phone Price on the different plans");
+                        await Miscellany.InsertDelayAsync(context);
+                        await context.PostAsync("If you want to learn more about features and reviews, please selecet \"Specifications\" ir \"Expert reviews\" or if you want to look at some other options, please type \"Start again\"");
+                    }
                     else
+                    {
+                        await Miscellany.InsertDelayAsync(context);
                         await context.PostAsync($"Great, {needIntent} , Here are our TOP {x} models to choose from. Or let's look at some other options, please type \"Start again\"");
+                    }
                 }
                 else
                 {
                     if (context.ConversationData.TryGetValue<List<string>>(BotConstants.SELECTED_BRANDS_KEY, out brands))
                     {
+                        await Miscellany.InsertDelayAsync(context);
                         if ((brands.Count == 1) && (brands[0] == BotConstants.SHOW_ME_ALL))
                             await context.PostAsync($"Great, here are our {x} models to choose from. Click \"Plan Prices\" if you want to see the Phone Price on the different plans");
                         else
@@ -178,8 +187,10 @@ namespace MultiDialogsBot.Dialogs
                     }
                     else
                     {
+                        await Miscellany.InsertDelayAsync(context);
                         await context.PostAsync($"Great, here are the TOP {x} models {(featureIntent != null ? "for " + featureIntent : "")} to choose from.");
                     }
+                    await Miscellany.InsertDelayAsync(context);
                     await context.PostAsync("Or let's work out some other options if you are not happy with these ones, please type \"Start again\"");
                 }
                 firstTime = false;
