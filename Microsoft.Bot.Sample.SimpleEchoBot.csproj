@@ -282,6 +282,7 @@
       <DependentUpon>Resource1.resx</DependentUpon>
     </Compile>
     <Compile Include="Scorables\DebugScorable.cs" />
+    <Compile Include="Scorables\SecuredScorable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

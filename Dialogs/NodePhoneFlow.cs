@@ -116,11 +116,12 @@ namespace MultiDialogsBot.Dialogs
             else
             {
                 if (debugMessages) await context.PostAsync("DEBUG : string representation : " + handSets.BuildStrRepFull());
-                context.ConversationData.RemoveValue(BotConstants.LAST_FEATURE_KEY);
-                context.ConversationData.RemoveValue(BotConstants.LAST_NEED_KEY);
-                await DisplayTopSalesCarouselAsync(context);
-                firstTime = false;
-                context.Wait(PickOrRecommendOptionReceivedAsync);
+                /*    context.ConversationData.RemoveValue(BotConstants.LAST_FEATURE_KEY);
+                    context.ConversationData.RemoveValue(BotConstants.LAST_NEED_KEY);
+                    await DisplayTopSalesCarouselAsync(context);
+                    firstTime = false; 
+                    context.Wait(PickOrRecommendOptionReceivedAsync);*/
+                await AskPickOrRecommendOption(context);
             }
         }
 
@@ -612,7 +613,8 @@ namespace MultiDialogsBot.Dialogs
             if (debugMessages)  if (debugMessages) await context.PostAsync($"DEBUG : bag has {modelsInBag.Count}");
             if (decoder.FeatureOrNeedDesc == "Start Again")
             {
-                context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
+                // context.Call(new BrandModelNode(), FinalSelectionReceivedAsync);
+                await AskPickOrRecommendOption(context);
             }
             else
             {
@@ -656,7 +658,7 @@ namespace MultiDialogsBot.Dialogs
             string selection = (string)(await awaitable);
             List<string> models2Exclude,remainingModels;
 
-            if (debugMessages) await context.PostAsync("DEBUG: Final selection received : " + selection);
+            if (debugMessages) await context.PostAsync("DEBUG: Final selection received : " + selection);  
             switch (selection[0])  
             {  
                 case LessThan5Node.SOME_OTHER_BRAND:  
@@ -667,7 +669,9 @@ namespace MultiDialogsBot.Dialogs
                     isUnsure = false;
                     await RecommendPhoneAsync(context, selection.Substring(1));
                     break;
-                case LessThan5Node.NONE_OF_THESE_MODELS:
+                case LessThan5Node.NONE_OF_THESE_MODELS:     // Start again from LessThan5Node
+                    await AskPickOrRecommendOption(context);
+                    break;
                     models2Exclude = new List<string>(selection.Substring(1).Split(LessThan5Node.NONE_OF_THESE_MODELS));
                     if (models2Exclude.Count == GetAllModels().Count)
                     {
@@ -760,6 +764,16 @@ namespace MultiDialogsBot.Dialogs
             reply2.Text = "If you dont find anything you like, Let’s work some other options";
             await Miscellany.InsertDelayAsync(context);
             await context.PostAsync(reply2);
+        }
+
+        private async Task AskPickOrRecommendOption(IDialogContext context)
+        {
+            if (debugMessages) await context.PostAsync("DEBUG : Beginning of AskPickOrRecommendOption() method");
+            context.ConversationData.RemoveValue(BotConstants.LAST_FEATURE_KEY);
+            context.ConversationData.RemoveValue(BotConstants.LAST_NEED_KEY);
+            await DisplayTopSalesCarouselAsync(context);
+            firstTime = false;
+            context.Wait(PickOrRecommendOptionReceivedAsync);
         }
     }
 

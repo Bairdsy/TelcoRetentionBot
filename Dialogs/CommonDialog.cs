@@ -26,7 +26,7 @@ namespace  MultiDialogsBot.Dialogs
         static Dictionary<string, EPlans> planNamesMapping;
 
         public static bool debugMessages ;
-     
+        public static bool locked;
 
 
         protected static HandSets handSets;

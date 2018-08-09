@@ -24,6 +24,10 @@ namespace MultiDialogsBot
                 .Register(c => new DebugScorable(c.Resolve<IDialogTask>()))   
                 .As<IScorable<IActivity, double>>()
                 .InstancePerLifetimeScope();
+            builder
+                .Register(c => new SecuredScorable(c.Resolve<IDialogTask>()))
+                .As<IScorable<IActivity, double>>()
+                .InstancePerLifetimeScope();
         }
     }
 }

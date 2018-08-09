@@ -25,7 +25,10 @@ namespace MultiDialogsBot.Helper
 
         public const string LAST_FEATURE_KEY = "LastFeature";
         public const string LAST_NEED_KEY = "LastNeed";
-        
+
+        public const string KEY_PHRASE = "I won't share MadCalm Intellectual Property";
+        public const string PASSWORD1 = "OPEN";
+        public const string PASSWORD2 = "PUZZLE";
 
         public const double FEATURE_PHONE_THRESHOLD = 0.7;
     }
