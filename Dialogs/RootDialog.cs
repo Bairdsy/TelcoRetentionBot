@@ -30,8 +30,11 @@
         string HSET_Model;  
             
         public override async Task StartAsync(IDialogContext context)
-        {     
-            context.Wait(this.ShowCharacters);  
+        {
+            if (CommonDialog.locked)
+                context.Wait(CheckUnlockedAsync); 
+            else
+                context.Wait(this.ShowCharacters);
         }   
 
         private async Task MainEntryPoint(IDialogContext context )
@@ -39,7 +42,7 @@
             DateTime time = DateTime.Now;
             int hour = time.Hour;
             string salutation,subsName;
-            TimeZone tz = TimeZone.CurrentTimeZone;
+            TimeZone tz = TimeZone.CurrentTimeZone;  
 
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync($"Welcome to the MC upgrade BOT demo where you are now the customer named {subsName} and can interact with the bot as that customer.");
@@ -64,6 +67,7 @@
             await context.PostAsync("How can I help you today?");
             context.Call(new NodeLUISBegin(), DoneInitiaLuisAsync);
         }
+
 
 
         public virtual async Task ShowCharacters(IDialogContext context, IAwaitable<IMessageActivity> result)
@@ -225,7 +229,6 @@
                     }
                 }
                 await MainEntryPoint(context);
-              //  context.Wait(this.MainEntryPoint);//await this.ShowOptions(context);
             }
             else
             {
@@ -545,6 +548,30 @@
             {
                 context.Wait(this.MessageReceivedAsync);
             }
+        }
+
+        private async Task UnavailableAsync(IDialogContext context)  
+        {
+            var heroCard = new HeroCard()
+            {
+                Title = "Hi There!",
+                Subtitle = "I'm MC - The MadCalm demo bot.",  
+                Text = "At this moment I am unavailable for a demo, please contact Mr. Pete Reinke (pete@madcalm.com) or Mrs. Jennifer Lopez (jennifer.lopez@madcalm.com) to book a demo",
+                Images = new List<CardImage>() { new CardImage("http://madcalm.com/wp-content/uploads/2018/06/MADCALM-QUESTION.png") }
+            };
+            var message = context.MakeMessage();
+
+            message.Attachments.Add(heroCard.ToAttachment());
+            await context.PostAsync(message);
+            context.Wait(CheckUnlockedAsync);
+        }
+
+        private async Task CheckUnlockedAsync(IDialogContext context,IAwaitable<IMessageActivity> awaitable)
+        {
+            if (CommonDialog.locked)
+                await UnavailableAsync(context);
+            else
+                context.Wait(ShowCharacters);
         }
     }
 }
