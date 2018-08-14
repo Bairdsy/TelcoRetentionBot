@@ -63,22 +63,16 @@ namespace MultiDialogsBot.Dialogs
             {
                 await PlanPricesButtonHandlerAsync(context, contents.Substring(24).ToLower());
                 return;
-            }  
+            }     
 
             if ((model = IdentifyModel(contents)) != null)
             {
-                if (debugMessages) await context.PostAsync("DEBUG: OK, you picked " + model);
+                if (debugMessages) await context.PostAsync("DEBUG: OK, you picked " + model);  
                 context.Done(model);   
             }
             else if ((failureNumber != 0) && (contents.ToLower() == "start again"))
             {
                 context.Done(LessThan5Node.NONE_OF_THESE_MODELS.ToString());
-                /*
-                reply = ans.CreateReply("OK, these are the remaining Brands that I have available, click on the one that you are interested if you know what you want just type it");
-                brands.Remove(brandChosen);
-                ComposeBrandsCarousel(reply);
-                await context.PostAsync(reply);
-                context.Wait(BrandChoiceMadeAskModelAsync);*/
             }
             else if (failureNumber++ < MAX_FAILURES )
             {

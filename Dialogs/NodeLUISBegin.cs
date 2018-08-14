@@ -165,14 +165,14 @@ namespace MultiDialogsBot.Dialogs
 
             if (typos)
             {
-                await context.PostAsync(typosWarning);
+                await context.PostAsync(typosWarning);  
                 initialPhrase = result.AlteredQuery;
             }
             else
                 initialPhrase = result.Query;
             await this.PostDebugInfoAsync(context, result, "No intention" );
 
-            await context.PostAsync($"Im sorry. Either I didn’t understand how I can help or I understood that you dont need any help right now. I’ll be here whenever you type something new and we can start again.");
+            await context.PostAsync($"Im sorry. I didn’t understand how I can help you. I can help you to **upgrade your phone**, to **change your plan** or **both**. I’ll be here whenever you type something new and we can start again.");
             context.Done(Tuple.Create(initialPhrase,EIntent.None));
         }
 
@@ -190,7 +190,7 @@ namespace MultiDialogsBot.Dialogs
             await AskToRephraseAsync(context, result);
         }
     
-        private async Task PostDebugInfoAsync(IDialogContext context, LuisResult result, string intention)   
+        private async Task PostDebugInfoAsync(IDialogContext context, LuisResult result, string intention)
         {
             double intentionScore = ObtainTopIntentScore(result);
             double secondIntentionScore = ObtainSecondTopIntentScore(result);
