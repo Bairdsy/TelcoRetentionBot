@@ -304,7 +304,7 @@
             else
             {
                 context.Wait(Restarting);
-                context.Wait(ShowCharacters);
+            //    context.Wait(ShowCharacters);
             }
         }
 

@@ -611,22 +611,19 @@ namespace MultiDialogsBot.Dialogs
                                 PromptDialog.Choice(context, ProcessEnumeratedChoice, handSetsBag.GetBagColors(), "Could you please indicate your favourite Color?", "Not understood, please try again", 3);
                             }
                             else
-                                await DecodeAndProcessIntentAsync(context);
+                                await DecodeAndProcessIntentAsync(context);  
                             break;
                         case EIntents.Brand:
                             if (!GetSpecificBrands(res))
                             {
                                 List<string> brands = handSetsBag.GetBagBrands();
+                                Activity reply = (Activity)context.MakeMessage();
 
-                                
+                                reply.Text = "Could you please indicate your favourite brand?";
                                 await Miscellany.InsertDelayAsync(context);
-                                PromptDialog.Choice(
-                                    context, 
-                                    ProcessEnumeratedChoice, 
-                                    brands.Select(x => Miscellany.Capitalize(x)), 
-                                    "Could you please indicate your favourite brand?", 
-                                    "Not understood, please try again", 
-                                    3);
+                                Miscellany.ComposeBrandsCarousel(reply, brands, handSetsBag);
+                                await context.PostAsync(reply);
+                                context.Wait(ProcessBrandChoice);
                             }
                             else   
                                 await DecodeAndProcessIntentAsync(context);
@@ -634,7 +631,7 @@ namespace MultiDialogsBot.Dialogs
                         default:
                             await DecodeAndProcessIntentAsync(context);
                             break;
-                    }
+                    } 
                 }
                 catch (ArgumentException)
                 {
@@ -647,6 +644,36 @@ namespace MultiDialogsBot.Dialogs
             }      
         }
          
+        private async Task ProcessBrandChoice(IDialogContext context,IAwaitable<object> awaitable)
+        {
+            Activity reply, ans = (Activity)(await awaitable);
+            string brand = ans.Text ;
+
+
+            if ((brand.Length > 7) && (brand.StartsWith("I want ")))
+                brand = brand.Substring(7).ToLower();
+            if (handSetsBag.IsBrandUnavailable(brand))
+            {
+                reply = ans.CreateReply("I'm sorry, unfortunately we do not have that brand available, would it be possible to pick another one?");
+                Miscellany.ComposeBrandsCarousel(reply, handSetsBag.GetAllBrands().Keys, handSetsBag);
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync(reply);
+            }
+            else if (!handSetsBag.GetAllBrands().Keys.Contains(brand))
+            {
+                reply = ans.CreateReply("I'm sorry, unfortunately I don't know that brand, would it be possible to pick another one?");
+                Miscellany.ComposeBrandsCarousel(reply, handSetsBag.GetAllBrands().Keys, handSetsBag);
+                await Miscellany.InsertDelayAsync(context);
+                await context.PostAsync(reply);
+            }
+            else
+            {
+                decoder.StrKeyWords = new List<string> { brand.ToLower() };
+                context.Wait(MessageReceived);
+                await DecodeAndProcessIntentAsync(context);
+            }
+        }
+
         private async Task ProcessSizeChoice(IDialogContext context,IAwaitable<string> awaitable)
         {
             string ans = await awaitable;
@@ -684,8 +711,7 @@ namespace MultiDialogsBot.Dialogs
             
 
             if (CommonDialog.debugMessages) await context.PostAsync("DEBUG : He picked = " + ans);
-          /*  if (ans == "Classic Phone")  
-                ans = "NA";*/
+
             decoder.StrKeyWords = new List<string>() { ans.ToLower() };
             await DecodeAndProcessIntentAsync(context);
         }

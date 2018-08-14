@@ -228,5 +228,28 @@ namespace MultiDialogsBot.Helper
                 }
             }
         }
+
+        public static void ComposeBrandsCarousel(Activity reply,IEnumerable<string> brands,HandSets hs)
+        {
+            List<string> listOfBrands = new List<string>(brands);
+            int len;
+            HeroCard heroCard;
+
+            listOfBrands.Sort();
+            len = listOfBrands.Count;
+            for (int n = 0;n< len;++n)
+            {
+                heroCard = new HeroCard
+                {
+                    Title = Miscellany.Capitalize(listOfBrands[n]),
+                    Subtitle = Miscellany.Capitalize(listOfBrands[n]),
+                    Text = "",
+                    Images = new List<CardImage> { new CardImage(hs.GetBrandLogo(listOfBrands[n]), "img/jpeg") },
+                    Buttons = new List<CardAction> { new CardAction { Title = "Pick Me!", Type = ActionTypes.ImBack, Value = "I want " + Miscellany.Capitalize(listOfBrands[n]) } },
+                };
+                reply.Attachments.Add(heroCard.ToAttachment());
+            }
+            reply.AttachmentLayout = "carousel";
+        }
     }
 }

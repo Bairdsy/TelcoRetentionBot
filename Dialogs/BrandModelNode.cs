@@ -68,7 +68,7 @@ namespace MultiDialogsBot.Dialogs
             if ((model = IdentifyModel(contents)) != null)
             {
                 if (debugMessages) await context.PostAsync("DEBUG: OK, you picked " + model);  
-                context.Done(model);   
+                context.Done(model);
             }
             else if ((failureNumber != 0) && (contents.ToLower() == "start again"))
             {
@@ -99,6 +99,7 @@ namespace MultiDialogsBot.Dialogs
             IEnumerable<string> vector;
               
             if (debugMessages) await context.PostAsync("Beginning of BrandChoiceMadeAskModelAsync()");
+            brand = brand.ToLower();
             brandChosen = brand;
             tempHash = GetBrandModels(brand);   
             if (debugMessages) await context.PostAsync("Collecting models' hash");
@@ -177,7 +178,8 @@ namespace MultiDialogsBot.Dialogs
 
                 reply.Text = $"You can choose from {numberOfModels} models from Apple, Samsung, Nokia and other leading brands. Click or type the brands below from this list";
                 if (debugMessages) await context.PostAsync("DEBUG : Calling ComposeBrandsCarousel()");
-                ComposeBrandsCarousel(reply);
+                Miscellany.ComposeBrandsCarousel(reply, brands.Keys, handSets);
+               // ComposeBrandsCarousel(reply);
             }
             catch (Exception xception)
             {
@@ -185,7 +187,7 @@ namespace MultiDialogsBot.Dialogs
             }
             await Miscellany.InsertDelayAsync(context);
             await context.PostAsync(reply);
-            context.Wait(BrandChoiceMadeAskModelAsync);
+            context.Wait(BrandChoiceMadeAskModelAsync); 
         }
 
         public async Task MessageReceivedAsync(IDialogContext context,IAwaitable<object> awaitable)
