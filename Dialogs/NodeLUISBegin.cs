@@ -467,7 +467,7 @@ namespace MultiDialogsBot.Dialogs
                 }
             };
 
-            reply.SuggestedActions = buttons;  
+            reply.SuggestedActions = buttons;    
 
             await context.PostAsync( reply);
             context.Wait(ConfirmationReceivedAsync);
