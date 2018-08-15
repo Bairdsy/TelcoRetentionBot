@@ -622,7 +622,7 @@ namespace MultiDialogsBot.Dialogs
                                 reply.Text = "Could you please indicate your favourite brand?";
                                 await Miscellany.InsertDelayAsync(context);
                                 Miscellany.ComposeBrandsCarousel(reply, brands, handSetsBag);
-                                await context.PostAsync(reply);
+                                await context.PostAsync(reply);  
                                 context.Wait(ProcessBrandChoice);
                             }
                             else   

@@ -171,10 +171,42 @@ namespace MultiDialogsBot.Dialogs
             else
                 initialPhrase = result.Query;
             await this.PostDebugInfoAsync(context, result, "No intention" );
-
+            await Miscellany.InsertDelayAsync(context);
             await context.PostAsync($"I'm sorry. I didn’t understand how I can help you. I can help you to **upgrade your phone**, to **change your plan** or **both**. I’ll be here whenever you type something new and we can start again.");
             context.Done(Tuple.Create(initialPhrase,EIntent.None));
         }
+
+        [LuisIntent("HowAreYou")]
+        public async Task HowAreYou(IDialogContext context,LuisResult result)
+        {
+            await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync("I'm fine, thank you.");
+            await WriteGenericReplyAsync(context);
+        }
+
+        [LuisIntent("Morning")]
+        public async Task Morning(IDialogContext context,LuisResult result)
+        {
+            string utterance, response;
+
+            if (result.AlteredQuery == null)
+                utterance = result.Query;
+            else
+                utterance = result.AlteredQuery;
+            utterance = utterance.ToLower();
+            if (utterance.Contains("morning"))
+                response = "Good Morning!";
+            else if (utterance.Contains("evening"))
+                response = "Good Evening!";
+            else if (utterance.Contains("afternoon"))
+                response = "Good Afternoon!";
+            else
+                response = "Hello!";
+            await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync(response);
+            await WriteGenericReplyAsync(context);
+        }
+
 
         [LuisIntent("")]
         public async Task NoneAtAll(IDialogContext context,LuisResult result)
@@ -435,7 +467,7 @@ namespace MultiDialogsBot.Dialogs
                 }
             };
 
-            reply.SuggestedActions = buttons;
+            reply.SuggestedActions = buttons;  
 
             await context.PostAsync( reply);
             context.Wait(ConfirmationReceivedAsync);
@@ -477,9 +509,15 @@ namespace MultiDialogsBot.Dialogs
                 context.Wait(MessageReceived);
             }
             else
-            {
+            {  
                 await ProcessLuisResultsAsync(context, this.luisResultCopy);
             }
+        }
+
+        private async Task WriteGenericReplyAsync(IDialogContext context)
+        {
+            await Miscellany.InsertDelayAsync(context);
+            await context.PostAsync("I am excited to help you to choose a **plan** or **phone** or **both**. Let me know what you are looking for?");
         }
     }
 }
