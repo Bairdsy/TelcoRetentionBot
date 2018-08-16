@@ -45,16 +45,12 @@ namespace MultiDialogsBot.Dialogs
             { "Upgrade Both" , new Tuple<string,EIntent>("are looking to get a new phone and plan",EIntent.Both)},
             {"Upgrade Equipment",new Tuple<string,EIntent>("are looking to get a new phone",EIntent.HandSet) },
             { "Upgrade plan", new Tuple<string,EIntent>("want to change your plan",EIntent.Plan)},
-            
-
         };  
-        
         static int numberOfTries = 1;
 
         LuisUpdater updater = new LuisUpdater();
         string nonUnderstoodUtterance,initialPhrase;
-        bool justCheck4Errors;
-
+        bool justCheck4Errors;   // flag to say if the node is being used to actually tell the intent or just to check for error spelling
         string subsIntention;
         LuisResult luisResultCopy;
 
@@ -64,15 +60,16 @@ namespace MultiDialogsBot.Dialogs
         }
 
         [LuisIntent("Upgrade Both")]
-        public async Task UpgradeBoth(IDialogContext context,LuisResult result)
+        public async Task UpgradeBoth(IDialogContext context,LuisResult result) 
         {
-            string typosWarning = TyposInformation(result);
+            string typosWarning;
 
             if (justCheck4Errors)
             {
                 CheckSpelling(context, result);
                 return;
             }
+            typosWarning = TyposInformation(result);
             subsIntention = "Upgrade Both";
             luisResultCopy = result;
             if (typosWarning != null)

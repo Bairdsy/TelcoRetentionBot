@@ -94,7 +94,7 @@ namespace MultiDialogsBot.Dialogs
                 {EIntents.BatteryLife,"Battery life" },
                 {EIntents.Small, "Physical Size" }
             };
-            acknowledgeMessages = new Dictionary<EIntents, string[]>()
+            acknowledgeMessages = new Dictionary<EIntents, string[]>() 
             {         
                 {EIntents.BandWidth,new String[]{"I've picked out the phones that have access to internet and wide bandwidth" } },
                 { EIntents.BatteryLife,new String[]{"I've picked out the phones that have a big battery life","I've picked out all the phones that have a battery life longer than {0} hours" } },
@@ -123,10 +123,10 @@ namespace MultiDialogsBot.Dialogs
             };
 
             handSetsBag = handSets;
-            brandDesired = brand; 
+            brandDesired = brand;
             ReleaseDateCurrentModel = currentModelReleaseDate; 
-            decoder = mostDemanded.AssociatedDecoder; 
-            topButtons = mostDemanded; 
+            decoder = mostDemanded.AssociatedDecoder;
+            topButtons = mostDemanded;
             needsScores = new ScoreFuncs(handSets);
         }
 

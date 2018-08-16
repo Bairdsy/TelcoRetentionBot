@@ -44,6 +44,7 @@ namespace MultiDialogsBot.Dialogs
                     new CardAction(){Title = "No, I haven't made up my mind", Type = ActionTypes.ImBack, Value = "No"}
                 }
             };
+
             try
             {
                 if (IndicatedModelsAndOrBrands(out brandsWanted,out modelsWanted))
@@ -159,7 +160,7 @@ namespace MultiDialogsBot.Dialogs
                         break;
                     if (maxWordIndex < wordIndex)
                     {
-                        builder.Append("\\x20*"  + words[wordIndex]);     // Depois substitutir por .x for debug purposes 
+                        builder.Append("\\x20*"  + words[wordIndex]);     // after we replace for .* for debug purposes 
                         maxWordIndex = wordIndex;
                     }
                     startIndex = index + words[wordIndex].Length;
@@ -204,14 +205,12 @@ namespace MultiDialogsBot.Dialogs
 
             foreach (string model in modelsSet.Keys)
             {
-                incompleteModel = FindPartsOfModels(spaceless, model.ToLower());    // Oliver = night
-
+                incompleteModel = FindPartsOfModels(spaceless, model.ToLower());
                 if (incompleteModel.Length != 0)  // Empty string means nothing is there
                 {
                     MergeIntoList(detectedModels, incompleteModel);
                 }
             }
-    
             for (int i = 0; i < detectedModels.Count; ++i)
                 returnVal.Add(detectedModels[i].Append(".*").ToString());
             return returnVal;
@@ -221,12 +220,9 @@ namespace MultiDialogsBot.Dialogs
         {
             List<string> keys = new List<string>(),returnStrs = new List<string>();
 
-            
             fullUtterance = fullUtterance.ToLower();
-
             foreach (string brand in brands.Keys)
                 keys.Add(brand);
-
             foreach (string brand in keys)
                 if (-1 != fullUtterance.IndexOf(brand.ToLower()))
                 {
@@ -306,7 +302,7 @@ namespace MultiDialogsBot.Dialogs
 
             sb = new StringBuilder("DEBUG : Models selected including uncovered brands: ");
             foreach (string model in selectResult)
-                sb.Append("-->" + model + "\r\n"); 
+                sb.Append("-->" + model + "\r\n");
             if (debugMessages) await context.PostAsync("DEBUG : models identified with uncovered brands : " + sb.ToString());
 
             handSets.InitializeBag(selectResult);

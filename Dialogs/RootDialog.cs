@@ -42,12 +42,11 @@
             DateTime time = DateTime.Now;
             int hour = time.Hour;
             string salutation,subsName;
-            TimeZone tz = TimeZone.CurrentTimeZone;  
+            TimeZone tz = TimeZone.CurrentTimeZone;
 
             context.ConversationData.TryGetValue("SubsName", out subsName);
             await context.PostAsync($"Welcome to the MC upgrade BOT demo where you are now the customer named {subsName} and can interact with the bot as that customer.");
 
-            //context.ConversationData.SetValue("HandsetModelKey", "iphone 7 plus- 256gb");
             if (CommonDialog.debugMessages)
             { 
                 await context.PostAsync("DEBUG : Beginning of program");
@@ -304,7 +303,6 @@
             else
             {
                 context.Wait(Restarting);
-            //    context.Wait(ShowCharacters);
             }
         }
 
